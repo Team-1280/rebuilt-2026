@@ -4,11 +4,8 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -16,30 +13,19 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
-import frc.robot.arm.ArmConst;
-import frc.robot.arm.ArmSubsystem;
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.TunerConstants;
-import frc.robot.elevator.ElevatorConst;
-import frc.robot.elevator.ElevatorSubsystem;
 
 public class Robot extends TimedRobot {
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    private final ElevatorSubsystem elevator = new ElevatorSubsystem();
-    private final ArmSubsystem arm = new ArmSubsystem();
+
+    private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
     private final Field2d field = new Field2d();
-
-    private final CommandXboxController controller = new CommandXboxController(0);
 
     public Robot() {
         initDashboard();
@@ -48,9 +34,6 @@ public class Robot extends TimedRobot {
 
     private void initDashboard() {
         SmartDashboard.putData("Field", field);
-        SmartDashboard.putData("Mechanism", mechanism);
-        SmartDashboard.putData("Elevator", elevator);
-        SmartDashboard.putData("Arm", arm);
     }
 
     private void initBindings() {
@@ -70,15 +53,6 @@ public class Robot extends TimedRobot {
                                         .withVelocityY(controller.getLeftX() * speed)
                                         .withRotationalRate(
                                                 controller.getRightX() * angularSpeed)));
-
-        // Elevator bindings
-        controller.y().onTrue(elevator.runOnce(() -> elevator.moveHeightFraction(1.0)));
-        controller.a().onTrue(elevator.runOnce(() -> elevator.moveHeightFraction(0.0)));
-
-        // Arm bindings
-        controller.b().onTrue(arm.runOnce(() -> arm.moveAngle(ArmConst.MIN_ANGLE)));
-        controller.x().onTrue(arm.runOnce(() -> arm.moveAngle(ArmConst.MAX_ANGLE)));
-        controller.povUp().onTrue(arm.runOnce(() -> arm.moveAngle(Rotations.of(0.0))));
     }
 
     @Override
@@ -114,26 +88,9 @@ public class Robot extends TimedRobot {
     @Override
     public void testPeriodic() {}
 
-    private final Mechanism2d mechanism = new Mechanism2d(1.5, 2.5);
-    private final MechanismRoot2d mechanismRoot = mechanism.getRoot("root", 0.75, 0.05);
-    private final MechanismLigament2d elevatorLigament =
-            mechanismRoot.append(
-                    new MechanismLigament2d("elevator", ElevatorConst.MIN_HEIGHT.in(Meters), 90));
-    private final MechanismLigament2d armLigament =
-            elevatorLigament.append(
-                    new MechanismLigament2d(
-                            "arm",
-                            ArmConst.LENGTH.in(Meters),
-                            ArmConst.MAX_ANGLE.in(Degrees) - 90,
-                            6,
-                            new Color8Bit(Color.kPurple)));
-
     @Override
     public void simulationInit() {}
 
     @Override
-    public void simulationPeriodic() {
-        elevatorLigament.setLength(elevator.getHeight().in(Meters));
-        armLigament.setAngle(arm.getAngle().in(Degrees) - 90);
-    }
+    public void simulationPeriodic() {}
 }
