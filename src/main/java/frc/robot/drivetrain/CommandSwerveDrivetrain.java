@@ -9,10 +9,10 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+// import com.pathplanner.lib.auto.AutoBuilder;
+// import com.pathplanner.lib.config.PIDConstants;
+// import com.pathplanner.lib.config.RobotConfig;
+// import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
@@ -201,45 +201,46 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public void configureAutoBuilder() {
-        try {
-            var config = RobotConfig.fromGUISettings();
-            AutoBuilder.configure(
-                    () -> getState().Pose, // Robot pose supplier
-                    this::resetPose, // Method to reset odometry
-                    () -> getState().Speeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                    (speeds, feedforwards) ->
-                            setControl(
-                                    m_pathApplyRobotSpeeds
-                                            .withSpeeds(speeds)
-                                            .withWheelForceFeedforwardsX(
-                                                    feedforwards.robotRelativeForcesXNewtons())
-                                            .withWheelForceFeedforwardsY(
-                                                    feedforwards.robotRelativeForcesYNewtons())),
-                    new PPHolonomicDriveController(
-                            // PID constants for translation
-                            new PIDConstants(10, 0, 0),
-                            // PID constants for rotation
-                            new PIDConstants(10, 0, 0)),
-                    config,
-                    () -> {
-                        // Boolean supplier that controls when the path will be mirrored for the red
-                        // alliance
-                        // This will flip the path being followed to the red side of the field.
-                        // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+        // try {
+        //     var config = RobotConfig.fromGUISettings();
+        //     AutoBuilder.configure(
+        //             () -> getState().Pose, // Robot pose supplier
+        //             this::resetPose, // Method to reset odometry
+        //             () -> getState().Speeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        //             (speeds, feedforwards) ->
+        //                     setControl(
+        //                             m_pathApplyRobotSpeeds
+        //                                     .withSpeeds(speeds)
+        //                                     .withWheelForceFeedforwardsX(
+        //                                             feedforwards.robotRelativeForcesXNewtons())
+        //                                     .withWheelForceFeedforwardsY(
+        //                                             feedforwards.robotRelativeForcesYNewtons())),
+        //             new PPHolonomicDriveController(
+        //                     // PID constants for translation
+        //                     new PIDConstants(10, 0, 0),
+        //                     // PID constants for rotation
+        //                     new PIDConstants(10, 0, 0)),
+        //             config,
+        //             () -> {
+        //                 // Boolean supplier that controls when the path will be mirrored for the
+        // red
+        //                 // alliance
+        //                 // This will flip the path being followed to the red side of the field.
+        //                 // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-                        var alliance = DriverStation.getAlliance();
-                        if (alliance.isPresent()) {
-                            return alliance.get() == DriverStation.Alliance.Red;
-                        }
-                        return false;
-                    },
-                    this // Reference to this subsystem to set requirements
-                    );
-        } catch (Exception ex) {
-            DriverStation.reportError(
-                    "Failed to load PathPlanner config and configure AutoBuilder",
-                    ex.getStackTrace());
-        }
+        //                 var alliance = DriverStation.getAlliance();
+        //                 if (alliance.isPresent()) {
+        //                     return alliance.get() == DriverStation.Alliance.Red;
+        //                 }
+        //                 return false;
+        //             },
+        //             this // Reference to this subsystem to set requirements
+        //             );
+        // } catch (Exception ex) {
+        //     DriverStation.reportError(
+        //             "Failed to load PathPlanner config and configure AutoBuilder",
+        //             ex.getStackTrace());
+        // }
     }
 
     /**
