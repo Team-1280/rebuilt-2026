@@ -1,10 +1,7 @@
 
-
-
-## Upgrading
-When updating the codebase to the next year, copy in the following files/folders:
-- `README.md`
-- `.vscode`
+## Notice: Using Prewritten Code
+The prewritten code must be available public, on a public forum post such as Chief Delphi,
+before kickoff. From R303 of (2026) Game Manual.
 
 
 ## Xbox Controller Mappings
