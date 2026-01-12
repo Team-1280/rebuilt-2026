@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -38,8 +39,8 @@ public class Robot extends TimedRobot {
 
     private void initBindings() {
         // Drive bindings
-        double speed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.15;
-        double angularSpeed = RotationsPerSecond.of(1.0).in(RadiansPerSecond);
+        double speed = MetersPerSecond.of(1.60).in(MetersPerSecond);
+        double angularSpeed = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
         final SwerveRequest.FieldCentric driveRequest =
                 new SwerveRequest.FieldCentric()
                         .withDeadband(speed * 0.1)
