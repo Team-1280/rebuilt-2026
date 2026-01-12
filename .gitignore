@@ -80,6 +80,8 @@ hs_err_pid*
 .DS_Store
 .AppleDouble
 .LSOverride
+.metals
+.bloop
 
 # Icon must end with two \r
 Icon
