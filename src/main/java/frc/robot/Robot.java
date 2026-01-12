@@ -52,7 +52,9 @@ public class Robot extends TimedRobot {
                                         .withVelocityX(controller.getLeftY() * speed)
                                         .withVelocityY(controller.getLeftX() * speed)
                                         .withRotationalRate(
-                                                controller.getRightX() * angularSpeed)));
+                                                -controller.getRightX() * angularSpeed)));
+
+        controller.rightStick().onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
     }
 
     @Override
