@@ -12,6 +12,8 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.TunerConstants;
 
-public class Robot extends TimedRobot {
+public class Robot extends TimedRobot implements Sendable {
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
@@ -34,6 +36,7 @@ public class Robot extends TimedRobot {
     }
 
     private void initDashboard() {
+        SmartDashboard.putData("Robot", this);
         SmartDashboard.putData("Field", field);
     }
 
@@ -50,8 +53,8 @@ public class Robot extends TimedRobot {
                 drivetrain.applyRequest(
                         () ->
                                 driveRequest
-                                        .withVelocityX(controller.getLeftY() * speed)
-                                        .withVelocityY(controller.getLeftX() * speed)
+                                        .withVelocityX(-controller.getLeftY() * speed)
+                                        .withVelocityY(-controller.getLeftX() * speed)
                                         .withRotationalRate(
                                                 -controller.getRightX() * angularSpeed)));
 
@@ -96,4 +99,10 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationPeriodic() {}
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addStringProperty("robot pose", () -> drivetrain.getState().Pose.toString(), null);
+        builder.addStringProperty("robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
+    }
 }
