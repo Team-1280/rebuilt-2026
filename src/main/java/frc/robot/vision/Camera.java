@@ -1,7 +1,6 @@
 package frc.robot.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Transform3d;
 
 import org.photonvision.EstimatedRobotPose;
@@ -19,7 +18,7 @@ public class Camera {
         this.camera = new PhotonCamera(cameraName);
         this.poseEstimator =
                 new PhotonPoseEstimator(
-                        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo),
+                        AprilTagFieldLayout.loadField(VisionConst.APRIL_TAG_FIELD),
                         robotToCameraPose);
     }
 
