@@ -1,4 +1,12 @@
 
+## Controls
+
+### Drive
+Left Joystick: Move (field-oriented)
+Right Joystick X: Rotate
+Right Joystick Button: Reset robot heading to 0
+
+
 ## Notice: Using Prewritten Code
 The prewritten code must be available public, on a public forum post such as Chief Delphi,
 before kickoff. From R303 of (2026) Game Manual.
