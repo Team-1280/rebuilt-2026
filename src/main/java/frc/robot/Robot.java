@@ -22,9 +22,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.TunerConstants;
+import frc.robot.vision.VisionSubsystem;
 
 public class Robot extends TimedRobot implements Sendable {
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
