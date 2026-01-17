@@ -20,14 +20,13 @@ public class Camera {
         this.poseEstimator =
                 new PhotonPoseEstimator(
                         AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo),
-                        PhotonPoseEstimator.PoseStrategy.AVERAGE_BEST_TARGETS,
                         robotToCameraPose);
     }
 
     public Optional<EstimatedRobotPose> update() {
         Optional<EstimatedRobotPose> estimatedPose = Optional.empty();
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
-            estimatedPose = poseEstimator.update(result);
+            estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result);
         }
         return estimatedPose;
     }
