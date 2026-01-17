@@ -60,7 +60,9 @@ public class Robot extends TimedRobot implements Sendable {
                                         .withRotationalRate(
                                                 -controller.getRightX() * angularSpeed)));
 
-        controller.rightStick().onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
+        controller
+                .rightStick()
+                .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
     }
 
     @Override
@@ -105,6 +107,7 @@ public class Robot extends TimedRobot implements Sendable {
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addStringProperty("robot pose", () -> drivetrain.getState().Pose.toString(), null);
-        builder.addStringProperty("robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
+        builder.addStringProperty(
+                "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
     }
 }
