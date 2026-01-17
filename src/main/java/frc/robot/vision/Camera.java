@@ -11,8 +11,8 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import java.util.Optional;
 
 public class Camera {
-    private PhotonCamera camera;
-    private PhotonPoseEstimator poseEstimator;
+    private final PhotonCamera camera;
+    private final PhotonPoseEstimator poseEstimator;
 
     public Camera(String cameraName, Transform3d robotToCameraPose) {
         this.camera = new PhotonCamera(cameraName);
