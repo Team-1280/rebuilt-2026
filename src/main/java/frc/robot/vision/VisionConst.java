@@ -7,8 +7,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
 public final class VisionConst {
-    public static final AprilTagFields APRIL_TAG_FIELD =
-            AprilTagFields.k2024Crescendo; // TODO: change to 2026
+    public static final AprilTagFields APRIL_TAG_FIELD = AprilTagFields.k2026RebuiltWelded;
 
     public static final Transform3d FRONT_CAMERA_TRANSFORM =
             new Transform3d(
