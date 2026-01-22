@@ -10,20 +10,22 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.TunerConstants;
 
 public class Robot extends TimedRobot {
-    private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    private final CommandXboxController controller = new CommandXboxController(0); // TODO
+    private final CommandSwerveDrivetrain drivetrain =
+        TunerConstants.createDrivetrain();
+
+    private final CommandXboxController controller = new CommandXboxController(
+        0
+    ); // TODO
 
     private final Field2d field = new Field2d();
 
@@ -38,21 +40,22 @@ public class Robot extends TimedRobot {
 
     private void initBindings() {
         // Drive bindings
-        double speed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.15;
+        double speed =
+            TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.15;
         double angularSpeed = RotationsPerSecond.of(1.0).in(RadiansPerSecond);
         final SwerveRequest.FieldCentric driveRequest =
-                new SwerveRequest.FieldCentric()
-                        .withDeadband(speed * 0.1)
-                        .withRotationalDeadband(angularSpeed * 0.1)
-                        .withDriveRequestType(DriveRequestType.Velocity);
+            new SwerveRequest.FieldCentric()
+                .withDeadband(speed * 0.1)
+                .withRotationalDeadband(angularSpeed * 0.1)
+                .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
-                drivetrain.applyRequest(
-                        () ->
-                                driveRequest
-                                        .withVelocityX(controller.getLeftY() * speed)
-                                        .withVelocityY(controller.getLeftX() * speed)
-                                        .withRotationalRate(
-                                                controller.getRightX() * angularSpeed)));
+            drivetrain.applyRequest(() ->
+                driveRequest
+                    .withVelocityX(controller.getLeftY() * speed)
+                    .withVelocityY(controller.getLeftX() * speed)
+                    .withRotationalRate(controller.getRightX() * angularSpeed)
+            )
+        );
     }
 
     @Override
