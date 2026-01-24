@@ -384,7 +384,7 @@ The smaller values of $t$ correspond to shallow, direct trajectories that may be
 
 ### 3. Find $\alpha$ and $\theta$
 
-First, define $\vec{L}$ as the horizontal "effective displacement". \
+First, define $\vec{L}$ as the horizontal ($x$ and $y$ directions only) "effective displacement" vector. \
 This comes from hypothetically changing the reference frame from being still to having velocity $\vec{V}$.
 
 The situation where the robot moves while the target is still is **perfectly analogous** to the situation where the robot is still while the target moves (with opposite velocity). \
