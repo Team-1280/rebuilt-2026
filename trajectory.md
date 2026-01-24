@@ -509,6 +509,8 @@ Define:
 First, find $t$ using a (depressed) quartic formula. There may be multiple solutions, or no solution.
 ```math
 (\frac{g^2}{4})t^4+(S_zg+\lVert\vec{V}\rVert^2-u^2)t^2-2(\vec{S}\cdot\vec{V})t+\lVert\vec{S}\rVert^2=0 \\
+```
+```math
 t\in\mathbb{R}^+\enspace(t>0)
 ```
 Choose a $t$ based on its size, with larger $t$ having a steeper trajectory. \
@@ -592,11 +594,11 @@ Substitute and solve for $\alpha$.
 ```
 We will ignore the second branch of $\arcsin$ giving a second $\alpha_2$ (corresponding to a supplementary angle facing in the wrong direction).
 ```math
-\boxed{\alpha=\angle\vec{S}+\arcsin(\frac{\vec{V}\times\vec{S}}{u\cos(\theta)\lVert\vec{S}\rVert})} \\
+\boxed{\alpha=\angle\vec{S}+\arcsin(\frac{\vec{V}\times\vec{S}}{u\cos(\theta)\lVert\vec{S}\rVert})}
 ```
 A real solution for $\alpha$ exists when the $\arcsin$ argument is in $\arcsin$'s domain of $[-1, 1]$:
 ```math
-\left\lvert\frac{\vec{V}\times\vec{S}}{u\cos(\theta)\lVert\vec{S}\rVert}\right\rvert\le1 \\
+\left\lvert\frac{\vec{V}\times\vec{S}}{u\cos(\theta)\lVert\vec{S}\rVert}\right\rvert\le1
 ```
 
 ## Physical Considerations
