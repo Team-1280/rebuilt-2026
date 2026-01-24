@@ -518,6 +518,8 @@ Simply use the components of $\hat{d}$ to find $\theta_r$ and $\alpha_r$, keepin
 (Due to things with the reference frame of 3D rotations, the $z$ component is the *negated* $\sin$ of the pitch angle.)
 
 ## Solution
+Summary of findings, without intermediate calculations.
+
 Given:
 ```math
 \vec{P}_{xyz}, \vec{V}_{xy},\boldsymbol{R}_R,\vec{T}_{xyz},\vec{Q}_{xyz},u,g
