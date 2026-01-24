@@ -100,7 +100,7 @@ More vector properties and operations:
 \vec{A}\cdot\vec{B}\coloneqq(\text{dot product})=A_xB_x+A_yB_y+\ldots=\lVert \vec{A} \rVert\lVert \vec{B} \rVert \cos\theta \\
 \implies
 \vec{A}\cdot\vec{A}=A_x^2+A_y^2+\ldots=\lVert \vec{A} \rVert^2 \\
-\angle\vec{A}_{xy}\coloneqq(\text{angle }\vec{A}\text{ makes with x+ axis})=\operatorname{atan2}(A_y,A_x) \\
+\angle\vec{A}_{xy}\coloneqq(\text{angle }\vec{A}\text{ makes with x+ axis})=\text{atan2}(A_y,A_x) \\
 \vec{0}\coloneqq(\text{zero vector})=\langle0,0,\ldots\rangle \\
 \vec{A}_{xy}\times\vec{B}_{xy}\coloneqq(\text{2D scalar cross product})=A_xB_y-A_yB_x
 ```
@@ -122,7 +122,7 @@ $\boldsymbol{R}(a)$ is a 2D rotation with angle $a$.
 $\boldsymbol{R}(a,b,c)$ is a 3D rotation with roll $a$, pitch $b$, yaw $c$. \
 The following functions will be defined to access the individual angles:
 ```math
-\operatorname{roll}(\boldsymbol{R})=a,\,\operatorname{pitch}(\boldsymbol{R})=b,\,\operatorname{yaw}(\boldsymbol{R})=c
+\text{roll}(\boldsymbol{R})=a,\,\text{pitch}(\boldsymbol{R})=b,\,\text{yaw}(\boldsymbol{R})=c
 ```
 (Yaw is turning side to side, pitch is turning up and down, roll is rotating around while keeping same direction.)
 
@@ -430,7 +430,7 @@ Divide the two resulting equations:
 \begin{align*}
     &\frac{ut\sin\theta}{ut\cos\theta}=\frac{S_z+\frac{1}{2}gt^2}{\lVert\vec{L}\rVert} \\
     \implies&\tan\theta=\frac{S_z+\frac{1}{2}gt^2}{\lVert\vec{L}\rVert} \\
-    \implies&\boxed{\theta=\operatorname{atan2}(S_z+\frac{1}{2}gt^2,\lVert\vec{L}\rVert)} \\
+    \implies&\boxed{\theta=\text{atan2}(S_z+\frac{1}{2}gt^2,\lVert\vec{L}\rVert)} \\
 \end{align*}
 ```
 (Since $\theta$ is physically always in the interval $[0,\frac{\pi}{4}]$, there is no need to find other valid angles.)
@@ -440,10 +440,10 @@ Since $\alpha$ and $\theta$ are in field coordinate system, they must first be c
 Find unknowns $\alpha_r,\theta_r$ from $\alpha,\theta$.
 
 #### Common Case
-If $\operatorname{pitch}(\boldsymbol{R}_R)=\operatorname{roll}(\boldsymbol{R}_R)=0$ (the robot is flat on the ground), then the calculations are trivial:
+If $\text{pitch}(\boldsymbol{R}_R)=\text{roll}(\boldsymbol{R}_R)=0$ (the robot is flat on the ground), then the calculations are trivial:
 ```math
 \begin{align*}
-    &\hookrightarrow\boxed{\alpha_r=\alpha-\operatorname{yaw}(\boldsymbol{R}_R)} \\
+    &\hookrightarrow\boxed{\alpha_r=\alpha-\text{yaw}(\boldsymbol{R}_R)} \\
     &\hookrightarrow\boxed{\theta_r=\theta} \\
 \end{align*}
 ```
@@ -478,17 +478,17 @@ Define $\hat{d}$ as this desired direction:
 ```math
 \hat{d}\coloneqq\boldsymbol{R}_R^{-1}\hat{w}=(\text{forward vector of }\boldsymbol{R}_S\,)
 ```
-Simply use the components of $\hat{d}$ to find $\theta_r$ and $\alpha_r$, keeping $\operatorname{roll}(\boldsymbol{R}_S)=0$.
+Simply use the components of $\hat{d}$ to find $\theta_r$ and $\alpha_r$, keeping $\text{roll}(\boldsymbol{R}_S)=0$.
 ```math
 \begin{align*}
-    &\hookrightarrow\theta_r=\operatorname{pitch}(\boldsymbol{R}_S)=\arcsin(\frac{-d_z}{\lVert\hat{d}\rVert}) \\
-    &\hookrightarrow\alpha_r=\operatorname{yaw}(\boldsymbol{R}_S)=\angle{\vec{d}_{xy}} \\
+    &\hookrightarrow\theta_r=\text{pitch}(\boldsymbol{R}_S)=\arcsin(\frac{-d_z}{\lVert\hat{d}\rVert}) \\
+    &\hookrightarrow\alpha_r=\text{yaw}(\boldsymbol{R}_S)=\angle{\vec{d}_{xy}} \\
 \end{align*}
 ```
 ```math
 \begin{align*}
     &\boxed{\theta_r=\arcsin(-d_z)} \\
-    &\boxed{\alpha_r=\operatorname{atan2}(d_y,d_x)}
+    &\boxed{\alpha_r=\text{atan2}(d_y,d_x)}
 \end{align*}
 ```
 (Due to things with the reference frame of 3D rotations, the $z$ component is the *negated* $\sin$ of the pitch angle.)
@@ -522,12 +522,12 @@ Calculate the unknowns:
 \boxed{\alpha=\angle\vec{L}}
 ```
 ```math
-\boxed{\theta=\operatorname{atan2}(S_z+\frac{1}{2}gt^2,\lVert\vec{L}\rVert)}
+\boxed{\theta=\text{atan2}(S_z+\frac{1}{2}gt^2,\lVert\vec{L}\rVert)}
 ```
-If robot is not tilted ($\operatorname{pitch}(\boldsymbol{R}_R)=\operatorname{roll}(\boldsymbol{R}_R)=0$):
+If robot is not tilted ($\text{pitch}(\boldsymbol{R}_R)=\text{roll}(\boldsymbol{R}_R)=0$):
 ```math
 \begin{align*}
-    &\boxed{\alpha_r=\alpha-\operatorname{yaw}(\boldsymbol{R}_R)} \\
+    &\boxed{\alpha_r=\alpha-\text{yaw}(\boldsymbol{R}_R)} \\
     &\boxed{\theta_r=\theta} \\
 \end{align*}
 ```
@@ -539,7 +539,7 @@ But in general, for any robot rotation:
 ```math
 \begin{align*}
     &\boxed{\theta_r=\arcsin(-d_z)} \\
-    &\boxed{\alpha_r=\operatorname{atan2}(d_y,d_x)}
+    &\boxed{\alpha_r=\text{atan2}(d_y,d_x)}
 \end{align*}
 ```
 
