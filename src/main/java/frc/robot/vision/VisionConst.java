@@ -9,6 +9,8 @@ import edu.wpi.first.math.util.Units;
 public final class VisionConst {
     public static final AprilTagFields APRIL_TAG_FIELD = AprilTagFields.k2026RebuiltWelded;
 
+    public static final double MAX_AMBIGUITY = 0.2;
+
     public static final Transform3d FRONT_CAMERA_TRANSFORM =
             new Transform3d(
                     new Translation3d(

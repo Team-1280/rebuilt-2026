@@ -25,8 +25,15 @@ public class Camera {
     public Optional<EstimatedRobotPose> update() {
         Optional<EstimatedRobotPose> estimatedPose = Optional.empty();
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
-            estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result);
+            if (shouldUseResult(result)) {
+                estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result);
+            }
         }
         return estimatedPose;
+    }
+
+    public boolean shouldUseResult(PhotonPipelineResult result) {
+        return result.hasTargets()
+                && result.getBestTarget().getPoseAmbiguity() < VisionConst.MAX_AMBIGUITY;
     }
 }
