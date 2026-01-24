@@ -405,12 +405,12 @@ Start with the definition of constant velocity:
 \begin{align*}
     (\text{subtitute for }\vec{v}_{xy})\implies&\langle u\cos\theta\cos\alpha+V_x,u\cos\theta\sin\alpha+V_y \rangle=\frac{\vec{S}_{xy}}{t} \\
     (\text{subtract }\vec{V}\text{ from sides})\implies&\langle u\cos\theta\cos\alpha,u\cos\theta\sin\alpha \rangle=\frac{\vec{S}_{xy}}{t}-\vec{V} \\
-    (\text{left side: factor out magnitude})\implies&(u\cos\theta)\langle \cos\alpha,\sin\alpha \rangle=\frac{\vec{S}_{xy}}{t}-\vec{V} \\
-    (\text{multiply sides by }t)\implies&(ut\cos\theta)\langle \cos\alpha,\sin\alpha  \rangle=\vec{S}_{xy}-\vec{V}t \\
-    (\text{subtitute }\vec{L}\text{ in})\implies&(ut\cos\theta)\langle \cos\alpha,\sin\alpha  \rangle=\vec{L} \\
-    (\text{take angle of sides})\implies&\angle((ut\cos\theta)\langle \cos\alpha,\sin\alpha \rangle)=\angle\vec{L} \\
-    (\text{angle is independent of magnitude})\implies&\angle\langle \cos\alpha,\sin\alpha \rangle=\angle\vec{L} \\
-    (\text{left side vector angle is }\alpha)\implies&\boxed{\alpha=\angle\vec{L}}
+    (\text{multiply sides by }t)\implies&\langle u\cos\theta\cos\alpha,u\cos\theta\sin\alpha \rangle=\vec{S}_{xy}-\vec{V}t \\
+    (\text{subtitute }\vec{L}\text{ in})\implies&\langle u\cos\theta\cos\alpha,u\cos\theta\sin\alpha \rangle=\vec{L} \\
+    (\text{take angle of sides})\implies&\angle\langle u\cos\theta\cos\alpha,u\cos\theta\sin\alpha \rangle=\angle\vec{L} \\
+    (\text{use definition of }\angle)\implies&\arctan(\frac{u\cos\theta\sin\alpha}{u\cos\theta\cos\alpha})=\angle\vec{L} \\
+    (\text{simplify fraction})\implies&\arctan(\tan\alpha)=\angle\vec{L} \\
+    (\text{inverse functions cancel})\implies&\boxed{\alpha=\angle\vec{L}}
 \end{align*}
 ```
 
