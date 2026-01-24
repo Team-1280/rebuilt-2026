@@ -446,7 +446,10 @@ Next, for the $xy$ (horizontal) component, considered together, use the velocity
 ```
 Take this last equation, and the one we saved earlier, and divide them by each other:
 ```math
-\frac{ut\sin\theta}{ut\cos\theta}=\frac{S_z+\frac{1}{2}gt^2}{\lVert\vec{L}\rVert}
+ut\sin\theta=S_z+\frac{1}{2}gt^2,\quad ut\cos\theta=\lVert\vec{L}\rVert
+```
+```math
+(\text{divide equations})\implies\frac{ut\sin\theta}{ut\cos\theta}=\frac{S_z+\frac{1}{2}gt^2}{\lVert\vec{L}\rVert}
 ```
 ```math
 \begin{align*}
