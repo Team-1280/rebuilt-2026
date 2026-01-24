@@ -14,12 +14,12 @@ public class Camera {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
 
-    public Camera(String cameraName, Transform3d robotToCameraPose) {
+    public Camera(String cameraName, Transform3d robotToCameraTransform) {
         this.camera = new PhotonCamera(cameraName);
         this.poseEstimator =
                 new PhotonPoseEstimator(
                         AprilTagFieldLayout.loadField(VisionConst.APRIL_TAG_FIELD),
-                        robotToCameraPose);
+                        robotToCameraTransform);
     }
 
     public Optional<EstimatedRobotPose> update() {
