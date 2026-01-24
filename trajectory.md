@@ -617,7 +617,7 @@ The shoot speed of the projectile likely varies due to natural variance in the p
 
 Projectile air resistance (drag) is likely a large source of error, causing undershooting. The error increases drastically with shoot speed. However, research needs to be done to examine its impact.
 
-The magnus effect for backspin applies since the projectile is given backspin by the shooting mechanism. TThis generates lift, which causes overshooting. he error increases for greater backspin. It is unknown how significant this source of error is.
+The magnus effect for backspin applies since the projectile is given backspin by the shooting mechanism. This generates lift, which causes overshooting. The error increases for greater backspin. It is unknown how significant this source of error is.
 
 Error in data such as robot pose and robot velocity yield proportional shooting error. But robot odometry and vision should be able to keep the accuracy of these within suitable error bounds for shooting.
 
