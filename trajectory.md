@@ -92,6 +92,8 @@ A regular number is called a *scalar*.
 Vector variables have an arrow on top, e.g. $\vec{v}$, and have components $v_x,v_y,$ and optionally $v_z$. \
 Vectors can be directly written out with their components using angled brackets: $\vec{v}_{xyz}=\langle v_x,v_y,v_z\rangle$.
 
+For a 3D vector $\vec{v}_{xyz}$, define $\vec{v}_{xy}$ as the 2D horizontal vector of it.
+
 A *unit vector* is a vector with magnitude $1$. They have a hat on top instead of an arrow, e.g. $\hat{w}$.
 
 Basic vector arithmetic:
