@@ -1,6 +1,8 @@
 # Trajectory Calculations
 Work for the calculations for shooting fuel.
 
+Use VS Code markdown preview to view this file properly.
+
 ### Goal
 The goal is for the shooter to automatically aim to be shoot fuel at a target, without any human operation.
 
