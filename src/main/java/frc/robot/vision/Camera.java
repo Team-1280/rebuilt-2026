@@ -14,6 +14,12 @@ public class Camera {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
 
+    /**
+     * Create a new Camera representing a physical vision camera on the robot.
+     *
+     * @param cameraName The name of the camera as configured in PhotonVision
+     * @param robotToCameraTransform The transform from the robot's origin to the camera
+     */
     public Camera(String cameraName, Transform3d robotToCameraTransform) {
         this.camera = new PhotonCamera(cameraName);
         this.poseEstimator =
@@ -22,6 +28,12 @@ public class Camera {
                         robotToCameraTransform);
     }
 
+    /**
+     * Updates the camera and returns an estimated robot pose if available. Should be called
+     * periodically.
+     *
+     * @return The latest estimated robot pose from the results, if available
+     */
     public Optional<EstimatedRobotPose> update() {
         Optional<EstimatedRobotPose> estimatedPose = Optional.empty();
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
@@ -32,6 +44,13 @@ public class Camera {
         return estimatedPose;
     }
 
+    /**
+     * Decides whether to use the given pipeline result for pose estimation. This method should be
+     * extended more to filter out bad results.
+     *
+     * @param result
+     * @return true if the result should be used, false otherwise
+     */
     public boolean shouldUseResult(PhotonPipelineResult result) {
         return result.hasTargets()
                 && result.getBestTarget().getPoseAmbiguity() < VisionConst.MAX_AMBIGUITY;
