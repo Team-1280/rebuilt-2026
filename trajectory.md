@@ -277,7 +277,7 @@ Define $t$ as the time from projectile exit to hitting the target. The main plan
 ```math
 \begin{align*}
     &t\coloneqq(\text{trajectory duration}) \\
-    &t\in\R^+\enspace(\text{must be real and positive})
+    &t\in\mathbb{R}^+\enspace(\text{must be real and positive})
 \end{align*}
 ```
 
@@ -509,7 +509,7 @@ Define:
 First, find $t$ using a (depressed) quartic formula. There may be multiple solutions, or no solution.
 ```math
 (\frac{g^2}{4})t^4+(S_zg+\lVert\vec{V}\rVert^2-u^2)t^2-2(\vec{S}\cdot\vec{V})t+\lVert\vec{S}\rVert^2=0 \\
-t\in\R^+\enspace(t>0)
+t\in\mathbb{R}^+\enspace(t>0)
 ```
 Choose a $t$ based on its size, with larger $t$ having a steeper trajectory. \
 If there is no valid $t$, fall back to a default direction.
