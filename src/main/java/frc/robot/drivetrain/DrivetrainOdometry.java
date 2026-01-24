@@ -48,7 +48,7 @@ public class DrivetrainOdometry extends CommandSwerveDrivetrain {
     }
 
     // Returns a Rotation2d location of where the HEAD of robot is to it's "zeroed"
-    // angled
+    // angle
     public Rotation2d getEstimatedHeading() {
         return getState().Pose.getRotation();
     }
@@ -56,6 +56,7 @@ public class DrivetrainOdometry extends CommandSwerveDrivetrain {
     public void resetOdometry(Pose2d pose) {
         seedFieldCentric(getEstimatedHeading());
         lastPose = pose;
+        
     }
 
     public void resetHeading(Rotation2d heading) {
