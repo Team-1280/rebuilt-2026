@@ -1,7 +1,6 @@
 package frc.robot.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Transform3d;
 
 import org.photonvision.EstimatedRobotPose;
@@ -18,21 +17,19 @@ public class Camera {
     /**
      * Create a new Camera representing a physical vision camera on the robot.
      *
-     * @param cameraName             The name of the camera as configured in
-     *                               PhotonVision
-     * @param robotToCameraTransform The transform from the robot's origin to the
-     *                               camera
+     * @param cameraName The name of the camera as configured in PhotonVision
+     * @param robotToCameraTransform The transform from the robot's origin to the camera
      */
     public Camera(String cameraName, Transform3d robotToCameraTransform) {
         this.camera = new PhotonCamera(cameraName);
-        this.poseEstimator = new PhotonPoseEstimator(
-                AprilTagFieldLayout.loadField(VisionConst.APRIL_TAG_FIELD),
-                robotToCameraTransform);
+        this.poseEstimator =
+                new PhotonPoseEstimator(
+                        AprilTagFieldLayout.loadField(VisionConst.APRIL_TAG_FIELD),
+                        robotToCameraTransform);
     }
 
     /**
-     * Updates the camera and returns an estimated robot pose if available. Should
-     * be called
+     * Updates the camera and returns an estimated robot pose if available. Should be called
      * periodically.
      *
      * @return The latest estimated robot pose from the results, if available
@@ -48,8 +45,7 @@ public class Camera {
     }
 
     /**
-     * Decides whether to use the given pipeline result for pose estimation. This
-     * method should be
+     * Decides whether to use the given pipeline result for pose estimation. This method should be
      * extended more to filter out bad results.
      *
      * @param result

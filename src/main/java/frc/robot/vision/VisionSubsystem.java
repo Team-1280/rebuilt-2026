@@ -1,4 +1,3 @@
-
 package frc.robot.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -11,13 +10,14 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class VisionSubsystem extends SubsystemBase {
-    private final BiConsumer<Pose2d, Double> addVisionMeasurement; // Takes (robot pose, timestampSec)
+    private final BiConsumer<Pose2d, Double>
+            addVisionMeasurement; // Takes (robot pose, timestampSec)
 
     /** All vision ameras */
     private final Camera[] cameras = {
-            new Camera("front", VisionConst.FRONT_CAMERA_TRANSFORM),
-            new Camera("back", VisionConst.BACK_CAMERA_TRANSFORM)
-            // TODO:new Camera("auxiliary", VisionConst.BACK_CAMERA_TRANSFORM)
+        new Camera("front", VisionConst.FRONT_CAMERA_TRANSFORM),
+        new Camera("back", VisionConst.BACK_CAMERA_TRANSFORM)
+        // TODO:new Camera("auxiliary", VisionConst.BACK_CAMERA_TRANSFORM)
     };
 
     /**
@@ -42,6 +42,5 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     @Override
-    public void initSendable(SendableBuilder builder) {
-    }
+    public void initSendable(SendableBuilder builder) {}
 }

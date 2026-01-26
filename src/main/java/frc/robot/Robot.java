@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.TunerConstants;
 import frc.robot.vision.VisionSubsystem;
@@ -27,8 +28,7 @@ public class Robot extends TimedRobot implements Sendable {
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
 
-    private final CommandXboxController controller = new CommandXboxController(
-            0); // TODO
+    private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
     private final Field2d field = new Field2d();
 
@@ -46,17 +46,19 @@ public class Robot extends TimedRobot implements Sendable {
         // Drive bindings
         double speed = MetersPerSecond.of(1.60).in(MetersPerSecond);
         double angularSpeed = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
-        final SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric()
-                .withDeadband(speed * 0.05)
-                .withRotationalDeadband(angularSpeed * 0.05)
-                .withDriveRequestType(DriveRequestType.Velocity);
+        final SwerveRequest.FieldCentric driveRequest =
+                new SwerveRequest.FieldCentric()
+                        .withDeadband(speed * 0.05)
+                        .withRotationalDeadband(angularSpeed * 0.05)
+                        .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
-                        () -> driveRequest
-                                .withVelocityX(-controller.getLeftY() * speed)
-                                .withVelocityY(-controller.getLeftX() * speed)
-                                .withRotationalRate(
-                                        -controller.getRightX() * angularSpeed)));
+                        () ->
+                                driveRequest
+                                        .withVelocityX(-controller.getLeftY() * speed)
+                                        .withVelocityY(-controller.getLeftX() * speed)
+                                        .withRotationalRate(
+                                                -controller.getRightX() * angularSpeed)));
 
         controller
                 .rightStick()
@@ -64,8 +66,7 @@ public class Robot extends TimedRobot implements Sendable {
     }
 
     @Override
-    public void robotInit() {
-    }
+    public void robotInit() {}
 
     @Override
     public void robotPeriodic() {
@@ -74,44 +75,34 @@ public class Robot extends TimedRobot implements Sendable {
     }
 
     @Override
-    public void autonomousInit() {
-    }
+    public void autonomousInit() {}
 
     @Override
-    public void autonomousPeriodic() {
-    }
+    public void autonomousPeriodic() {}
 
     @Override
-    public void teleopInit() {
-    }
+    public void teleopInit() {}
 
     @Override
-    public void teleopPeriodic() {
-    }
+    public void teleopPeriodic() {}
 
     @Override
-    public void disabledInit() {
-    }
+    public void disabledInit() {}
 
     @Override
-    public void disabledPeriodic() {
-    }
+    public void disabledPeriodic() {}
 
     @Override
-    public void testInit() {
-    }
+    public void testInit() {}
 
     @Override
-    public void testPeriodic() {
-    }
+    public void testPeriodic() {}
 
     @Override
-    public void simulationInit() {
-    }
+    public void simulationInit() {}
 
     @Override
-    public void simulationPeriodic() {
-    }
+    public void simulationPeriodic() {}
 
     @Override
     public void initSendable(SendableBuilder builder) {

@@ -1,20 +1,17 @@
 package frc.robot.drivetrain;
 
-import edu.wpi.first.apriltag.AprilTagPoseEstimate;
+import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 // import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
+
 import frc.robot.vision.VisionSubsystem;
-
-import org.ejml.dense.row.MatrixFeatures_ZDRM;
-
-import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 
 public class DrivetrainOdometry extends CommandSwerveDrivetrain {
 
@@ -53,10 +50,12 @@ public class DrivetrainOdometry extends CommandSwerveDrivetrain {
         // zone boundaries measured from aliance wall y-axis
         private static final double BLUE_ALLIANCE_ZONE_DEPTH = 4.03; // 158.6 inches
         private static final double NEUTRAL_ALLIANCE_ZONE_DEPTH = 7.19; // 283 inches
-        private static final double RED_ALLIANCE_ZONE_START = 12.51; // 492.6 inches (651.2 - 158.6 too)
+        private static final double RED_ALLIANCE_ZONE_START =
+                12.51; // 492.6 inches (651.2 - 158.6 too)
         // robot dimensions
         private static final double ROBOT_SIZE = 0.6858; // 27 inches square robot
         private static final double ROBOT_HALF_SIZE = ROBOT_SIZE / (2.0);
+
         // diagonal distance from center to corner of square robot
 
         // helper
@@ -64,12 +63,12 @@ public class DrivetrainOdometry extends CommandSwerveDrivetrain {
             double centerY = pose.getY();
             double angle = pose.getRotation().getRadians();
             /**
-             * for a square the max y extent is center + projection of half diagonal
-             * and the angle that extends the furthest is at the top of the square that is
-             * rotated
-             * and this happens at >45 degrees from one of the sides
-             **/
-            return centerY + ROBOT_HALF_SIZE * (Math.abs(Math.sin(angle)) + Math.abs(Math.cos(angle)));
+             * for a square the max y extent is center + projection of half diagonal and the angle
+             * that extends the furthest is at the top of the square that is rotated and this
+             * happens at >45 degrees from one of the sides
+             */
+            return centerY
+                    + ROBOT_HALF_SIZE * (Math.abs(Math.sin(angle)) + Math.abs(Math.cos(angle)));
         }
 
         private static double getMinYExtent(Pose2d pose) {
@@ -77,7 +76,8 @@ public class DrivetrainOdometry extends CommandSwerveDrivetrain {
             // most downwards
             double centerY = pose.getY();
             double angle = pose.getRotation().getRadians();
-            return centerY - ROBOT_HALF_SIZE * (Math.abs(Math.sin(angle)) + Math.abs(Math.cos(angle)));
+            return centerY
+                    - ROBOT_HALF_SIZE * (Math.abs(Math.sin(angle)) + Math.abs(Math.cos(angle)));
         }
 
         // check if robot is touching or inside blue alliance
