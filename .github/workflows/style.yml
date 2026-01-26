@@ -1,0 +1,13 @@
+# Formatting workflow for when code is committed from someone without the auto-formatter set up
+name: Enforce style
+on: [pull_request, workflow_dispatch]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          args: "--aosp --replace"
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: axel-op/googlejavaformat-action@v3.6.0
