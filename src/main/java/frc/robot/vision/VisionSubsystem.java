@@ -13,18 +13,24 @@ import java.util.function.BiConsumer;
 public class VisionSubsystem extends SubsystemBase {
     private final BiConsumer<Pose2d, Double> addVisionMeasurement; // Takes (robot pose, timestampSec)
 
+    /** All vision ameras */
     private final Camera[] cameras = {
             new Camera("front", VisionConst.FRONT_CAMERA_TRANSFORM),
             new Camera("back", VisionConst.BACK_CAMERA_TRANSFORM)
             // TODO:new Camera("auxiliary", VisionConst.BACK_CAMERA_TRANSFORM)
     };
 
+    /**
+     * @param addVisionMeasurement Function that the subsystem calls to add a vision measurement,
+     *     e.g. drivetrain::addVisionMeasurement
+     */
     public VisionSubsystem(BiConsumer<Pose2d, Double> addVisionMeasurement) {
         this.addVisionMeasurement = addVisionMeasurement;
     }
 
     @Override
     public void periodic() {
+        // Update each camera, and add their measurements if available
         for (Camera camera : cameras) {
             Optional<EstimatedRobotPose> estimatedPose = camera.update();
             if (estimatedPose.isPresent()) {

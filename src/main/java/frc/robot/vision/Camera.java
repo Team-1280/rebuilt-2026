@@ -15,36 +15,48 @@ public class Camera {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
 
-    public Camera(String cameraName, Transform3d robotToCameraPose) {
+    /**
+     * Create a new Camera representing a physical vision camera on the robot.
+     *
+     * @param cameraName             The name of the camera as configured in
+     *                               PhotonVision
+     * @param robotToCameraTransform The transform from the robot's origin to the
+     *                               camera
+     */
+    public Camera(String cameraName, Transform3d robotToCameraTransform) {
         this.camera = new PhotonCamera(cameraName);
         this.poseEstimator = new PhotonPoseEstimator(
                 AprilTagFieldLayout.loadField(VisionConst.APRIL_TAG_FIELD),
-                robotToCameraPose);
+                robotToCameraTransform);
     }
 
+    /**
+     * Updates the camera and returns an estimated robot pose if available. Should
+     * be called
+     * periodically.
+     *
+     * @return The latest estimated robot pose from the results, if available
+     */
     public Optional<EstimatedRobotPose> update() {
         Optional<EstimatedRobotPose> estimatedPose = Optional.empty();
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
-            estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result);
+            if (shouldUseResult(result)) {
+                estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result);
+            }
         }
         return estimatedPose;
     }
 
-    // private boolean visionConstraints() {
-    // var result = camera.getAllUnreadResults();
-    // boolean inSnapRange = null;
-    // if
-    // (result.getBestTarget().getAlternateCameraToTarget().getTranslation().getNorm()
-    // < 3
-    // && MathUtil.inputModulus(
-    // result.getBestTarget().getAlternateCameraToTarget().getRotation().toRotation2d().getDegrees()
-    // + 15,
-    // -180, 180) < 30
-    // && Arrays.stream(validIds).anyMatch(n -> n == (int)
-    // result.getBestTarget().getFiducialId())) {
-    // inSnapRange = true;
-    // } else {
-    // inSnapRange = false;
-    // }
-    // }
+    /**
+     * Decides whether to use the given pipeline result for pose estimation. This
+     * method should be
+     * extended more to filter out bad results.
+     *
+     * @param result
+     * @return true if the result should be used, false otherwise
+     */
+    public boolean shouldUseResult(PhotonPipelineResult result) {
+        return result.hasTargets()
+                && result.getBestTarget().getPoseAmbiguity() < VisionConst.MAX_AMBIGUITY;
+    }
 }
