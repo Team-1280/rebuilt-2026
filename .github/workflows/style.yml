@@ -10,4 +10,4 @@ jobs:
         with:
           args: "--aosp --replace"
           ref: ${{ github.event.pull_request.head.ref }}
-      - uses: axel-op/googlejavaformat-action@v3.6.0
+      - uses: axel-op/googlejavaformat-action@v4.0.0
