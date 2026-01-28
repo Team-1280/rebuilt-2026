@@ -13,7 +13,7 @@ Right Joystick X: Rotate
 Right Joystick Button: Reset robot heading to 0
 
 ## Trajectory Calculations and Math
-See [trajectory.md](./trajectory.md).
+See [trajectory.pdf](./trajectory/trajectory.pdf).
 
 ## Notice: Using Prewritten Code
 The prewritten code must be available public, on a public forum post such as Chief Delphi,
