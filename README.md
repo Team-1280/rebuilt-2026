@@ -1,5 +1,10 @@
 # REBUILT 2026
 
+## Design Doc
+At this [Google Doc](https://docs.google.com/document/d/1LHVBFvE4I9V1lK-kII-BY99baFRJSkxOhEw3NQdT6d4/edit?usp=sharing).
+
+This document contains all specifications and requirements for the program.
+
 ## Controls
 
 ### Drive
