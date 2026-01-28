@@ -9,9 +9,9 @@ jobs:
       - name: Compile LaTeX document
         uses: xu-cheng/latex-action@v4
         with:
-          root_file: ./trajectory.tex
+          root_file: ./trajectory/trajectory.tex
       - name: Upload PDF file
         uses: actions/upload-artifact@v6
         with:
           name: PDF
-          path: trajectory.pdf
+          path: ./trajectory/trajectory.pdf
