@@ -1,5 +1,8 @@
 name: LaTeX PDF
-on: [push]
+on:
+  push:
+    paths:
+      - './trajectory/trajectory.md'
 jobs:
   build_latex:
     runs-on: ubuntu-latest
