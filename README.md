@@ -1,7 +1,4 @@
-# Rebuilt 2026
-
-## Trajectory Calculations and Math
-See [trajectory.md](./trajectory.md).
+# REBUILT 2026
 
 ## Controls
 
@@ -10,6 +7,8 @@ Left Joystick: Move (field-oriented)
 Right Joystick X: Rotate
 Right Joystick Button: Reset robot heading to 0
 
+## Trajectory Calculations and Math
+See [trajectory.md](./trajectory.md).
 
 ## Notice: Using Prewritten Code
 The prewritten code must be available public, on a public forum post such as Chief Delphi,
