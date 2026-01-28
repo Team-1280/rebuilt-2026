@@ -1,6 +1,7 @@
-# Rebuilt 2026 - Haru Urara
+# Rebuilt 2026
 
-## Any refrences to Trajectory and the Math behind it [see trajectory.md](./trajectory.md)
+## Trajectory Calculations and Math
+See [trajectory.md](./trajectory.md).
 
 ## Controls
 
