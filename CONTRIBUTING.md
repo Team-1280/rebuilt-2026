@@ -38,6 +38,7 @@ The two branches should have no *merge conflicts* because they modified differen
 #### Git Commands
 In the *Terminal*, commands can be entered to perform Git operations. \
 The most common operations are also available in the VS Code GUI, in the *Source Control* tab.
+> *see more commands:* type `man git` in the Terminal. 
 
 All Git commands start with `git`, followed by a specific command like `commit`, then optionally some options/flags like `--message` (or equivalently, `-m`), then possibly some arguments for the flags or the entire command. \
 Example: `git switch -c fix-vision` .
@@ -175,7 +176,7 @@ For example, one issue title may be `Add shooter subsystem` .
 
 The issues are listed on the GitHub repo's *Issues* tab, but they are also visible in the *Project* (explained later).
 
-Each issue has a bunch of fields that should be appropriately set when it is created:
+<D->Each issue has a bunch of fields that should be appropriately set when it is created:
 - Assignees - which people are assigned to work on it, if any
 - Labels - a set of tags that describe aspects of the issue, e.g. `documentation`, `help wanted`
 - Type - a single issue type of either `Bug`, `Feature`, or `Task`. (While a `Feature` issue is a description of new functionality, a `Task` issue is a specific piece of work, that may or may not contribute to a feature.)
@@ -259,13 +260,16 @@ Officers: one of your main responsibilities is to create and possibly assign iss
 
 ### Branches and PRs
 A new branch must be used for each new feature, bug fix, etc. \
-Only very small, one-off changes should be directly committed without its own branch.
+
+Only very small, one-off changes should be directly committed(after testing) without its own branch.
 
 A GitHub pull request must be opened, to merge a branch back into `main` or some other core development branch. \
 (But updating an in-development branch itself such as merging `main` into `feature-1` is fine to do locally.)
 
 Rookie programmer pull requests must not be merged until reviewed by a veteran programmer who merges it themselves. \
 Veteran programmers may choose to merge their own PR without review for insignificant or difficult changes.
+
+WHen a Veteran Programmer PRs, it is highly encouraged to be reviewed by a peer.  
 
 Avoid committing directly to `main`, especially new features.
 
