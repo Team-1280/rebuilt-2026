@@ -28,21 +28,53 @@ public class Camera {
                         robotToCameraTransform);
     }
 
-    /**
-     * Updates the camera and returns an estimated robot pose if available. Should be called
-     * periodically.
-     *
-     * @return The latest estimated robot pose from the results, if available
-     */
-    public Optional<EstimatedRobotPose> update() {
-        Optional<EstimatedRobotPose> estimatedPose = Optional.empty();
-        for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
-            if (shouldUseResult(result)) {
-                estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result);
-            }
-        }
-        return estimatedPose;
+    private PhotonPipelineResult latestResult;
+
+/**
+ * gets distance to the best AprilTag in meters.
+ */
+public double getDistanceToTag() {
+    if (latestResult == null || !latestResult.hasTargets()) {
+        return Double.MAX_VALUE;
     }
+    // gfet transform to best target, extract distance
+    var bestTarget = latestResult.getBestTarget();
+    var transform = bestTarget.getBestCameraToTarget();
+    return Math.hypot(
+        transform.getX(),
+        Math.hypot(transform.getY(), transform.getZ())
+    );
+}
+
+/**
+ * fgets pose ambiguity of best target (0 = good, higher = worse).
+ */
+    public double getAmbiguity() {
+    if (latestResult == null | !latestResult.hasTargets()) {
+        return 1.0;
+    }
+    return latestResult.getBestTarget().getPoseAmbiguity();
+}
+
+    /**
+     * updates the camera and returns an estimated robot pose if available, shhould be called
+     * periodically
+     *
+     * @return the latest estimated robot pose from the results
+     */
+
+public Optional<EstimatedRobotPose> update() {
+    Optional<EstimatedRobotPose> estimatedPose = Optional.empty();
+    for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
+        if (shouldUseResult(result)) {
+            latestResult = result;  // Store for later use
+            estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result);
+        }
+    }
+    return estimatedPose;
+}
+
+
 
     /**
      * Decides whether to use the given pipeline result for pose estimation. This method should be

@@ -30,13 +30,16 @@ public class VisionSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Update each camera, and add their measurements if available
+        // update each camera, and add their measurements if available
         for (Camera camera : cameras) {
             Optional<EstimatedRobotPose> estimatedPose = camera.update();
             if (estimatedPose.isPresent()) {
                 Pose2d pose = estimatedPose.get().estimatedPose.toPose2d();
                 double timestamp = estimatedPose.get().timestampSeconds;
                 addVisionMeasurement.accept(pose, timestamp);
+
+                double distance = camera.getDistanceToTag();
+                double ambiguity = camera.getAmbiguity();
             }
         }
     }

@@ -14,8 +14,6 @@ public final class FieldZoning {
     private static final double ROBOT_SIZE = 0.6858; // 27 inches square robot
     private static final double ROBOT_HALF_SIZE = ROBOT_SIZE / (2.0);
 
-    // diagonal distance from center to corner of square robot
-
     // helper
     private static double getMaxYExtent(Pose2d pose) {
         double centerY = pose.getY();
