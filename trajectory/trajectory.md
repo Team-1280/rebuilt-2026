@@ -1,7 +1,5 @@
-# Trajectory Calculations
-Work for the calculations for shooting fuel.
-
-Use VS Code markdown preview to view this file properly.
+# REBUILT Trajectory Calculations
+Calculations for shooting fuel projectiles for the 2026 FIRST Robotics Competition: REBUILT.
 
 ### Goal
 The goal is for the shooter to automatically aim to be shoot fuel at a target, without any human operation.
@@ -660,5 +658,12 @@ Having a greater $\theta$ (steeper trajectory) makes the error have a lesser imp
 
 Reducing exit speed reduces many sources of error.
 
+___
+
 ## Attribution
-Some techniques used in the calculations were guided with the help of an AI, GPT-5. None of the calculations were written with AI.
+This file was written by Anthony Le, [@aatle](https://github.com/aatle) on GitHub.
+
+Some techniques used in the calculations were guided with the help of an AI, GPT-5. (None of the calculations were written with AI.)
+
+## License
+REBUILT Trajectory Calculations  © 2026 by Anthony Le is licensed under Creative Commons Attribution 4.0 International. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/
