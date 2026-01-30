@@ -176,7 +176,7 @@ For example, one issue title may be `Add shooter subsystem` .
 
 The issues are listed on the GitHub repo's *Issues* tab, but they are also visible in the *Project* (explained later).
 
-<D->Each issue has a bunch of fields that should be appropriately set when it is created:
+Each issue has a bunch of fields that should be appropriately set when it is created:
 - Assignees - which people are assigned to work on it, if any
 - Labels - a set of tags that describe aspects of the issue, e.g. `documentation`, `help wanted`
 - Type - a single issue type of either `Bug`, `Feature`, or `Task`. (While a `Feature` issue is a description of new functionality, a `Task` issue is a specific piece of work, that may or may not contribute to a feature.)
@@ -269,7 +269,7 @@ A GitHub pull request must be opened, to merge a branch back into `main` or some
 Rookie programmer pull requests must not be merged until reviewed by a veteran programmer who merges it themselves. \
 Veteran programmers may choose to merge their own PR without review for insignificant or difficult changes.
 
-WHen a Veteran Programmer PRs, it is highly encouraged to be reviewed by a peer.  
+When a Veteran Programmer PRs, it is highly encouraged to be reviewed by a peer.  
 
 Avoid committing directly to `main`, especially new features.
 
