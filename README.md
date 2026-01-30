@@ -2,7 +2,7 @@
 
 ## Contributing, Conforming and Terms
 
-Visit [Contributing.md](./c)
+Visit [Contributing.md](./CONTRIBUTING.md)
 
 ## Design Doc
 At this [Google Doc](https://docs.google.com/document/d/1LHVBFvE4I9V1lK-kII-BY99baFRJSkxOhEw3NQdT6d4/edit?usp=sharing).
