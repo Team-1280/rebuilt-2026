@@ -1,4 +1,13 @@
-# REBUILT 2026 Code
+# REBUILT 2026
+
+## Contributing, Conforming and Terms
+
+Visit [Contributing.md](./CONTRIBUTING.md)
+
+## Design Doc
+At this [Google Doc](https://docs.google.com/document/d/1LHVBFvE4I9V1lK-kII-BY99baFRJSkxOhEw3NQdT6d4/edit?usp=sharing).
+
+This document contains all specifications and requirements for the program.
 
 ## Controls
 
@@ -7,6 +16,8 @@ Left Joystick: Move (field-oriented)
 Right Joystick X: Rotate
 Right Joystick Button: Reset robot heading to 0
 
+## Trajectory Calculations and Math
+See [trajectory.pdf](./trajectory/trajectory.pdf).
 
 ## Notice: Using Prewritten Code
 The prewritten code must be available public, on a public forum post such as Chief Delphi,

@@ -40,6 +40,7 @@ public class Robot extends TimedRobot implements Sendable {
     private void initDashboard() {
         SmartDashboard.putData("Robot", this);
         SmartDashboard.putData("Field", field);
+        SmartDashboard.putData("Vision", vision);
     }
 
     private void initBindings() {
@@ -48,8 +49,8 @@ public class Robot extends TimedRobot implements Sendable {
         double angularSpeed = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
         final SwerveRequest.FieldCentric driveRequest =
                 new SwerveRequest.FieldCentric()
-                        .withDeadband(speed * 0.05)
-                        .withRotationalDeadband(angularSpeed * 0.05)
+                        .withDeadband(speed * 0.1)
+                        .withRotationalDeadband(angularSpeed * 0.1)
                         .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
