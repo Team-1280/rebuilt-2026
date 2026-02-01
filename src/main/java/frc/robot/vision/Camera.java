@@ -37,13 +37,31 @@ public class Camera {
      * @return The latest estimated robot pose from the results, if available
      */
     public Optional<EstimatedRobotPose> update() {
-        Optional<EstimatedRobotPose> estimatedPose = Optional.empty();
+        Optional<EstimatedRobotPose> bestEstimate = Optional.empty();
+        double bestScore = Double.POSITIVE_INFINITY;
+
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
-            if (shouldUseResult(result)) {
-                estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result);
+            if (!shouldUseResult(result)) {
+                continue;
+            }
+
+            Optional<EstimatedRobotPose> estimate = poseEstimator.estimateAverageBestTargetsPose(result);
+
+            if (estimate.isEmpty()) {
+                continue;
+            }
+
+            double ambiguity = result.getBestTarget().getPoseAmbiguity();
+            double targetArea = result.getBestTarget().getArea();
+            double score = ambiguity - (0.01 * targetArea);
+
+            if (score < bestScore) {
+                bestScore = score;
+                bestEstimate = estimate;
             }
         }
-        return estimatedPose;
+
+        return bestEstimate;
     }
 
     /**
