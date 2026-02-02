@@ -1,5 +1,6 @@
-package frc.robot.shooter;
+package frc.robot.turret;
 
+import com.ctre.phoenix6.hardware;
 /* 
  * Outlining the goals -> 
  * there are currently two mechanical setbacks that need to be fixed in code, telling the rotation of the turret and it's "zone" which is done by a 
@@ -14,9 +15,12 @@ package frc.robot.shooter;
  * It's a kraken motor geared down to 12:1 connected to a larger cog that is x amount
  *
  */
-
+import com.ctre.phoenix6.hardware.TalonFX;
 
 public class Turret {
-       
 
+    public Turret() {
+        TalonFX m_turretMotor = new TalonFX(TurretConst.m_motorID);
+
+    }
 }
