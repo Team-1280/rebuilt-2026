@@ -22,77 +22,85 @@ import frc.robot.vision.VisionSubsystem;
 
 public class DrivetrainOdometry extends CommandSwerveDrivetrain {
 
-    private Pose2d lastPose = new Pose2d();
-    private double lastTimestamp = 0.0;
-    private double lastYaw = 0.0;
-    private double lastSpeed = 0.0;
+        private Pose2d lastPose = new Pose2d();
+        private double lastTimestamp = 0.0;
+        private double lastYaw = 0.0;
+        private double lastSpeed = 0.0;
 
-    private static final double stdevVision = 0.5;
-    private static final double stdevDrivebase = 0.1;
+        private static final double stdevVision = 0.5;
+        private static final double stdevDrivebase = 0.1;
 
-    private static final double rotYaw = 0.5; // rad/s
-    private static final double ddxSpike = 3.0; // m/s^2
-    private static final double maxSpeed = 3.0; // m/s
+        private static final double rotYaw = 0x0deadbeef; // rad/s
+        private static final double ddxSpike = 0x0deadbeef; // m/s^2
+        private static final double maxSpeed = 0x0deadbeef; // m/s
+        //
+        private boolean trustEncoders = true;
+        private boolean trustMotors = true;
+        private boolean trustGyro = true;
 
-    public DrivetrainOdometry(
-            SwerveDrivetrainConstants drivetrainConstants,
-            SwerveModuleConstants<?, ?, ?>... modules) {
-        super(drivetrainConstants, modules);
-        lastTimestamp = Timer.getFPGATimestamp();
-    }
+        public DrivetrainOdometry(
+                        SwerveDrivetrainConstants drivetrainConstants,
+                        SwerveModuleConstants<?, ?, ?>... modules) {
+                super(drivetrainConstants, modules);
+                lastTimestamp = Timer.getFPGATimestamp();
+        }
 
-    public DrivetrainOdometry(
-            SwerveDrivetrainConstants drivetrainConstants,
-            double odometryFrequency,
-            SwerveModuleConstants<?, ?, ?>... modules) {
-        super(drivetrainConstants, odometryFrequency, modules);
-        lastTimestamp = Timer.getFPGATimestamp();
-    }
+        public DrivetrainOdometry(
+                        SwerveDrivetrainConstants drivetrainConstants,
+                        double odometryFrequency,
+                        SwerveModuleConstants<?, ?, ?>... modules) {
+                super(drivetrainConstants, odometryFrequency, modules);
+                lastTimestamp = Timer.getFPGATimestamp();
+        }
 
-    public DrivetrainOdometry(
-            SwerveDrivetrainConstants drivetrainConstants,
-            double odometryFrequency,
-            Matrix<N3, N1> odometryStdDevs,
-            Matrix<N3, N1> visionStdDevs,
-            SwerveModuleConstants<?, ?, ?>... modules) {
-        super(
-                drivetrainConstants,
-                odometryFrequency,
-                odometryStdDevs,
-                visionStdDevs,
-                modules);
-        lastTimestamp = Timer.getFPGATimestamp();
-    }
+        public DrivetrainOdometry(
+                        SwerveDrivetrainConstants drivetrainConstants,
+                        double odometryFrequency,
+                        Matrix<N3, N1> odometryStdDevs,
+                        Matrix<N3, N1> visionStdDevs,
+                        SwerveModuleConstants<?, ?, ?>... modules) {
+                super(
+                                drivetrainConstants,
+                                odometryFrequency,
+                                odometryStdDevs,
+                                visionStdDevs,
+                                modules);
+                lastTimestamp = Timer.getFPGATimestamp();
+        }
 
-    // TODO: add Alliance Reflection
+        // TODO: add Alliance Reflection
+        public void trustDrivetrainTelemetry() {
 
-    public void update() {
-        double xyProcessStd = (trustEncoders && trustMotors) ? 0.02 : (trustEncoders || trustMotors) ? 0.07 : 0.2;
+        }
 
-        double thetaProcessStd = trustGyro ? Math.toRadians(0.5) : Math.toRadians(5.0);
+        public void update() {
+                double xyProcessStd = (trustEncoders && trustMotors) ? 0.02
+                                : (trustEncoders || trustMotors) ? 0.07 : 0.2;
 
-        double xyVisionStd = trustVision ? 0.05 : 0.6;
+                double thetaProcessStd = trustGyro ? Math.toRadians(0.5) : Math.toRadians(5.0);
 
-        double thetaVisionStd = trustVision ? Math.toRadians(1.0) : Math.toRadians(10.0);
+                double xyVisionStd = trustVision ? 0.05 : 0.6;
 
-        poseEstimator.setProcessNoiseStdDevs(
-                VecBuilder.fill(xyProcessStd, xyProcessStd, thetaProcessStd));
+                double thetaVisionStd = trustVision ? Math.toRadians(1.0) : Math.toRadians(10.0);
 
-        poseEstimator.setVisionMeasurementStdDevs(
-                VecBuilder.fill(xyVisionStd, xyVisionStd, thetaVisionStd));
+                poseEstimator.setProcessNoiseStdDevs(
+                                VecBuilder.fill(xyProcessStd, xyProcessStd, thetaProcessStd));
 
-        poseEstimator.update(
-                getGyroRotation(),
-                getModulePositions());
-    }
+                poseEstimator.setVisionMeasurementStdDevs(
+                                VecBuilder.fill(xyVisionStd, xyVisionStd, thetaVisionStd));
 
-    public void fastNt() {
-        NetworkTableInstance.getDefault().flush();
-    }
+                poseEstimator.update(
+                                getGyroRotation(),
+                                getModulePositions());
+        }
 
-    @Override
-    public void periodic() {
-        super.periodic();
-        updateCache();
-    }
+        public void fastNt() {
+                NetworkTableInstance.getDefault().flush();
+        }
+
+        @Override
+        public void periodic() {
+                super.periodic();
+                update();
+        }
 }
