@@ -3,12 +3,16 @@ package frc.robot.util;
 public final class PolynomialSolver {
     private PolynomialSolver() {}
 
+    /**
+     * Get 0, 2, or 4 real roots from the given depressed quartic.
+     *
+     * @param a quartic coefficient, not equal to 0
+     * @param c quadratic coefficient
+     * @param d linear coefficient
+     * @param e constant coefficient
+     * @return an array of the real roots, of length 0, 2, or 4
+     */
     public static double[] depressedQuarticRealRoots(double a, double c, double d, double e) {
-        /* Get 0, 2, or 4 real roots from the given depressed quartic
-         * 
-         * a != 0
-        */
-
         // Ferrari's method
         // Normalize coefficients
         double p = c / a;
@@ -44,11 +48,16 @@ public final class PolynomialSolver {
         return new double[] {quadRoots1[0], quadRoots1[1], quadRoots2[0], quadRoots2[1]};
     }
 
+    /**
+     * Get either 1 or 3 real root from the given cubic.
+     *
+     * @param a cubic coefficient, not equal to 0
+     * @param b quadratic coefficient
+     * @param c linear coefficient
+     * @param d constant coefficient
+     * @return an array of the real roots, of length 1 or 3
+     */
     public static double[] cubicRealRoots(double a, double b, double c, double d) {
-        /* Get one real root from the given cubic. It always exists
-         * 
-         * If there are multiple, choose the on ewith the largest absolute value.
-         */
         double p = (3 * a * c - b * b) / (3 * a * a);
         double q = (2 * b * b * b - 9 * a * b * c + 27 * a * a * d) / (27 * a * a * a);
         double delta = q * q / 4 + p * p * p / 27;
@@ -71,16 +80,19 @@ public final class PolynomialSolver {
         return roots;
     }
 
+    /**
+     * Get 0 or 2 real roots from the given quadratic.
+     *
+     * @param a quadratic coefficient, not equal to 0
+     * @param b linear coefficient
+     * @param c constant coefficient
+     * @return an array of the real roots, of length 0 or 2
+     */
     public static double[] quadraticRealRoots(double a, double b, double c) {
-        /* Get 0 or 2 real roots from the given quadratic
-         * 
-         * a != 0
-         */
-
         double bp = b / 2;
         double delta = bp * bp - a * c;
         if (delta < 0) {
-           return new double[] {};
+            return new double[] {};
         }
         double r1 = (-bp - Math.sqrt(delta)) / a;
         double r2 = -r1 - b / a;
