@@ -51,19 +51,19 @@ public final class PolynomialSolver {
          */
         double p = (3 * a * c - b * b) / (3 * a * a);
         double q = (2 * b * b * b - 9 * a * b * c + 27 * a * a * d) / (27 * a * a * a);
-        double delta = Math.pow((q / 2), 2) + Math.pow((p / 3), 3);
+        double delta = q * q / 4 + p * p * p / 27;
         if (delta > 0) {
             // Cardano's method
             // One real root
-            double sqrt_delta = Math.sqrt(delta);
-            double u = Math.cbrt(-q / 2 + sqrt_delta);
-            double v = Math.cbrt(-q / 2 - sqrt_delta);
+            double sqrtDelta = Math.sqrt(delta);
+            double u = Math.cbrt(-q / 2 + sqrtDelta);
+            double v = Math.cbrt(-q / 2 - sqrtDelta);
             return new double[] {u + v - b / (3 * a)};
         }
         // Trigonometric method
         // Three real roots
         double r = Math.sqrt(-4 * p / 3);
-        double phi = Math.acos(-q / 2 / Math.sqrt(-(Math.pow((p / 3), 3)))) / 3;
+        double phi = Math.acos(-q / (2 * p * Math.sqrt(-3 * p))) / 3;
         double[] roots = new double[3];
         for (int k = 0; k < 3; k++) {
             roots[k] = r * Math.cos(phi + k * 2 * Math.PI / 3) - b / (3 * a);
