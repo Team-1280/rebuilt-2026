@@ -40,6 +40,7 @@ public class Robot extends TimedRobot implements Sendable {
     private void initDashboard() {
         SmartDashboard.putData("Robot", this);
         SmartDashboard.putData("Field", field);
+        SmartDashboard.putData("Vision", vision);
     }
 
     private void initBindings() {
