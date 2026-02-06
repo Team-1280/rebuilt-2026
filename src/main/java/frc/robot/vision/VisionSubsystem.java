@@ -10,19 +10,18 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class VisionSubsystem extends SubsystemBase {
-    private final BiConsumer<Pose2d, Double> addVisionMeasurement; // Takes (robot pose, timestampSec)
+    private final BiConsumer<Pose2d, Double>
+            addVisionMeasurement; // Takes (robot pose, timestampSec)
 
     /** All vision ameras */
     private final Camera[] cameras = {
-            new Camera("front", VisionConst.FRONT_CAMERA_TRANSFORM),
-            new Camera("back", VisionConst.BACK_CAMERA_TRANSFORM)
-            // TODO:new Camera("auxiliary", VisionConst.BACK_CAMERA_TRANSFORM)
+        new Camera("front", VisionConst.FRONT_CAMERA_TRANSFORM),
+        new Camera("back", VisionConst.BACK_CAMERA_TRANSFORM)
     };
 
     /**
-     * @param addVisionMeasurement Function that the subsystem calls to add a vision
-     *                             measurement,
-     *                             e.g. drivetrain::addVisionMeasurement
+     * @param addVisionMeasurement Function that the subsystem calls to add a vision measurement,
+     *     e.g. drivetrain::addVisionMeasurement
      */
     public VisionSubsystem(BiConsumer<Pose2d, Double> addVisionMeasurement) {
         this.addVisionMeasurement = addVisionMeasurement;
@@ -30,7 +29,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // update each camera, and add their measurements if available
+        // Update each camera, and add their measurements if available
         for (Camera camera : cameras) {
             Optional<EstimatedRobotPose> estimatedPose = camera.update();
             if (estimatedPose.isPresent()) {
@@ -42,6 +41,5 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     @Override
-    public void initSendable(SendableBuilder builder) {
-    }
+    public void initSendable(SendableBuilder builder) {}
 }
