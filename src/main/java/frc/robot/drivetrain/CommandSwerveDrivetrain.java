@@ -13,6 +13,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -26,7 +27,9 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+
 import frc.robot.drivetrain.TunerConstants.TunerSwerveDrivetrain;
+
 import java.util.function.Supplier;
 
 /**
@@ -34,79 +37,58 @@ import java.util.function.Supplier;
  * Subsystem so it can easily
  * be used in command-based projects.
  */
-public class CommandSwerveDrivetrain
-    extends TunerSwerveDrivetrain
-    implements Subsystem
-{
-
+public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
-    private static final Rotation2d kBlueAlliancePerspectiveRotation =
-        Rotation2d.kZero;
+    private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
     /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
-    private static final Rotation2d kRedAlliancePerspectiveRotation =
-        Rotation2d.k180deg;
+    private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
 
     /** Swerve request to apply during robot-centric path following */
-    private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds =
-        new SwerveRequest.ApplyRobotSpeeds();
+    private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
     /* Swerve requests to apply during SysId characterization */
-    private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization =
-        new SwerveRequest.SysIdSwerveTranslation();
-    private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization =
-        new SwerveRequest.SysIdSwerveSteerGains();
-    private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
-        new SwerveRequest.SysIdSwerveRotation();
+    private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
+    private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
+    private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
     /*
      * SysId routine for characterizing translation. This is used to find PID gains
      * for the drive motors.
      */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
-        new SysIdRoutine.Config(
-            null, // Use default ramp rate (1 V/s)
-            Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
-            null, // Use default timeout (10 s)
-            // Log state with SignalLogger class
-            state ->
-                SignalLogger.writeString(
-                    "SysIdTranslation_State",
-                    state.toString()
-                )
-        ),
-        new SysIdRoutine.Mechanism(
-            output ->
-                setControl(m_translationCharacterization.withVolts(output)),
-            null,
-            this
-        )
-    );
+            new SysIdRoutine.Config(
+                    null, // Use default ramp rate (1 V/s)
+                    Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
+                    null, // Use default timeout (10 s)
+                    // Log state with SignalLogger class
+                    state -> SignalLogger.writeString(
+                            "SysIdTranslation_State", state.toString())),
+            new SysIdRoutine.Mechanism(
+                    output -> setControl(m_translationCharacterization.withVolts(output)),
+                    null,
+                    this));
 
     /*
      * SysId routine for characterizing steer. This is used to find PID gains for
      * the steer motors.
      */
     private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
-        new SysIdRoutine.Config(
-            null, // Use default ramp rate (1 V/s)
-            Volts.of(7), // Use dynamic voltage of 7 V
-            null, // Use default timeout (10 s)
-            // Log state with SignalLogger class
-            state ->
-                SignalLogger.writeString("SysIdSteer_State", state.toString())
-        ),
-        new SysIdRoutine.Mechanism(
-            volts -> setControl(m_steerCharacterization.withVolts(volts)),
-            null,
-            this
-        )
-    );
+            new SysIdRoutine.Config(
+                    null, // Use default ramp rate (1 V/s)
+                    Volts.of(7), // Use dynamic voltage of 7 V
+                    null, // Use default timeout (10 s)
+                    // Log state with SignalLogger class
+                    state -> SignalLogger.writeString("SysIdSteer_State", state.toString())),
+            new SysIdRoutine.Mechanism(
+                    volts -> setControl(m_steerCharacterization.withVolts(volts)),
+                    null,
+                    this));
 
     /*
      * SysId routine for characterizing rotation.
@@ -116,45 +98,32 @@ public class CommandSwerveDrivetrain
      * importing the log to SysId.
      */
     private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
-        new SysIdRoutine.Config(
-            /*
-             * This is in radians per second^2, but SysId only supports "volts per second"
-             */
-            Volts.of(Math.PI / 6).per(Second),
-            /* This is in radians per second, but SysId only supports "volts" */
-            Volts.of(Math.PI),
-            null, // Use default timeout (10 s)
-            // Log state with SignalLogger class
-            state ->
-                SignalLogger.writeString(
-                    "SysIdRotation_State",
-                    state.toString()
-                )
-        ),
-        new SysIdRoutine.Mechanism(
-            output -> {
-                /*
-                 * output is actually radians per second, but SysId only supports
-                 * "volts"
-                 */
-                setControl(
-                    m_rotationCharacterization.withRotationalRate(
-                        output.in(Volts)
-                    )
-                );
-                /* also log the requested output for SysId */
-                SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
-            },
-            null,
-            this
-        )
-    );
+            new SysIdRoutine.Config(
+                    /*
+                     * This is in radians per second^2, but SysId only supports "volts per second"
+                     */
+                    Volts.of(Math.PI / 6).per(Second),
+                    /* This is in radians per second, but SysId only supports "volts" */
+                    Volts.of(Math.PI),
+                    null, // Use default timeout (10 s)
+                    // Log state with SignalLogger class
+                    state -> SignalLogger.writeString(
+                            "SysIdRotation_State", state.toString())),
+            new SysIdRoutine.Mechanism(
+                    output -> {
+                        /* output is actually radians per second, but SysId only supports "volts" */
+                        setControl(
+                                m_rotationCharacterization.withRotationalRate(
+                                        output.in(Volts)));
+                        /* also log the requested output for SysId */
+                        SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
+                    },
+                    null,
+                    this));
 
     /* The SysId routine to test */
     private final SysIdRoutine[] m_sysIdRoutines = {
-        m_sysIdRoutineTranslation,
-        m_sysIdRoutineRotation,
-        m_sysIdRoutineSteer,
+            m_sysIdRoutineTranslation, m_sysIdRoutineRotation, m_sysIdRoutineSteer
     };
     private int m_sysIdRoutineToApply = 0;
 
@@ -171,9 +140,8 @@ public class CommandSwerveDrivetrain
      * @param modules             Constants for each specific module
      */
     public CommandSwerveDrivetrain(
-        SwerveDrivetrainConstants drivetrainConstants,
-        SwerveModuleConstants<?, ?, ?>... modules
-    ) {
+            SwerveDrivetrainConstants drivetrainConstants,
+            SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, 0, modules);
         if (Utils.isSimulation()) {
             startSimThread();
@@ -198,10 +166,9 @@ public class CommandSwerveDrivetrain
      * @param modules                 Constants for each specific module
      */
     public CommandSwerveDrivetrain(
-        SwerveDrivetrainConstants drivetrainConstants,
-        double odometryUpdateFrequency,
-        SwerveModuleConstants<?, ?, ?>... modules
-    ) {
+            SwerveDrivetrainConstants drivetrainConstants,
+            double odometryUpdateFrequency,
+            SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, odometryUpdateFrequency, modules);
         if (Utils.isSimulation()) {
             startSimThread();
@@ -235,19 +202,17 @@ public class CommandSwerveDrivetrain
      * @param modules                   Constants for each specific module
      */
     public CommandSwerveDrivetrain(
-        SwerveDrivetrainConstants drivetrainConstants,
-        double odometryUpdateFrequency,
-        Matrix<N3, N1> odometryStandardDeviation,
-        Matrix<N3, N1> visionStandardDeviation,
-        SwerveModuleConstants<?, ?, ?>... modules
-    ) {
+            SwerveDrivetrainConstants drivetrainConstants,
+            double odometryUpdateFrequency,
+            Matrix<N3, N1> odometryStandardDeviation,
+            Matrix<N3, N1> visionStandardDeviation,
+            SwerveModuleConstants<?, ?, ?>... modules) {
         super(
-            drivetrainConstants,
-            odometryUpdateFrequency,
-            odometryStandardDeviation,
-            visionStandardDeviation,
-            modules
-        );
+                drivetrainConstants,
+                odometryUpdateFrequency,
+                odometryStandardDeviation,
+                visionStandardDeviation,
+                modules);
         if (Utils.isSimulation()) {
             startSimThread();
         }
@@ -258,47 +223,40 @@ public class CommandSwerveDrivetrain
         try {
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
-                () -> getState().Pose, // Robot pose supplier
-                this::resetPose, // Method to reset odometry
-                () -> getState().Speeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                (speeds, feedforwards) ->
-                    setControl(
-                        m_pathApplyRobotSpeeds
-                            .withSpeeds(speeds)
-                            .withWheelForceFeedforwardsX(
-                                feedforwards.robotRelativeForcesXNewtons()
-                            )
-                            .withWheelForceFeedforwardsY(
-                                feedforwards.robotRelativeForcesYNewtons()
-                            )
-                    ),
-                new PPHolonomicDriveController(
-                    // PID constants for translation
-                    new PIDConstants(10, 0, 0),
-                    // PID constants for rotation
-                    new PIDConstants(10, 0, 0)
-                ),
-                config,
-                () -> {
-                    // Boolean supplier that controls when the path will be mirrored for the
-                    // red
-                    // alliance
-                    // This will flip the path being followed to the red side of the field.
-                    // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+                    () -> getState().Pose, // Robot pose supplier
+                    this::resetPose, // Method to reset odometry
+                    () -> getState().Speeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                    (speeds, feedforwards) -> setControl(
+                            m_pathApplyRobotSpeeds
+                                    .withSpeeds(speeds)
+                                    .withWheelForceFeedforwardsX(
+                                            feedforwards.robotRelativeForcesXNewtons())
+                                    .withWheelForceFeedforwardsY(
+                                            feedforwards.robotRelativeForcesYNewtons())),
+                    new PPHolonomicDriveController(
+                            // PID constants for translation
+                            new PIDConstants(10, 0, 0),
+                            // PID constants for rotation
+                            new PIDConstants(10, 0, 0)),
+                    config,
+                    () -> {
+                        // Boolean supplier that controls when the path will be mirrored for the red
+                        // alliance
+                        // This will flip the path being followed to the red side of the field.
+                        // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-                    var alliance = DriverStation.getAlliance();
-                    if (alliance.isPresent()) {
-                        return alliance.get() == DriverStation.Alliance.Red;
-                    }
-                    return false;
-                },
-                this // Reference to this subsystem to set requirements
+                        var alliance = DriverStation.getAlliance();
+                        if (alliance.isPresent()) {
+                            return alliance.get() == DriverStation.Alliance.Red;
+                        }
+                        return false;
+                    },
+                    this // Reference to this subsystem to set requirements
             );
         } catch (Exception ex) {
             DriverStation.reportError(
-                "Failed to load PathPlanner config and configure AutoBuilder",
-                ex.getStackTrace()
-            );
+                    "Failed to load PathPlanner config and configure AutoBuilder",
+                    ex.getStackTrace());
         }
     }
 
@@ -314,8 +272,7 @@ public class CommandSwerveDrivetrain
     }
 
     public void sysIdCycleRoutine() {
-        m_sysIdRoutineToApply =
-            (m_sysIdRoutineToApply + 1) % m_sysIdRoutines.length;
+        m_sysIdRoutineToApply = (m_sysIdRoutineToApply + 1) % m_sysIdRoutines.length;
     }
 
     /**
@@ -356,20 +313,20 @@ public class CommandSwerveDrivetrain
          * occurs during testing.
          */
         if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
-            DriverStation.getAlliance().ifPresent(allianceColor -> {
-                setOperatorPerspectiveForward(
-                    allianceColor == Alliance.Red
-                        ? kRedAlliancePerspectiveRotation
-                        : kBlueAlliancePerspectiveRotation
-                );
-                m_hasAppliedOperatorPerspective = true;
-            });
+            DriverStation.getAlliance()
+                    .ifPresent(
+                            allianceColor -> {
+                                setOperatorPerspectiveForward(
+                                        allianceColor == Alliance.Red
+                                                ? kRedAlliancePerspectiveRotation
+                                                : kBlueAlliancePerspectiveRotation);
+                                m_hasAppliedOperatorPerspective = true;
+                            });
         }
     }
 
     final PIDController fieldPositionController = new PIDController(1, 0, 0.1);
-    final FieldCentricFacingAngle alignDriveRequest =
-        new FieldCentricFacingAngle()
+    final FieldCentricFacingAngle alignDriveRequest = new FieldCentricFacingAngle()
             .withDeadband(0.1)
             .withRotationalDeadband(0.1)
             .withHeadingPID(1, 0, 0.1);
@@ -379,40 +336,36 @@ public class CommandSwerveDrivetrain
      *
      * @param targetPoseSupplier where u want to go
      */
-    public Command getAlignToFieldPosition(
-        Supplier<Pose2d> targetPoseSupplier
-    ) {
+    public Command getAlignToFieldPosition(Supplier<Pose2d> targetPoseSupplier) {
         fieldPositionController.setSetpoint(0);
         fieldPositionController.setTolerance(0.125);
         return run(() -> {
             var relPose = targetPoseSupplier.get().minus(getState().Pose);
-            double vel_mag = fieldPositionController.calculate(
-                relPose.getTranslation().getNorm()
-            );
+            double vel_mag = fieldPositionController.calculate(relPose.getTranslation().getNorm());
             var vel = relPose.times(vel_mag);
             setControl(
-                alignDriveRequest
-                    .withVelocityX(vel.getX())
-                    .withVelocityY(vel.getY())
-                    .withTargetDirection(targetPoseSupplier.get().getRotation())
-            );
+                    alignDriveRequest
+                            .withVelocityX(vel.getX())
+                            .withVelocityY(vel.getY())
+                            .withTargetDirection(targetPoseSupplier.get().getRotation()));
         })
-            .until(fieldPositionController::atSetpoint)
-            .withTimeout(2.0);
+                .until(fieldPositionController::atSetpoint)
+                .withTimeout(2.0);
     }
 
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
 
         /* Run simulation at a faster rate so PID gains behave more reasonably */
-        m_simNotifier = new Notifier(() -> {
-            final double currentTime = Utils.getCurrentTimeSeconds();
-            double deltaTime = currentTime - m_lastSimTime;
-            m_lastSimTime = currentTime;
+        m_simNotifier = new Notifier(
+                () -> {
+                    final double currentTime = Utils.getCurrentTimeSeconds();
+                    double deltaTime = currentTime - m_lastSimTime;
+                    m_lastSimTime = currentTime;
 
-            /* use the measured time delta, get battery voltage from WPILib */
-            updateSimState(deltaTime, RobotController.getBatteryVoltage());
-        });
+                    /* use the measured time delta, get battery voltage from WPILib */
+                    updateSimState(deltaTime, RobotController.getBatteryVoltage());
+                });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
 
@@ -427,14 +380,9 @@ public class CommandSwerveDrivetrain
      *                              seconds.
      */
     @Override
-    public void addVisionMeasurement(
-        Pose2d visionRobotPoseMeters,
-        double timestampSeconds
-    ) {
+    public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
         super.addVisionMeasurement(
-            visionRobotPoseMeters,
-            Utils.fpgaToCurrentTime(timestampSeconds)
-        );
+                visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
     /**
@@ -459,14 +407,12 @@ public class CommandSwerveDrivetrain
      */
     @Override
     public void addVisionMeasurement(
-        Pose2d visionRobotPoseMeters,
-        double timestampSeconds,
-        Matrix<N3, N1> visionMeasurementStdDevs
-    ) {
+            Pose2d visionRobotPoseMeters,
+            double timestampSeconds,
+            Matrix<N3, N1> visionMeasurementStdDevs) {
         super.addVisionMeasurement(
-            visionRobotPoseMeters,
-            Utils.fpgaToCurrentTime(timestampSeconds),
-            visionMeasurementStdDevs
-        );
+                visionRobotPoseMeters,
+                Utils.fpgaToCurrentTime(timestampSeconds),
+                visionMeasurementStdDevs);
     }
 }
