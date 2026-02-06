@@ -58,6 +58,8 @@ public final class DrivetrainOdometry extends CommandSwerveDrivetrain {
 
     @Override
     public void periodic() {
+        super.periodic();
+
         double now = Timer.getFPGATimestamp();
         double dt = now - lastTimeSec;
         lastTimeSec = now;
