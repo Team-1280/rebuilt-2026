@@ -70,8 +70,6 @@ public final class DrivetrainOdometry extends CommandSwerveDrivetrain {
                 double slipTrust = trust(slipRatio.getAsDouble() < TRUST_SLIP_LIMIT);
 
                 double odomTrust = combine(TRUST_IDENTITY, combine(gyroTrust, slipTrust));
-
-                // Optional: you can log odomTrust for diagnostics
         }
 
         public void applyVisionMeasurement(
