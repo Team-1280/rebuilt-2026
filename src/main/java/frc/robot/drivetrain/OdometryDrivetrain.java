@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.Timer;
 
 import java.util.function.DoubleSupplier;
 
-public final class DrivetrainOdometry extends CommandSwerveDrivetrain {
+public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     private static final double ODOMETRY_UPDATE_FREQUENCY = 250.0; // hertz
 
     // vision standard deviations in the form [x, y, theta], for use in the drivetrain constructor
@@ -37,7 +37,7 @@ public final class DrivetrainOdometry extends CommandSwerveDrivetrain {
     private Pose2d lastPose = Pose2d.kZero;
     private double lastTimeSec = Timer.getFPGATimestamp();
 
-    public DrivetrainOdometry(
+    public OdometryDrivetrain(
             DoubleSupplier gyroRateRadPerSecSupplier, DoubleSupplier slipRatioSupplier) {
         super(
                 TunerConstants.DrivetrainConstants,
