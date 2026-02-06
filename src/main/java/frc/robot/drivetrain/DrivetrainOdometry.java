@@ -1,98 +1,89 @@
 package frc.robot.drivetrain;
 
-import java.util.Optional;
-
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.targeting.PhotonPipelineResult;
-
-import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+import com.ctre.phoenix6.Utils;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-// import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
-
 import frc.robot.vision.VisionSubsystem;
 
-public class DrivetrainOdometry extends CommandSwerveDrivetrain {
+import java.util.function.DoubleSupplier;
 
-    private Pose2d lastPose = new Pose2d();
-    private double lastTimestamp = 0.0;
-    private double lastYaw = 0.0;
-    private double lastSpeed = 0.0;
+public final class DrivetrainOdometry extends CommandSwerveDrivetrain {
 
-    private static final double stdevVision = 0.5;
-    private static final double stdevDrivebase = 0.1;
+        private static final double ODOMETRY_HZ = 250.0;
 
-    private static final double rotYaw = 0.5; // rad/s
-    private static final double ddxSpike = 3.0; // m/s^2
-    private static final double maxSpeed = 3.0; // m/s
+        private static final Matrix<N3, ?> VISION_STD_BEST = VecBuilder.fill(0.05, 0.05, 0.04);
+        private static final Matrix<N3, ?> VISION_STD_WORST = VecBuilder.fill(0.60, 0.60, 0.40);
 
-    public DrivetrainOdometry(
-            SwerveDrivetrainConstants drivetrainConstants,
-            SwerveModuleConstants<?, ?, ?>... modules) {
-        super(drivetrainConstants, modules);
-        lastTimestamp = Timer.getFPGATimestamp();
-    }
+        private static final double TRUST_IDENTITY = 1.0;
+        private static final double TRUST_GYRO_LIMIT = 6.0; // rad/s
+        private static final double TRUST_SLIP_LIMIT = 0.35; // slip ratio threshold
+        private static final double TRUST_VISION_RANGE_MIN = 0.25;
+        private static final double TRUST_VISION_RANGE_MAX = 3.5;
 
-    public DrivetrainOdometry(
-            SwerveDrivetrainConstants drivetrainConstants,
-            double odometryFrequency,
-            SwerveModuleConstants<?, ?, ?>... modules) {
-        super(drivetrainConstants, odometryFrequency, modules);
-        lastTimestamp = Timer.getFPGATimestamp();
-    }
+        private final DoubleSupplier gyroRateRadPerSec;
+        private final DoubleSupplier slipRatio;
 
-    public DrivetrainOdometry(
-            SwerveDrivetrainConstants drivetrainConstants,
-            double odometryFrequency,
-            Matrix<N3, N1> odometryStdDevs,
-            Matrix<N3, N1> visionStdDevs,
-            SwerveModuleConstants<?, ?, ?>... modules) {
-        super(
-                drivetrainConstants,
-                odometryFrequency,
-                odometryStdDevs,
-                visionStdDevs,
-                modules);
-        lastTimestamp = Timer.getFPGATimestamp();
-    }
+        private Pose2d lastPose = new Pose2d();
+        private double lastTimeSec = Timer.getFPGATimestamp();
 
-    // TODO: add Alliance Reflection
+        public DrivetrainOdometry(DoubleSupplier gyroRateRadPerSec, DoubleSupplier slipRatio) {
+                super(
+                                TunerConstants.DrivetrainConstants,
+                                ODOMETRY_HZ,
+                                TunerConstants.FrontLeft,
+                                TunerConstants.FrontRight,
+                                TunerConstants.BackLeft,
+                                TunerConstants.BackRight);
+                this.gyroRateRadPerSec = gyroRateRadPerSec;
+                this.slipRatio = slipRatio;
+        }
 
-    public void update() {
-        double xyProcessStd = (trustEncoders && trustMotors) ? 0.02 : (trustEncoders || trustMotors) ? 0.07 : 0.2;
+        private static double trust(boolean predicate) {
+                return predicate ? 1.0 : 0.0;
+        }
 
-        double thetaProcessStd = trustGyro ? Math.toRadians(0.5) : Math.toRadians(5.0);
+        private static double combine(double a, double b) {
+                return a * b;
+        }
 
-        double xyVisionStd = trustVision ? 0.05 : 0.6;
+        private static Matrix<N3, ?> interpolate(Matrix<N3, ?> best, Matrix<N3, ?> worst, double alpha) {
+                return VecBuilder.fill(
+                                best.get(0, 0) * alpha + worst.get(0, 0) * (1.0 - alpha),
+                                best.get(1, 0) * alpha + worst.get(1, 0) * (1.0 - alpha),
+                                best.get(2, 0) * alpha + worst.get(2, 0) * (1.0 - alpha));
+        }
 
-        double thetaVisionStd = trustVision ? Math.toRadians(1.0) : Math.toRadians(10.0);
+        @Override
+        public void periodic() {
+                double now = Timer.getFPGATimestamp();
+                double dt = now - lastTimeSec;
+                lastTimeSec = now;
 
-        poseEstimator.setProcessNoiseStdDevs(
-                VecBuilder.fill(xyProcessStd, xyProcessStd, thetaProcessStd));
+                Pose2d pose = getState().Pose;
+                double translationDelta = pose.getTranslation().getDistance(lastPose.getTranslation());
+                lastPose = pose;
 
-        poseEstimator.setVisionMeasurementStdDevs(
-                VecBuilder.fill(xyVisionStd, xyVisionStd, thetaVisionStd));
+                double gyroTrust = trust(Math.abs(gyroRateRadPerSec.getAsDouble()) < TRUST_GYRO_LIMIT);
+                double slipTrust = trust(slipRatio.getAsDouble() < TRUST_SLIP_LIMIT);
 
-        poseEstimator.update(
-                getGyroRotation(),
-                getModulePositions());
-    }
+                double odomTrust = combine(TRUST_IDENTITY, combine(gyroTrust, slipTrust));
 
-    public void fastNt() {
-        NetworkTableInstance.getDefault().flush();
-    }
+                // Optional: you can log odomTrust for diagnostics
+        }
 
-    @Override
-    public void periodic() {
-        super.periodic();
-        updateCache();
-    }
+        public void applyVisionMeasurement(
+                        Pose2d pose,
+                        double timestampSeconds,
+                        double distanceMeters,
+                        boolean noisy) {
+                double rangeTrust = trust(
+                                distanceMeters > TRUST_VISION_RANGE_MIN && distanceMeters < TRUST_VISION_RANGE_MAX);
+                double ambiguityTrust = trust(!noisy);
+                double visionTrust = combine(rangeTrust, ambiguityTrust);
+
+                addVisionMeasurement(pose, Utils.fpgaToCurrentTime(timestampSeconds));
+        }
 }
