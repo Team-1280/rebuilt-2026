@@ -19,51 +19,29 @@ public final class PolynomialSolver {
         double B = -4 * p;
         double C = -8 * r;
         double D = 4 * p * r - q * q;
-        // Choose root with largest absolute value
-        double largestAbs = 0;
-        for (double i : cubicRealRoots(A, B, C, D)) {
-            if (Math.abs(i) > largestAbs) {
-                largestAbs = i;
-            }
-        }
-        double y1 = largestAbs;
+        double y1 =
+                cubicRealRoots(A, B, C, D)[0]; // Chooses the only real root or the principal root
         // Solve the two quadratics
-        double u = Math.sqrt(2 * y1 - p);
-        double v = Math.sqrt(y1 * y1 - r);
-        double[] quadRoots1 = quadraticRealRoots(1.0, -u, y1 - v);
-        double[] quadRoots2 = quadraticRealRoots(1.0, u, y1 - v);
-        // add together the solutions
-        double[] sumPart1 = new double[2];
-        double[] sumPart2 = new double[2];
-        double[] roots = new double[2];
-        switch (quadRoots1.length) {
-            case 0:
-                sumPart1[0] = 0;
-                sumPart1[1] = 0;
-                break;
-            case 1:
-                sumPart1[0] = quadRoots1[0];
-                sumPart1[1] = 0;
-                break;
-            case 2:
-                sumPart1 = quadRoots1;
+        double u;
+        double v;
+        if (2 * y1 - p > 1e-12) {
+            u = Math.sqrt(2 * y1 - p);
+            v = q / (2 * u);
+        } else {
+            // Biquadratic case: d close to 0 and real roots exist
+            u = 0.0;
+            v = Math.sqrt(y1 * y1 - r);
         }
-        switch (quadRoots2.length) {
-            case 0:
-                sumPart2[0] = 0;
-                sumPart2[1] = 0;
-                break;
-            case 1:
-                sumPart2[0] = quadRoots2[0];
-                sumPart2[1] = 0;
-                break;
-            case 2:
-                sumPart2 = quadRoots2;
+        double[] quadRoots1 = quadraticRealRoots(1.0, u, y1 - v);
+        double[] quadRoots2 = quadraticRealRoots(1.0, -u, y1 + v);
+        // Add together the solutions
+        if (quadRoots2.length == 0) {
+            return quadRoots1;
         }
-        for (int i = 0; i < 2; i++) {
-            roots[i] = sumPart1[i] + sumPart2[i];
+        if (quadRoots1.length == 0) {
+            return quadRoots2;
         }
-        return roots;
+        return new double[] {quadRoots1[0], quadRoots1[1], quadRoots2[0], quadRoots2[1]};
     }
 
     public static double[] cubicRealRoots(double a, double b, double c, double d) {
