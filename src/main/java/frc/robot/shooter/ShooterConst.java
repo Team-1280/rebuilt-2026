@@ -1,6 +1,5 @@
 package frc.robot.shooter;
 
-
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
@@ -33,6 +32,6 @@ public class ShooterConst {
         shooterMotorConfig.CurrentLimits.StatorCurrentLimit = SHOOTER_MOTORS_CURRENT_LIMIT.in(Amps);
         shooterMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         shooterMotorConfig.MotorOutput.Inverted =
-            InvertedValue.CounterClockwise_Positive; // right is leader, positive is out
+                InvertedValue.CounterClockwise_Positive; // right is leader, positive is out
     }
 }

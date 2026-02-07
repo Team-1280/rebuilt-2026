@@ -18,7 +18,10 @@ public class ShooterSubsystem extends SubsystemBase {
     public ShooterSubsystem() {
         leaderShooterMotor.getConfigurator().apply(ShooterConst.shooterMotorConfig);
         followerShooterMotor.getConfigurator().apply(ShooterConst.shooterMotorConfig);
-        followerShooterMotor.setControl(new Follower(leaderShooterMotor.getDeviceID(), MotorAlignmentValue.Opposed)); // left motor is opposite orientation of leader; flip rotation direction
+        followerShooterMotor.setControl(
+                new Follower(
+                        leaderShooterMotor.getDeviceID(),
+                        MotorAlignmentValue.Opposed)); // follower is opposite orientation of leader
     }
 
     public void setAngularVelocity(AngularVelocity angularVelocity) {
@@ -35,6 +38,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-    builder.addDoubleProperty("speed (RPS)", () -> getAngularVelocity().in(RotationsPerSecond), (double speed) -> setAngularVelocity(RotationsPerSecond.of(speed)));
-  }
+        builder.addDoubleProperty(
+                "speed (RPS)",
+                () -> getAngularVelocity().in(RotationsPerSecond),
+                (double speed) -> setAngularVelocity(RotationsPerSecond.of(speed)));
+    }
 }
