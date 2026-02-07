@@ -16,8 +16,8 @@ public class ShooterSubsystem extends SubsystemBase {
     private final TalonFX followerShooterMotor = new TalonFX(ShooterConst.LEFT_MOTOR_ID);
 
     public ShooterSubsystem() {
-        leaderShooterMotor.getConfigurator().apply(ShooterConst.shooterMotorConfig);
-        followerShooterMotor.getConfigurator().apply(ShooterConst.shooterMotorConfig);
+        leaderShooterMotor.getConfigurator().apply(ShooterConfig.shooterMotorConfig);
+        followerShooterMotor.getConfigurator().apply(ShooterConfig.shooterMotorConfig);
         followerShooterMotor.setControl(
                 new Follower(
                         leaderShooterMotor.getDeviceID(),
