@@ -1,4 +1,4 @@
-package frc.robot.shooter;
+package frc.robot.launcher.shooter;
 
 import static edu.wpi.first.units.Units.Inches;
 
