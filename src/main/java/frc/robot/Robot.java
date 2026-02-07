@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -19,13 +20,18 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
-import frc.robot.drivetrain.TunerConstants;
+import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.vision.VisionSubsystem;
 
 public class Robot extends TimedRobot implements Sendable {
-    private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    private final Pigeon2 pigeon = new Pigeon2(26); // Also in TunerConstants.kPigeonId
+
+    private final CommandSwerveDrivetrain drivetrain =
+            new OdometryDrivetrain(
+                    () -> pigeon.getAngularVelocityZDevice().getValue().in(RadiansPerSecond),
+                    () -> 0.0 // TODO: slip ratio supplier
+                    );
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
