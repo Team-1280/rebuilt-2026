@@ -15,16 +15,23 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.vision.VisionSubsystem;
 
-public class Robot extends TimedRobot implements Sendable {
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+public class Robot extends LoggedRobot implements Sendable {
     private final Pigeon2 pigeon = new Pigeon2(26); // Also in TunerConstants.kPigeonId
 
     private final CommandSwerveDrivetrain drivetrain =
@@ -39,8 +46,27 @@ public class Robot extends TimedRobot implements Sendable {
     private final Field2d field = new Field2d();
 
     public Robot() {
+        initLogger(); // must happen first
         initDashboard();
         initBindings();
+    }
+
+    private void initLogger() {
+        Logger.recordMetadata("ProjectName", "MyProject"); // Set a metadata value
+        if (isReal()) {
+            Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+            Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+        } else {
+            setUseTiming(false); // Run as fast as possible
+            // Pull the replay log from AdvantageScope (or prompt the user)
+            String logPath = LogFileUtil.findReplayLog();
+            // Read replay log
+            Logger.setReplaySource(new WPILOGReader(logPath));
+            // Save outputs to a new log
+            Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+        }
+        // Start logging! No more data receivers, replay sources, or metadata values may be added.
+        Logger.start();
     }
 
     private void initDashboard() {
