@@ -290,6 +290,15 @@ The source code is separated into folders/packages by *feature* (e.g. `vision`, 
 Constants that are not expected to change over the codebase (e.g. mechanism locations, device IDs) should be placed in a `___Const` class in the relevant package. \
 Configuration, which are tunable values and settings (e.g. motor configuration, PID values, tolerances), should be placed in a `___Config` class in the relevant package.
 
+### AI
+Do not use AI to generate large amounts of code, especially when the task is too difficult for your skills.
+
+If using autocomplete or code generation, please review the code very carefully and make sure it works.
+
+Rookies: do not generate code snippets using AI.
+
+It is okay to use AI for research or guidance purposes.
+
 ## Workflow
 Recommended step-by-step workflow or development process for programmers:
 
