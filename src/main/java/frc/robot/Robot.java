@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
+import frc.robot.drivetrain.CommandSwerveIO;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.vision.VisionSubsystem;
 
@@ -63,6 +64,26 @@ public class Robot extends LoggedRobot implements Sendable {
                         Logger.setReplaySource(new WPILOGReader(logPath));
                         // Save outputs to a new log
                         Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+                }
+                switch (CommandSwerveIO.currentMode) {
+                        case REAL:
+                                // Running on a real robot, log to a USB stick ("/U/logs")
+                                Logger.addDataReceiver(new WPILOGWriter());
+                                Logger.addDataReceiver(new NT4Publisher());
+                                break;
+
+                        case SIM:
+                                // Running a physics simulator, log to NT
+                                Logger.addDataReceiver(new NT4Publisher());
+                                break;
+
+                        case REPLAY:
+                                // Replaying a log, set up replay source
+                                setUseTiming(false); // Run as fast as possible
+                                String logPath = LogFileUtil.findReplayLog();
+                                Logger.setReplaySource(new WPILOGReader(logPath));
+                                Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+                                break;
                 }
                 // Start logging! No more data receivers, replay sources, or metadata values may
                 // be added.

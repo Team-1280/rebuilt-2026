@@ -1,121 +1,105 @@
-public class Module {
-  private final ModuleIO io;
-  private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
-  private final int index;
-  private final SwerveModuleConstants<
-          TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-      constants;
+package frc.robot.advkit;
 
-  private final Alert driveDisconnectedAlert;
-  private final Alert turnDisconnectedAlert;
-  private final Alert turnEncoderDisconnectedAlert;
-  private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 
-  public Module(
-      ModuleIO io,
-      int index,
-      SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-          constants) {
-    this.io = io;
-    this.index = index;
-    this.constants = constants;
-    driveDisconnectedAlert =
-        new Alert(
-            "Disconnected drive motor on module " + Integer.toString(index) + ".",
-            AlertType.kError);
-    turnDisconnectedAlert =
-        new Alert(
-            "Disconnected turn motor on module " + Integer.toString(index) + ".", AlertType.kError);
-    turnEncoderDisconnectedAlert =
-        new Alert(
-            "Disconnected turn encoder on module " + Integer.toString(index) + ".",
-            AlertType.kError);
+import java.util.Queue;
+
+import org.littletonrobotics.junction.AutoLog;
+
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
+import java.lang.Cloneable;
+import java.lang.Override;
+import org.littletonrobotics.junction.LogTable;
+import org.littletonrobotics.junction.inputs.LoggableInputs;
+
+import com.ctre.phoenix6.hardware.Pigeon2;
+
+import frc.robot.drivetrain.*;
+
+//a way to interface the Gyro
+public interface GyroIO {
+  @AutoLog
+  public static class GyroIOInputs {
+    public boolean connected = false;
+    public Rotation2d yawPosition = Rotation2d.kZero;
+    public double yawVelocityRadPerSec = 0.0;
+    public double[] odometryYawTimestamps = new double[] {};
+    public Rotation2d[] odometryYawPositions = new Rotation2d[] {};
   }
 
-  public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+  public default void updateInputs(GyroIOInputs inputs) {
+  }
 
-    // Calculate positions for odometry
-    int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
-    odometryPositions = new SwerveModulePosition[sampleCount];
-    for (int i = 0; i < sampleCount; i++) {
-      double positionMeters = inputs.odometryDrivePositionsRad[i] * constants.WheelRadius;
-      Rotation2d angle = inputs.odometryTurnPositions[i];
-      odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
+  public class GyroIOInputsAutoLogged extends GyroIO.GyroIOInputs implements LoggableInputs, Cloneable {
+    @Override
+    public void toLog(LogTable table) {
+      table.put("Connected", connected);
+      table.put("YawPosition", yawPosition);
+      table.put("YawVelocityRadPerSec", yawVelocityRadPerSec);
+      table.put("OdometryYawTimestamps", odometryYawTimestamps);
+      table.put("OdometryYawPositions", odometryYawPositions);
     }
 
-    // Update alerts
-    driveDisconnectedAlert.set(!inputs.driveConnected);
-    turnDisconnectedAlert.set(!inputs.turnConnected);
-    turnEncoderDisconnectedAlert.set(!inputs.turnEncoderConnected);
+    @Override
+    public void fromLog(LogTable table) {
+      connected = table.get("Connected", connected);
+      yawPosition = table.get("YawPosition", yawPosition);
+      yawVelocityRadPerSec = table.get("YawVelocityRadPerSec", yawVelocityRadPerSec);
+      odometryYawTimestamps = table.get("OdometryYawTimestamps", odometryYawTimestamps);
+      odometryYawPositions = table.get("OdometryYawPositions", odometryYawPositions);
+    }
+
+    public GyroIOInputsAutoLogged clone() {
+      GyroIOInputsAutoLogged copy = new GyroIOInputsAutoLogged();
+      copy.connected = this.connected;
+      copy.yawPosition = this.yawPosition;
+      copy.yawVelocityRadPerSec = this.yawVelocityRadPerSec;
+      copy.odometryYawTimestamps = this.odometryYawTimestamps.clone();
+      copy.odometryYawPositions = this.odometryYawPositions.clone();
+      return copy;
+    }
   }
 
-  /** Runs the module with the specified setpoint state. Mutates the state to optimize it. */
-  public void runSetpoint(SwerveModuleState state) {
-    // Optimize velocity setpoint
-    state.optimize(getAngle());
-    state.cosineScale(inputs.turnPosition);
+  // implements using our own gyro: ctre pigeon2.0
+  public class GyroIOPigeon2 implements GyroIO {
+    private final Pigeon2 pigeon = new Pigeon2(TunerConstants.DrivetrainConstants.Pigeon2Id, TunerConstants.kCANBus);
+    private final StatusSignal<Angle> yaw = pigeon.getYaw();
+    private final Queue<Double> yawPositionQueue;
+    private final Queue<Double> yawTimestampQueue;
+    private final StatusSignal<AngularVelocity> yawVelocity = pigeon.getAngularVelocityZWorld();
 
-    // Apply setpoints
-    io.setDriveVelocity(state.speedMetersPerSecond / constants.WheelRadius);
-    io.setTurnPosition(state.angle);
-  }
+    public GyroIOPigeon2() {
+      if (TunerConstants.DrivetrainConstants.Pigeon2Configs != null) {
+        pigeon.getConfigurator().apply(TunerConstants.DrivetrainConstants.Pigeon2Configs);
+      } else {
+        pigeon.getConfigurator().apply(new Pigeon2Configuration());
+      }
 
-  /** Runs the module with the specified output while controlling to zero degrees. */
-  public void runCharacterization(double output) {
-    io.setDriveOpenLoop(output);
-    io.setTurnPosition(Rotation2d.kZero);
-  }
+      pigeon.getConfigurator().setYaw(0.0);
+      yaw.setUpdateFrequency(CommandSwerveIO.ODOMETRY_FREQ);
+      yawVelocity.setUpdateFrequency(50.0);
+      pigeon.optimizeBusUtilization();
+      yawTimestampQueue = PhoenixOdometry.getInstance().makeTimestampQueue();
+      yawPositionQueue = PhoenixOdometry.getInstance().registerSignal(yaw.clone());
+    }
 
-  /** Disables all outputs to motors. */
-  public void stop() {
-    io.setDriveOpenLoop(0.0);
-    io.setTurnOpenLoop(0.0);
-  }
-
-  /** Returns the current turn angle of the module. */
-  public Rotation2d getAngle() {
-    return inputs.turnPosition;
-  }
-
-  /** Returns the current drive position of the module in meters. */
-  public double getPositionMeters() {
-    return inputs.drivePositionRad * constants.WheelRadius;
-  }
-
-  /** Returns the current drive velocity of the module in meters per second. */
-  public double getVelocityMetersPerSec() {
-    return inputs.driveVelocityRadPerSec * constants.WheelRadius;
-  }
-
-  /** Returns the module position (turn angle and drive position). */
-  public SwerveModulePosition getPosition() {
-    return new SwerveModulePosition(getPositionMeters(), getAngle());
-  }
-
-  /** Returns the module state (turn angle and drive velocity). */
-  public SwerveModuleState getState() {
-    return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
-  }
-
-  /** Returns the module positions received this cycle. */
-  public SwerveModulePosition[] getOdometryPositions() {
-    return odometryPositions;
-  }
-
-  /** Returns the timestamps of the samples received this cycle. */
-  public double[] getOdometryTimestamps() {
-    return inputs.odometryTimestamps;
-  }
-
-  /** Returns the module position in radians. */
-  public double getWheelRadiusCharacterizationPosition() {
-    return inputs.drivePositionRad;
-  }
-
-  /** Returns the module velocity in rotations/sec (Phoenix native units). */
-  public double getFFCharacterizationVelocity() {
-    return Units.radiansToRotations(inputs.driveVelocityRadPerSec);
+    @Override
+    public void updateInputs(GyroIOInputs inputs) {
+      inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity).equals(StatusCode.OK);
+      inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
+      inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
+      inputs.odometryYawTimestamps = yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+      inputs.odometryYawPositions = yawPositionQueue.stream()
+          .map((Double value) -> Rotation2d.fromDegrees(value))
+          .toArray(Rotation2d[]::new);
+      yawTimestampQueue.clear();
+      yawPositionQueue.clear();
+    }
   }
 }

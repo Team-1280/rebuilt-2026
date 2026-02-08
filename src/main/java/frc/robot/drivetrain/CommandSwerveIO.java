@@ -1,6 +1,8 @@
 package frc.robot.drivetrain;
 
 import static edu.wpi.first.units.Unit.*;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -20,16 +22,26 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
+import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import frc.robot.advkit.GyroIO;
+import frc.robot.advkit.GyroIO.GyroIOInputs;
+import frc.robot.advkit.GyroIO.GyroIOInputsAutoLogged;
+import frc.robot.advkit.Module;
+import frc.robot.advkit.ModuleIO;
+import frc.robot.advkit.PhoenixOdometry;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -51,52 +63,9 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 
-public interface ModuleIO {
-    @AutoLog
-    public static class ModuleIOInputs {
-        public boolean driveConnected = false;
-        public double drivePositionRad = 0.0;
-        public double driveVelocityRadPerSec = 0.0;
-        public double driveAppliedVolts = 0.0;
-        public double driveCurrentAmps = 0.0;
+public class CommandSwerveIO extends SubsystemBase {
 
-        public boolean turnConnected = false;
-        public boolean turnEncoderConnected = false;
-        public Rotation2d turnAbsolutePosition = Rotation2d.kZero;
-        public Rotation2d turnPosition = Rotation2d.kZero;
-        public double turnVelocityRadPerSec = 0.0;
-        public double turnAppliedVolts = 0.0;
-        public double turnCurrentAmps = 0.0;
-
-        public double[] odometryTimestamps = new double[] {};
-        public double[] odometryDrivePositionsRad = new double[] {};
-        public Rotation2d[] odometryTurnPositions = new Rotation2d[] {};
-    }
-
-    /** Updates the set of loggable inputs. */
-    public default void updateInputs(ModuleIOInputs inputs) {
-    }
-
-    /** Run the drive motor at the specified open loop value. */
-    public default void setDriveOpenLoop(double output) {
-    }
-
-    /** Run the turn motor at the specified open loop value. */
-    public default void setTurnOpenLoop(double output) {
-    }
-
-    /** Run the drive motor at the specified velocity. */
-    public default void setDriveVelocity(double velocityRadPerSec) {
-    }
-
-    /** Run the turn motor to the specified rotation. */
-    public default void setTurnPosition(Rotation2d rotation) {
-    }
-}
-
-public class CommandSwerveIO {
-
-    static final double ODOMETRY_FREQ = TunerConstants.kCANBus.isNetworkFD()
+    public static final double ODOMETRY_FREQ = TunerConstants.kCANBus.isNetworkFD()
             ? 250.0
             : 100.0;
     public static final double DRIVE_BASE_RADIUS = Math.max(
@@ -133,134 +102,8 @@ public class CommandSwerveIO {
     // ),
     // getModuleTranslations()
     // );
-    public class PhoenixOdometryThread extends Thread {
-        private final Lock signalsLock = new ReentrantLock(); // Prevents conflicts when registering signals
-        private BaseStatusSignal[] phoenixSignals = new BaseStatusSignal[0];
-        private final List<DoubleSupplier> genericSignals = new ArrayList<>();
-        private final List<Queue<Double>> phoenixQueues = new ArrayList<>();
-        private final List<Queue<Double>> genericQueues = new ArrayList<>();
-        private final List<Queue<Double>> timestampQueues = new ArrayList<>();
-
-        private static boolean isCANFD = TunerConstants.kCANBus.isNetworkFD();
-        private static PhoenixOdometryThread instance = null;
-
-        public static PhoenixOdometryThread getInstance() {
-            if (instance == null) {
-                instance = new PhoenixOdometryThread();
-            }
-            return instance;
-        }
-
-        private PhoenixOdometryThread() {
-            setName("PhoenixOdometryThread");
-            setDaemon(true);
-        }
-
-        @Override
-        public void start() {
-            if (timestampQueues.size() > 0) {
-                super.start();
-            }
-        }
-
-        /** Registers a Phoenix signal to be read from the thread. */
-        public Queue<Double> registerSignal(StatusSignal<Angle> signal) {
-            Queue<Double> queue = new ArrayBlockingQueue<>(20);
-            signalsLock.lock();
-            odometryLock.lock();
-            try {
-                BaseStatusSignal[] newSignals = new BaseStatusSignal[phoenixSignals.length + 1];
-                System.arraycopy(phoenixSignals, 0, newSignals, 0, phoenixSignals.length);
-                newSignals[phoenixSignals.length] = signal;
-                phoenixSignals = newSignals;
-                phoenixQueues.add(queue);
-            } finally {
-                signalsLock.unlock();
-                odometryLock.unlock();
-            }
-            return queue;
-        }
-
-        /** Registers a generic signal to be read from the thread. */
-        public Queue<Double> registerSignal(DoubleSupplier signal) {
-            Queue<Double> queue = new ArrayBlockingQueue<>(20);
-            signalsLock.lock();
-            odometryLock.lock();
-            try {
-                genericSignals.add(signal);
-                genericQueues.add(queue);
-            } finally {
-                signalsLock.unlock();
-                odometryLock.unlock();
-            }
-            return queue;
-        }
-
-        /** Returns a new queue that returns timestamp values for each sample. */
-        public Queue<Double> makeTimestampQueue() {
-            Queue<Double> queue = new ArrayBlockingQueue<>(20);
-            odometryLock.lock();
-            try {
-                timestampQueues.add(queue);
-            } finally {
-                odometryLock.unlock();
-            }
-            return queue;
-        }
-
-        @Override
-        public void run() {
-            while (true) {
-                // Wait for updates from all signals
-                signalsLock.lock();
-                try {
-                    if (isCANFD && phoenixSignals.length > 0) {
-                        BaseStatusSignal.waitForAll(2.0 / ODOMETRY_FREQ, phoenixSignals);
-                    } else {
-                        // "waitForAll" does not support blocking on multiple signals with a bus
-                        // that is not CAN FD, regardless of Pro licensing. No reasoning for this
-                        // behavior is provided by the documentation.
-                        Thread.sleep((long) (1000.0 / ODOMETRY_FREQ));
-                        if (phoenixSignals.length > 0)
-                            BaseStatusSignal.refreshAll(phoenixSignals);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } finally {
-                    signalsLock.unlock();
-                }
-
-                // Save new data to queues
-                odometryLock.lock();
-                try {
-                    // Sample timestamp is current FPGA time minus average CAN latency
-                    // Default timestamps from Phoenix are NOT compatible with
-                    // FPGA timestamps, this solution is imperfect but close
-                    double timestamp = RobotController.getFPGATime() / 1e6;
-                    double totalLatency = 0.0;
-                    for (BaseStatusSignal signal : phoenixSignals) {
-                        totalLatency += signal.getTimestamp().getLatency();
-                    }
-                    if (phoenixSignals.length > 0) {
-                        timestamp -= totalLatency / phoenixSignals.length;
-                    }
-
-                    // Add new samples to queues
-                    for (int i = 0; i < phoenixSignals.length; i++) {
-                        phoenixQueues.get(i).offer(phoenixSignals[i].getValueAsDouble());
-                    }
-                    for (int i = 0; i < genericSignals.size(); i++) {
-                        genericQueues.get(i).offer(genericSignals.get(i).getAsDouble());
-                    }
-                    for (int i = 0; i < timestampQueues.size(); i++) {
-                        timestampQueues.get(i).offer(timestamp);
-                    }
-                } finally {
-                    odometryLock.unlock();
-                }
-            }
-        }
-    }
+    public static final Mode simMode = Mode.SIM;
+    public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
     public static enum Mode {
         /** Running on a real robot. */
@@ -273,51 +116,7 @@ public class CommandSwerveIO {
         REPLAY
     }
 
-    public final class GyroIOPigeon2 implements GyroIO {
-        private final Pigeon2 pigeon = new Pigeon2(
-                TunerConstants.DrivetrainConstants.Pigeon2Id,
-                TunerConstants.kCANBus);
-
-        private final StatusSignal<Angle> yaw = pigeon.getYaw();
-        private final StatusSignal<AngularVelocity> yawVelocity = pigeon.getAngularVelocityZWorld();
-
-        private final Queue<Double> yawPosQueue = PhoenixOdometryThread.getInstance().registerSignal(yaw.clone());
-        private final Queue<Double> yawTimeQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
-
-        public GyroIOPigeon2() {
-            pigeon
-                    .getConfigurator()
-                    .apply(
-                            TunerConstants.DrivetrainConstants.Pigeon2Configs != null
-                                    ? TunerConstants.DrivetrainConstants.Pigeon2Configs
-                                    : new Pigeon2Configuration());
-
-            pigeon.getConfigurator().setYaw(0.0);
-            yaw.setUpdateFrequency(ODOMETRY_FREQ);
-            yawVelocity.setUpdateFrequency(50.0);
-            pigeon.optimizeBusUtilization();
-        }
-
-        @Override
-        public void updateInputs(GyroIOInputs inputs) {
-            inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity) == StatusCode.OK;
-
-            inputs.yaw = Rotation2d.fromDegrees(yaw.getValueAsDouble());
-            inputs.yawRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
-
-            inputs.odoYawTimestamps = yawTimeQueue.stream().mapToDouble(Double::doubleValue).toArray();
-
-            inputs.odoYawPositions = yawPosQueue.stream()
-                    .map(Rotation2d::fromDegrees)
-                    .toArray(Rotation2d[]::new);
-
-            yawTimeQueue.clear();
-            yawPosQueue.clear();
-        }
-
-    }
-
-    static final Lock odoLock = new ReentrantLock();
+    public static final Lock odometryLock = new ReentrantLock();
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     private final Module[] modules = new Module[4]; // FL, FR, BL(Yaoi), BR
@@ -333,6 +132,9 @@ public class CommandSwerveIO {
             };
     private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
             lastModulePositions, Pose2d.kZero);
+    private final Alert gyroDisconnectedAlert = new Alert(
+            "oh nyo ur gyro is disconnected, falling back to raw kinematics UwU",
+            AlertType.kError);
 
     public CommandSwerveIO(
             GyroIO gyroIO,
@@ -348,21 +150,20 @@ public class CommandSwerveIO {
 
         // Usage reporting for swerve template
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
-
         // Start odometry thread
-        PhoenixOdometryThread.getInstance().start();
+        PhoenixOdometry.getInstance().start();
 
-        // Configure AutoBuilder for PathPlanner
-        AutoBuilder.configure(
-                this::getPose,
-                this::setPose,
-                this::getChassisSpeeds,
-                this::runVelocity,
-                new PPHolonomicDriveController(
-                        new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
-                PP_CONFIG,
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                this);
+        // // Configure AutoBuilder for PathPlanner
+        // AutoBuilder.configure(
+        // this::getPose,
+        // this::setPose,
+        // this::getChassisSpeeds,
+        // this::runVelocity,
+        // new PPHolonomicDriveController(
+        // new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+        // PP_CONFIG,
+        // () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+        // this);
         // Pathfinding.setPathfinder(new LocalADStarAK());
         // PathPlannerLogging.setLogActivePathCallback(
         // (activePath) -> {
@@ -373,7 +174,7 @@ public class CommandSwerveIO {
         // (targetPose) -> {
         // Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
         // });
-
+        //
         // Configure SysId
         sysId = new SysIdRoutine(
                 new SysIdRoutine.Config(
@@ -383,6 +184,7 @@ public class CommandSwerveIO {
                         (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
                 new SysIdRoutine.Mechanism(
                         (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+
     }
 
     @Override
@@ -439,8 +241,7 @@ public class CommandSwerveIO {
         }
 
         // Update gyro alert
-        new Alert("Oh nyo, your gyro has disconnected, i'm falling back to kinematics UwU")
-                .set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+        gyroDisconnectedAlert.set(!gyroInputs.connected && currentMode != Mode.SIM);
     }
 
     /**
@@ -602,6 +403,4 @@ public class CommandSwerveIO {
                 new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
         };
     }
-    // private final Alert gyroDisconnect = new Alert("Oh nyo, your gyro has
-    // disconnected, i'm falling back to kinematics UwU");
 }

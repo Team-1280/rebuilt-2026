@@ -1,5 +1,32 @@
 package frc.robot.advkit;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.drivetrain.CommandSwerveIO;
+import frc.robot.drivetrain.TunerConstants;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.DoubleSupplier;
+
+/**
+ * Provides an interface for asynchronously reading high-frequency measurements
+ * to a set of queues.
+ *
+ * <p>
+ * This version is intended for Phoenix 6 devices on both the RIO and CANivore
+ * buses. When using
+ * a CANivore, the thread uses the "waitForAll" blocking method to enable more
+ * consistent sampling.
+ * This also allows Phoenix Pro users to benefit from lower latency between
+ * devices using CANivore
+ * time synchronization.
+ */
 public class PhoenixOdometry extends Thread {
   private final Lock signalsLock = new ReentrantLock(); // Prevents conflicts when registering signals
   private BaseStatusSignal[] phoenixSignals = new BaseStatusSignal[0];
@@ -9,19 +36,19 @@ public class PhoenixOdometry extends Thread {
   private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 
   private static boolean isCANFD = TunerConstants.kCANBus.isNetworkFD();
-  private static PhoenixOdometryThread instance = null;
+  private static PhoenixOdometry instance = null;
 
-  public static PhoenixOdometryThread getInstance() {
+  public static PhoenixOdometry getInstance() {
     if (instance == null) {
-      instance = new PhoenixOdometryThread();
+      instance = new PhoenixOdometry();
     }
     return instance;
   }
 
-  private PhoenixOdometryThread() {
-            setName("PhoenixOdometryThread");
-            setDaemon(true);
-        }
+  private PhoenixOdometry() {
+    setName("PhoenixOdometryThread");
+    setDaemon(true);
+  }
 
   @Override
   public void start() {
@@ -34,7 +61,7 @@ public class PhoenixOdometry extends Thread {
   public Queue<Double> registerSignal(StatusSignal<Angle> signal) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     signalsLock.lock();
-    odometryLock.lock();
+    CommandSwerveIO.odometryLock.lock();
     try {
       BaseStatusSignal[] newSignals = new BaseStatusSignal[phoenixSignals.length + 1];
       System.arraycopy(phoenixSignals, 0, newSignals, 0, phoenixSignals.length);
@@ -43,7 +70,7 @@ public class PhoenixOdometry extends Thread {
       phoenixQueues.add(queue);
     } finally {
       signalsLock.unlock();
-      odometryLock.unlock();
+      CommandSwerveIO.odometryLock.unlock();
     }
     return queue;
   }
@@ -52,13 +79,13 @@ public class PhoenixOdometry extends Thread {
   public Queue<Double> registerSignal(DoubleSupplier signal) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     signalsLock.lock();
-    odometryLock.lock();
+    CommandSwerveIO.odometryLock.lock();
     try {
       genericSignals.add(signal);
       genericQueues.add(queue);
     } finally {
       signalsLock.unlock();
-      odometryLock.unlock();
+      CommandSwerveIO.odometryLock.unlock();
     }
     return queue;
   }
@@ -66,11 +93,11 @@ public class PhoenixOdometry extends Thread {
   /** Returns a new queue that returns timestamp values for each sample. */
   public Queue<Double> makeTimestampQueue() {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
-    odometryLock.lock();
+    CommandSwerveIO.odometryLock.lock();
     try {
       timestampQueues.add(queue);
     } finally {
-      odometryLock.unlock();
+      CommandSwerveIO.odometryLock.unlock();
     }
     return queue;
   }
@@ -82,12 +109,12 @@ public class PhoenixOdometry extends Thread {
       signalsLock.lock();
       try {
         if (isCANFD && phoenixSignals.length > 0) {
-          BaseStatusSignal.waitForAll(2.0 / ODOMETRY_FREQ, phoenixSignals);
+          BaseStatusSignal.waitForAll(2.0 / CommandSwerveIO.ODOMETRY_FREQ, phoenixSignals);
         } else {
           // "waitForAll" does not support blocking on multiple signals with a bus
           // that is not CAN FD, regardless of Pro licensing. No reasoning for this
           // behavior is provided by the documentation.
-          Thread.sleep((long) (1000.0 / ODOMETRY_FREQ));
+          Thread.sleep((long) (1000.0 / CommandSwerveIO.ODOMETRY_FREQ));
           if (phoenixSignals.length > 0)
             BaseStatusSignal.refreshAll(phoenixSignals);
         }
@@ -98,7 +125,7 @@ public class PhoenixOdometry extends Thread {
       }
 
       // Save new data to queues
-      odometryLock.lock();
+      CommandSwerveIO.odometryLock.lock();
       try {
         // Sample timestamp is current FPGA time minus average CAN latency
         // Default timestamps from Phoenix are NOT compatible with
@@ -123,7 +150,7 @@ public class PhoenixOdometry extends Thread {
           timestampQueues.get(i).offer(timestamp);
         }
       } finally {
-        odometryLock.unlock();
+        CommandSwerveIO.odometryLock.unlock();
       }
     }
   }
