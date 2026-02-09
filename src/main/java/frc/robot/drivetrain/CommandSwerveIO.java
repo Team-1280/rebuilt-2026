@@ -4,6 +4,11 @@ import static edu.wpi.first.units.Unit.*;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -29,9 +34,9 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -42,47 +47,45 @@ import frc.robot.advkit.GyroIO.GyroIOInputsAutoLogged;
 import frc.robot.advkit.Module;
 import frc.robot.advkit.ModuleIO;
 import frc.robot.advkit.PhoenixOdometry;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
-
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
-import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.Pigeon2Configuration;
-import com.ctre.phoenix6.hardware.Pigeon2;
-
 public class CommandSwerveIO extends SubsystemBase {
 
-    public static final double ODOMETRY_FREQ = TunerConstants.kCANBus.isNetworkFD()
-            ? 250.0
-            : 100.0;
+    public static final double ODOMETRY_FREQ =
+        TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
     public static final double DRIVE_BASE_RADIUS = Math.max(
-            Math.max(
-                    Math.hypot(
-                            TunerConstants.FrontLeft.LocationX,
-                            TunerConstants.FrontLeft.LocationY),
-                    Math.hypot(
-                            TunerConstants.FrontRight.LocationX,
-                            TunerConstants.FrontRight.LocationY)),
-            Math.max(
-                    Math.hypot(
-                            TunerConstants.BackLeft.LocationX,
-                            TunerConstants.BackLeft.LocationY),
-                    Math.hypot(
-                            TunerConstants.BackRight.LocationX,
-                            TunerConstants.BackRight.LocationY)));
+        Math.max(
+            Math.hypot(
+                TunerConstants.FrontLeft.LocationX,
+                TunerConstants.FrontLeft.LocationY
+            ),
+            Math.hypot(
+                TunerConstants.FrontRight.LocationX,
+                TunerConstants.FrontRight.LocationY
+            )
+        ),
+        Math.max(
+            Math.hypot(
+                TunerConstants.BackLeft.LocationX,
+                TunerConstants.BackLeft.LocationY
+            ),
+            Math.hypot(
+                TunerConstants.BackRight.LocationX,
+                TunerConstants.BackRight.LocationY
+            )
+        )
+    );
     private static final double DRIVE_MASS_KG = 0x0deadbeef; // TODO:add mass
     private static final double ROBOT_MOI = 6.088;
     private static final double WHEEL_COF = 1.02;
@@ -103,7 +106,9 @@ public class CommandSwerveIO extends SubsystemBase {
     // getModuleTranslations()
     // );
     public static final Mode simMode = Mode.SIM;
-    public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
+    public static final Mode currentMode = RobotBase.isReal()
+        ? Mode.REAL
+        : simMode;
 
     public static enum Mode {
         /** Running on a real robot. */
@@ -113,35 +118,45 @@ public class CommandSwerveIO extends SubsystemBase {
         SIM,
 
         /** Replaying from a log file. */
-        REPLAY
+        REPLAY,
     }
 
     public static final Lock odometryLock = new ReentrantLock();
     private final GyroIO gyroIO;
-    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+    private final GyroIOInputsAutoLogged gyroInputs =
+        new GyroIOInputsAutoLogged();
     private final Module[] modules = new Module[4]; // FL, FR, BL(Yaoi), BR
     private final SysIdRoutine sysId;
-    private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+    private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
+        getModuleTranslations()
+    );
     private Rotation2d rawGyroRotation = Rotation2d.kZero;
     private SwerveModulePosition[] lastModulePositions = // For delta tracking
-            new SwerveModulePosition[] {
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition()
-            };
-    private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
-            lastModulePositions, Pose2d.kZero);
+        new SwerveModulePosition[] {
+            new SwerveModulePosition(),
+            new SwerveModulePosition(),
+            new SwerveModulePosition(),
+            new SwerveModulePosition(),
+        };
+    private SwerveDrivePoseEstimator poseEstimator =
+        new SwerveDrivePoseEstimator(
+            kinematics,
+            rawGyroRotation,
+            lastModulePositions,
+            Pose2d.kZero
+        );
     private final Alert gyroDisconnectedAlert = new Alert(
-            "oh nyo ur gyro is disconnected, falling back to raw kinematics UwU",
-            AlertType.kError);
+        "oh nyo ur gyro is disconnected, falling back to raw kinematics UwU",
+        AlertType.kError
+    );
 
     public CommandSwerveIO(
-            GyroIO gyroIO,
-            ModuleIO flModuleIO,
-            ModuleIO frModuleIO,
-            ModuleIO blModuleIO,
-            ModuleIO brModuleIO) {
+        GyroIO gyroIO,
+        ModuleIO flModuleIO,
+        ModuleIO frModuleIO,
+        ModuleIO blModuleIO,
+        ModuleIO brModuleIO
+    ) {
         this.gyroIO = gyroIO;
         modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft);
         modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
@@ -149,7 +164,10 @@ public class CommandSwerveIO extends SubsystemBase {
         modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight);
 
         // Usage reporting for swerve template
-        HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
+        HAL.report(
+            tResourceType.kResourceType_RobotDrive,
+            tInstances.kRobotDriveSwerve_AdvantageKit
+        );
         // Start odometry thread
         PhoenixOdometry.getInstance().start();
 
@@ -177,14 +195,15 @@ public class CommandSwerveIO extends SubsystemBase {
         //
         // Configure SysId
         sysId = new SysIdRoutine(
-                new SysIdRoutine.Config(
-                        null,
-                        null,
-                        null,
-                        (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-                new SysIdRoutine.Mechanism(
-                        (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
-
+            new SysIdRoutine.Config(null, null, null, state ->
+                Logger.recordOutput("Drive/SysIdState", state.toString())
+            ),
+            new SysIdRoutine.Mechanism(
+                voltage -> runCharacterization(voltage.in(Volts)),
+                null,
+                this
+            )
+        );
     }
 
     @Override
@@ -206,8 +225,14 @@ public class CommandSwerveIO extends SubsystemBase {
 
         // Log empty setpoint states when disabled
         if (DriverStation.isDisabled()) {
-            Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
-            Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+            Logger.recordOutput(
+                "SwerveStates/Setpoints",
+                new SwerveModuleState[] {}
+            );
+            Logger.recordOutput(
+                "SwerveStates/SetpointsOptimized",
+                new SwerveModuleState[] {}
+            );
         }
 
         // Update odometry
@@ -215,14 +240,17 @@ public class CommandSwerveIO extends SubsystemBase {
         int sampleCount = sampleTimestamps.length;
         for (int i = 0; i < sampleCount; i++) {
             // Read wheel positions and deltas from each module
-            SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
+            SwerveModulePosition[] modulePositions =
+                new SwerveModulePosition[4];
             SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
             for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-                modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
+                modulePositions[moduleIndex] =
+                    modules[moduleIndex].getOdometryPositions()[i];
                 moduleDeltas[moduleIndex] = new SwerveModulePosition(
-                        modulePositions[moduleIndex].distanceMeters
-                                - lastModulePositions[moduleIndex].distanceMeters,
-                        modulePositions[moduleIndex].angle);
+                    modulePositions[moduleIndex].distanceMeters -
+                        lastModulePositions[moduleIndex].distanceMeters,
+                    modulePositions[moduleIndex].angle
+                );
                 lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
             }
 
@@ -233,15 +261,23 @@ public class CommandSwerveIO extends SubsystemBase {
             } else {
                 // Use the angle delta from the kinematics and module deltas
                 Twist2d twist = kinematics.toTwist2d(moduleDeltas);
-                rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+                rawGyroRotation = rawGyroRotation.plus(
+                    new Rotation2d(twist.dtheta)
+                );
             }
 
             // Apply update
-            poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+            poseEstimator.updateWithTime(
+                sampleTimestamps[i],
+                rawGyroRotation,
+                modulePositions
+            );
         }
 
         // Update gyro alert
-        gyroDisconnectedAlert.set(!gyroInputs.connected && currentMode != Mode.SIM);
+        gyroDisconnectedAlert.set(
+            !gyroInputs.connected && currentMode != Mode.SIM
+        );
     }
 
     /**
@@ -252,8 +288,13 @@ public class CommandSwerveIO extends SubsystemBase {
     public void runVelocity(ChassisSpeeds speeds) {
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
-        SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
+        SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(
+            discreteSpeeds
+        );
+        SwerveDriveKinematics.desaturateWheelSpeeds(
+            setpointStates,
+            TunerConstants.kSpeedAt12Volts
+        );
 
         // Log unoptimized setpoints and setpoint speeds
         Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
@@ -298,13 +339,15 @@ public class CommandSwerveIO extends SubsystemBase {
     /** Returns a command to run a quasistatic test in the specified direction. */
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
         return run(() -> runCharacterization(0.0))
-                .withTimeout(1.0)
-                .andThen(sysId.quasistatic(direction));
+            .withTimeout(1.0)
+            .andThen(sysId.quasistatic(direction));
     }
 
     /** Returns a command to run a dynamic test in the specified direction. */
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.dynamic(direction));
+        return run(() -> runCharacterization(0.0))
+            .withTimeout(1.0)
+            .andThen(sysId.dynamic(direction));
     }
 
     /**
@@ -372,16 +415,24 @@ public class CommandSwerveIO extends SubsystemBase {
 
     /** Resets the current odometry pose. */
     public void setPose(Pose2d pose) {
-        poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+        poseEstimator.resetPosition(
+            rawGyroRotation,
+            getModulePositions(),
+            pose
+        );
     }
 
     /** Adds a new timestamped vision measurement. */
     public void addVisionMeasurement(
-            Pose2d visionRobotPoseMeters,
-            double timestampSeconds,
-            Matrix<N3, N1> visionMeasurementStdDevs) {
+        Pose2d visionRobotPoseMeters,
+        double timestampSeconds,
+        Matrix<N3, N1> visionMeasurementStdDevs
+    ) {
         poseEstimator.addVisionMeasurement(
-                visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+            visionRobotPoseMeters,
+            timestampSeconds,
+            visionMeasurementStdDevs
+        );
     }
 
     /** Returns the maximum linear speed in meters per sec. */
@@ -397,10 +448,22 @@ public class CommandSwerveIO extends SubsystemBase {
     /** Returns an array of module translations. */
     public static Translation2d[] getModuleTranslations() {
         return new Translation2d[] {
-                new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
-                new Translation2d(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY),
-                new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
-                new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
+            new Translation2d(
+                TunerConstants.FrontLeft.LocationX,
+                TunerConstants.FrontLeft.LocationY
+            ),
+            new Translation2d(
+                TunerConstants.FrontRight.LocationX,
+                TunerConstants.FrontRight.LocationY
+            ),
+            new Translation2d(
+                TunerConstants.BackLeft.LocationX,
+                TunerConstants.BackLeft.LocationY
+            ),
+            new Translation2d(
+                TunerConstants.BackRight.LocationX,
+                TunerConstants.BackRight.LocationY
+            ),
         };
     }
 }
