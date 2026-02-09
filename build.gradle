@@ -1,6 +1,7 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.2.1"
+    id("com.diffplug.spotless") version "8.2.1"
 }
 
 java {
@@ -40,6 +41,12 @@ deploy {
         }
     }
 }
+spotless {
+    java {
+        googleJavaFormat().aosp()
+    }
+}
+
 def deployArtifact = deploy.targets.roborio.artifacts.frcJava
 
 // Set to true to use debug for all targets including JNI, which will drastically impact
