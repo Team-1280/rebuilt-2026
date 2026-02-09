@@ -8,6 +8,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 public class Camera {
@@ -29,38 +30,25 @@ public class Camera {
     }
 
     /**
-     * Updates the camera and returns an estimated robot pose if available. Should be called
-     * periodically.
+     * Updates the camera and returns estimated robot poses from the latest unread results. Should
+     * be called periodically.
      *
-     * @return The latest estimated robot pose from the results, if available
+     * @return The latest estimated robot poses from the results, if available
      */
-    public Optional<EstimatedRobotPose> update() {
-        Optional<EstimatedRobotPose> bestEstimate = Optional.empty();
-        double bestScore = Double.POSITIVE_INFINITY;
-
+    public ArrayList<EstimatedRobotPose> update() {
+        ArrayList<EstimatedRobotPose> estimatedPoses = new ArrayList<>();
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
             if (!shouldUseResult(result)) {
                 continue;
             }
-
             Optional<EstimatedRobotPose> estimate =
                     poseEstimator.estimateAverageBestTargetsPose(result);
-
             if (estimate.isEmpty()) {
                 continue;
             }
-
-            double ambiguity = result.getBestTarget().getPoseAmbiguity();
-            double targetArea = result.getBestTarget().getArea();
-            double score = ambiguity - (0.01 * targetArea);
-
-            if (score < bestScore) {
-                bestScore = score;
-                bestEstimate = estimate;
-            }
+            estimatedPoses.add(estimate.get());
         }
-
-        return bestEstimate;
+        return estimatedPoses;
     }
 
     /**
