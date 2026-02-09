@@ -12,28 +12,27 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ShooterSubsystem extends SubsystemBase {
-    private final TalonFX leaderShooterMotor = new TalonFX(ShooterConst.RIGHT_MOTOR_ID);
-    private final TalonFX followerShooterMotor = new TalonFX(ShooterConst.LEFT_MOTOR_ID);
+    private final TalonFX rightLeaderMotor = new TalonFX(ShooterConst.RIGHT_LEADER_MOTOR_ID);
+    private final TalonFX leftFollowerMotor = new TalonFX(ShooterConst.LEFT_FOLLOWER_MOTOR_ID);
 
     public ShooterSubsystem() {
-        leaderShooterMotor.getConfigurator().apply(ShooterConfig.shooterMotorConfig);
-        followerShooterMotor.getConfigurator().apply(ShooterConfig.shooterMotorConfig);
-        followerShooterMotor.setControl(
-                new Follower(
-                        leaderShooterMotor.getDeviceID(),
-                        MotorAlignmentValue.Opposed)); // follower is opposite orientation of leader
+        rightLeaderMotor.getConfigurator().apply(ShooterConfig.motorConfig);
+        leftFollowerMotor.getConfigurator().apply(ShooterConfig.motorConfig);
+        // Set the follower motor to follow the leader motor output but in the opposite direction
+        leftFollowerMotor.setControl(
+                new Follower(rightLeaderMotor.getDeviceID(), MotorAlignmentValue.Opposed));
     }
 
     public void setAngularVelocity(AngularVelocity angularVelocity) {
-        leaderShooterMotor.setControl(new MotionMagicVelocityVoltage(angularVelocity));
+        rightLeaderMotor.setControl(new MotionMagicVelocityVoltage(angularVelocity));
     }
 
     public AngularVelocity getAngularVelocity() {
-        return leaderShooterMotor.getVelocity().getValue();
+        return rightLeaderMotor.getVelocity().getValue();
     }
 
     public void stop() {
-        leaderShooterMotor.stopMotor();
+        rightLeaderMotor.stopMotor();
     }
 
     @Override
