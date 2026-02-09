@@ -64,6 +64,9 @@
   },
   "java.format.settings.google.extra": "--aosp", // For 4 space indentation
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit", // For auto-importing on save
+  },
 
   "redhat.telemetry.enabled": false,
 
