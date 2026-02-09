@@ -2,14 +2,12 @@ package frc.robot.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Transform3d;
-
+import java.util.ArrayList;
+import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
-
-import java.util.ArrayList;
-import java.util.Optional;
 
 public class Camera {
     private final PhotonCamera camera;

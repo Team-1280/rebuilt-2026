@@ -25,18 +25,15 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
 import frc.robot.advkit.GyroIO;
 import frc.robot.advkit.GyroIO.GyroIOInputsAutoLogged;
 import frc.robot.advkit.Module;
 import frc.robot.advkit.ModuleIO;
 import frc.robot.advkit.PhoenixOdometry;
-
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
-
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class CommandSwerveIO extends SubsystemBase {
 

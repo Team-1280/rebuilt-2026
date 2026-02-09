@@ -7,10 +7,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
-
-import org.littletonrobotics.junction.Logger;
-
 import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * OdometryDrivetrain extends the base swerve drivetrain with logic that dynamically determines how
