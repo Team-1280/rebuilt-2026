@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -18,10 +19,11 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
-import frc.robot.drivetrain.CommandSwerveIO;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.vision.VisionSubsystem;
+
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -33,18 +35,14 @@ public class Robot extends LoggedRobot implements Sendable {
 
     private final Pigeon2 pigeon = new Pigeon2(26); // Also in TunerConstants.kPigeonId
 
-    private final CommandSwerveDrivetrain drivetrain = new OdometryDrivetrain(
-        () ->
-            pigeon.getAngularVelocityZDevice().getValue().in(RadiansPerSecond),
-        () -> 0.0 // TODO: slip ratio supplier
-    );
-    private final VisionSubsystem vision = new VisionSubsystem(
-        drivetrain::addVisionMeasurement
-    );
+    private final CommandSwerveDrivetrain drivetrain =
+            new OdometryDrivetrain(
+                    () -> pigeon.getAngularVelocityZDevice().getValue().in(RadiansPerSecond),
+                    () -> 0.0 // TODO: slip ratio supplier
+                    );
+    private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
 
-    private final CommandXboxController controller = new CommandXboxController(
-        0
-    ); // TODO
+    private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
     private final Field2d field = new Field2d();
 
@@ -66,9 +64,7 @@ public class Robot extends LoggedRobot implements Sendable {
             // Read replay log
             Logger.setReplaySource(new WPILOGReader(logPath));
             // Save outputs to a new log
-            Logger.addDataReceiver(
-                new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim"))
-            );
+            Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
         }
         // Start logging! No more data receivers, replay sources, or metadata values may
         // be added.
@@ -86,26 +82,22 @@ public class Robot extends LoggedRobot implements Sendable {
         double speed = MetersPerSecond.of(1.60).in(MetersPerSecond);
         double angularSpeed = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
         final SwerveRequest.FieldCentric driveRequest =
-            new SwerveRequest.FieldCentric()
-                .withDeadband(speed * 0.1)
-                .withRotationalDeadband(angularSpeed * 0.1)
-                .withDriveRequestType(DriveRequestType.Velocity);
+                new SwerveRequest.FieldCentric()
+                        .withDeadband(speed * 0.1)
+                        .withRotationalDeadband(angularSpeed * 0.1)
+                        .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
-            drivetrain.applyRequest(() ->
-                driveRequest
-                    .withVelocityX(-controller.getLeftY() * speed)
-                    .withVelocityY(-controller.getLeftX() * speed)
-                    .withRotationalRate(-controller.getRightX() * angularSpeed)
-            )
-        );
+                drivetrain.applyRequest(
+                        () ->
+                                driveRequest
+                                        .withVelocityX(-controller.getLeftY() * speed)
+                                        .withVelocityY(-controller.getLeftX() * speed)
+                                        .withRotationalRate(
+                                                -controller.getRightX() * angularSpeed)));
 
         controller
-            .rightStick()
-            .onTrue(
-                drivetrain.runOnce(() ->
-                    drivetrain.resetRotation(Rotation2d.kZero)
-                )
-            );
+                .rightStick()
+                .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
     }
 
     @Override
@@ -149,15 +141,8 @@ public class Robot extends LoggedRobot implements Sendable {
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        builder.addStringProperty("robot pose", () -> drivetrain.getState().Pose.toString(), null);
         builder.addStringProperty(
-            "robot pose",
-            () -> drivetrain.getState().Pose.toString(),
-            null
-        );
-        builder.addStringProperty(
-            "robot speeds",
-            () -> drivetrain.getState().Speeds.toString(),
-            null
-        );
+                "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
     }
 }
