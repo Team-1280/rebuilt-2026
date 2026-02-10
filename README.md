@@ -1,5 +1,9 @@
 # REBUILT 2026
 
+## Contributing, Conforming and Terms
+
+Visit [Contributing.md](./CONTRIBUTING.md)
+
 ## Design Doc
 At this [Google Doc](https://docs.google.com/document/d/1LHVBFvE4I9V1lK-kII-BY99baFRJSkxOhEw3NQdT6d4/edit?usp=sharing).
 
@@ -70,6 +74,10 @@ These only go by angles; avoid pressing more than one button at once.
 - https://hal7df.github.io/pauls-tutorials/wpi/ch2/user-input.html
 - https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
 - https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html#joystick-and-controller-coordinate-system
+
+## Generated, Templated, and Imported Code
+- `TunerConstants.java` is entirely auto-generated
+- `CommandSwerveDrivetrain` is entirely from a template
 
 ## Attribution
 AI (GitHub Copilot) may sometimes be used for autocomplete (e.g. writing specific lines and writing documentation).
