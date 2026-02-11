@@ -74,5 +74,6 @@
 
   "redhat.telemetry.enabled": false,
 
-  "wpilib.skipSelectSimulateExtension": true
+  "wpilib.skipSelectSimulateExtension": true,
+  "java.compile.nullAnalysis.mode": "disabled"
 }

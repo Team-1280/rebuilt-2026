@@ -1,5 +1,8 @@
 # REBUILT 2026
 
+##
+execute `gradlew spotlessApply` to fix formatting
+
 ## Contributing, Conforming and Terms
 
 Visit [Contributing.md](./CONTRIBUTING.md)
