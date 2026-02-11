@@ -3,6 +3,7 @@
 
 ./.bloop
 ./.metals
+./.vscode
 
 ### C++ ###
 # Prerequisites

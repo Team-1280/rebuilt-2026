@@ -11,7 +11,11 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -42,6 +46,8 @@ public class Robot extends LoggedRobot implements Sendable {
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
     private final Field2d field = new Field2d();
+    StructPublisher<Pose2d> posePublisher =
+            NetworkTableInstance.getDefault().getStructTopic("Robot Pose", Pose2d.struct).publish();
 
     public Robot() {
         initLogger(); // must happen first
@@ -71,6 +77,7 @@ public class Robot extends LoggedRobot implements Sendable {
     private void initDashboard() {
         SmartDashboard.putData("Robot", this);
         SmartDashboard.putData("Field", field);
+        posePublisher.set(Pose2d.kZero);
         SmartDashboard.putData("Vision", vision);
     }
 
@@ -104,6 +111,7 @@ public class Robot extends LoggedRobot implements Sendable {
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
         field.setRobotPose(drivetrain.getState().Pose);
+        posePublisher.set(drivetrain.getState().Pose);
     }
 
     @Override
