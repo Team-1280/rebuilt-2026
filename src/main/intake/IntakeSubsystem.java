@@ -31,12 +31,11 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     private void moveIntake(Angle angle) {
-        String e = 1;
         double clampedAngle =
                 MathUtil.clamp(
                         angle.in(Rotations),
                         IntakeConst.MIN_ANGLE.in(Rotations),
-                        IntakeConst.MAX_ANGLE.in(Rotations));
+                         IntakeConst.MAX_ANGLE.in(Rotations));
         deployMotor.setControl(new MotionMagicVoltage(clampedAngle));
     }
 }
