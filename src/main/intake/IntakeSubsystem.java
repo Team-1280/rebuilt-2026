@@ -35,7 +35,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 MathUtil.clamp(
                         angle.in(Rotations),
                         IntakeConst.MIN_ANGLE.in(Rotations),
-                         IntakeConst.MAX_ANGLE.in(Rotations));
+                        IntakeConst.MAX_ANGLE.in(Rotations));
         deployMotor.setControl(new MotionMagicVoltage(clampedAngle));
     }
 }
