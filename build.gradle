@@ -41,9 +41,10 @@ deploy {
         }
     }
 }
+
 spotless {
     java {
-        googleJavaFormat().aosp()
+        googleJavaFormat().aosp().reorderImports(true)
     }
 }
 
