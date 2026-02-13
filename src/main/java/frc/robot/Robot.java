@@ -10,13 +10,16 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -27,12 +30,14 @@ import frc.robot.vision.VisionSubsystem;
 public class Robot extends TimedRobot implements Sendable {
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
+    private final SendableChooser<Command> autoChooser;
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
     private final Field2d field = new Field2d();
 
     public Robot() {
+        autoChooser = AutoBuilder.buildAutoChooser();
         initDashboard();
         initBindings();
     }
@@ -40,6 +45,7 @@ public class Robot extends TimedRobot implements Sendable {
     private void initDashboard() {
         SmartDashboard.putData("Robot", this);
         SmartDashboard.putData("Field", field);
+        SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
     private void initBindings() {
@@ -103,6 +109,10 @@ public class Robot extends TimedRobot implements Sendable {
 
     @Override
     public void simulationPeriodic() {}
+
+    public Command getAutonomousCommand() {
+        return autoChooser.getSelected();
+    }
 
     @Override
     public void initSendable(SendableBuilder builder) {
