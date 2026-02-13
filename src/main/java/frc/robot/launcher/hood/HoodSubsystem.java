@@ -1,5 +1,6 @@
 package frc.robot.launcher.hood;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -38,8 +39,8 @@ public class HoodSubsystem extends SubsystemBase {
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty(
-                "pitch rotations",
-                () -> getPitch().in(Rotations),
-                (pitch) -> movePitch(Rotations.of(pitch)));
+                "pitch (deg)",
+                () -> getPitch().in(Degrees),
+                (pitch) -> movePitch(Degrees.of(pitch)));
     }
 }
