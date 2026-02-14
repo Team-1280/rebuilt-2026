@@ -85,7 +85,7 @@ public class Robot extends TimedRobot implements Sendable {
         Command scheduledAutonomousCommand = getAutonomousCommand();
 
     if (scheduledAutonomousCommand != null) {
-      scheduledAutonomousCommand.schedule();
+      CommandScheduler.getInstance().schedule(scheduledAutonomousCommand);
       SmartDashboard.putData(scheduledAutonomousCommand);
     }
     }
