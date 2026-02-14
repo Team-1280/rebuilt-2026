@@ -1,3 +1,7 @@
+---
+author: Anthony Le
+---
+
 # REBUILT Trajectory Calculations
 Calculations for launching fuel projectiles for the 2026 FIRST Robotics Competition: REBUILT.
 
@@ -16,6 +20,7 @@ Decent physics skills are needed to derive many of the equations.
 For the last part of calculations involving rotations, which is more separate and not important to the trajectory calculations, matrix-like transformations are needed, but all definitions will be listed.
 
 Topics:
+
 - Trigonometry, inverse trigonometry
 - Vector algebra
 - Algebra
@@ -66,6 +71,7 @@ The robot coordinate system, abbreviated **RCS**, is relative to the robot. Vect
 
 #### Greek Letters
 Names of Greek letters that will be used as variables.
+
 - $\alpha$: alpha (lowercase)
 - $\theta$: theta (lowercase)
 - $\phi$: phi (lowercase)
@@ -74,26 +80,26 @@ Names of Greek letters that will be used as variables.
 
 #### Symbols
 The $\coloneqq$ (colon equals) symbol means assignment or definition, "is defined as"; true by definition, rather than a result or equality. (It has the same effect as $=$.)
-```math
+$$
 x\coloneqq(\text{distance})
-```
+$$
 
 The $\implies$ arrow means "implies", "it follows"; deduction, algebra.
-```math
+$$
 x=y^3\implies y=\sqrt[3]{x}
-```
+$$
 $\iff$ is the same but it implies in both directions. It may be used when the reverse deduction is necessary or emphasized.
 
 The $\hookrightarrow$ arrow shall mean that the equation is derived from intuition or physics, rather than derived algebraically from another equation.
-```math
+$$
 \hookrightarrow F_{net}=F_T-mg\sin\theta
-```
+$$
 
 $\in$ means "in" or "is a member of" and is used to say what set of numbers a value is in. \
 $\mathbb{R}$ is the set of all real numbers. $\mathbb{R}^+$ is the set of all positive real numbers.
-```math
+$$
 t\in\mathbb{R}^+\iff(t>0\text{ and }t\text{ is real})
-```
+$$
 
 $\text{atan2}(y,x)$ is a variant of $\arctan(y/x)$ that takes two separate numbers. The difference is that $\text{atan2}$ can give angles in any of the four quadrants of the 2D plane, while $\arctan$ can only give angles in the rightmost two quadrants.
 
@@ -110,21 +116,25 @@ For a 3D vector $\vec{v}_{xyz}$, define $\vec{v}_{xy}$ as the 2D horizontal vect
 A *unit vector* is a vector with magnitude $1$. They have a hat on top instead of an arrow, e.g. $\hat{w}$.
 
 Basic vector arithmetic:
-```math
-c\vec{A}=\vec{A}c=\langle cA_x,\,cA_y,\,\ldots\rangle \\
-\vec{A}\pm\vec{B}=\langle A_x\pm B_x,\,A_y\pm B_y,\,\ldots\rangle
-```
+$$
+\begin{gather*}
+    c\vec{A}=\vec{A}c=\langle cA_x,\,cA_y,\,\ldots\rangle \\
+    \vec{A}\pm\vec{B}=\langle A_x\pm B_x,\,A_y\pm B_y,\,\ldots\rangle \\
+\end{gather*}
+$$
 More vector properties and operations:
-```math
-\lVert \vec{A} \rVert\coloneqq(\text{magnitude of vector})=\sqrt{A_x^2+A_y^2+\ldots} \\
-\angle\vec{A}_{xy}\coloneqq(\text{angle }\vec{A}\text{ makes with x+ axis})=\text{atan2}(A_y,A_x) \\
-\vec{0}\coloneqq(\text{zero vector})=\langle0,0,\ldots\rangle \\
-\vec{A}\cdot\vec{B}\coloneqq(\text{dot product})=A_xB_x+A_yB_y+\ldots=\lVert\vec{A}\rVert\lVert\vec{B}\rVert\cos\theta \\
-\implies\vec{A}\cdot\vec{A}=A_x^2+A_y^2+\ldots=\lVert \vec{A} \rVert^2 \\
-\vec{A}_{xy}\times\vec{B}_{xy}\coloneqq(\text{2D scalar cross product})=A_xB_y-A_yB_x=\lVert\vec{A}\rVert\lVert\vec{B}\rVert\sin\theta \\
-\vec{A}=\vec{B}\implies\lVert\vec{A}\rVert=\lVert\vec{B}\rVert \\
-\vec{A}_{xy}=\lVert\vec{A}\rVert\langle\cos\angle\vec{A},\sin\angle\vec{A}\rangle \\
-```
+$$
+\begin{gather*}
+    \lVert \vec{A} \rVert\coloneqq(\text{magnitude of vector})=\sqrt{A_x^2+A_y^2+\ldots} \\
+    \angle\vec{A}_{xy}\coloneqq(\text{angle }\vec{A}\text{ makes with x+ axis})=\text{atan2}(A_y,A_x) \\
+    \vec{0}\coloneqq(\text{zero vector})=\langle0,0,\ldots\rangle \\
+    \vec{A}\cdot\vec{B}\coloneqq(\text{dot product})=A_xB_x+A_yB_y+\ldots=\lVert\vec{A}\rVert\lVert\vec{B}\rVert\cos\theta \\
+    \implies\vec{A}\cdot\vec{A}=A_x^2+A_y^2+\ldots=\lVert \vec{A} \rVert^2 \\
+    \vec{A}_{xy}\times\vec{B}_{xy}\coloneqq(\text{2D scalar cross product})=A_xB_y-A_yB_x=\lVert\vec{A}\rVert\lVert\vec{B}\rVert\sin\theta \\
+    \vec{A}=\vec{B}\implies\lVert\vec{A}\rVert=\lVert\vec{B}\rVert \\
+    \vec{A}_{xy}=\lVert\vec{A}\rVert\langle\cos\angle\vec{A},\sin\angle\vec{A}\rangle \\
+\end{gather*}
+$$
 
 ### Rotations
 This section can be skipped if necessary as these skills aren't important in the primary trajectory calculations.
@@ -133,18 +143,20 @@ An $\boldsymbol{R}$ denotes a rotation (either 2D or 3D). \
 Internally and mathematically, they are represented either as transformation matrices or quaternions.
 
 These can transform vectors and other rotations via multiplication. The rotation $\boldsymbol{R}$ is *applied* to the other object.
-```math
-\boldsymbol{R}\vec{v}=\vec{v}' \\
-\boldsymbol{R}_2\boldsymbol{R}_1=\boldsymbol{R}_1'
-```
+$$
+\begin{gather*}
+    \boldsymbol{R}\vec{v}=\vec{v}' \\
+    \boldsymbol{R}_2\boldsymbol{R}_1=\boldsymbol{R}_1' \\
+\end{gather*}
+$$
 
 $\boldsymbol{R}(a)$ is a 2D rotation with angle $a$.
 
 $\boldsymbol{R}(a,b,c)$ is a 3D rotation with roll $a$, pitch $b$, yaw $c$. \
 The following functions will be defined to access the individual angles:
-```math
+$$
 \text{roll}(\boldsymbol{R})=a,\,\text{pitch}(\boldsymbol{R})=b,\,\text{yaw}(\boldsymbol{R})=c
-```
+$$
 (Yaw is turning side to side, pitch is turning up and down, roll is rotating around while keeping same direction.)
 
 #### Properties
@@ -154,20 +166,22 @@ The *forward vector* of $\boldsymbol{R}$ is a unit vector pointing in the direct
 
 Objects that aren't rotated face in the $+x$ axis. \
 Let:
-```math
-\hat{i}\coloneqq(\text{unit forward vector for }\boldsymbol{R}(0,0,0)\,)=\langle1,0,0\rangle \\
-\boldsymbol{R}\hat{i}=(\text{unit vector for }\boldsymbol{R})
-```
+$$
+\begin{gather*}
+    \hat{i}\coloneqq(\text{unit forward vector for }\boldsymbol{R}(0,0,0)\,)=\langle1,0,0\rangle \\
+    \boldsymbol{R}\hat{i}=(\text{unit vector for }\boldsymbol{R})
+\end{gather*}
+$$
 
 Forward vector for 2D rotation:
-```math
+$$
 \boldsymbol{R}(a)\hat{i}=\langle \cos a,\sin a \rangle
-```
+$$
 
 Forward vector for 3D rotation:
-```math
+$$
 \boldsymbol{R}(a,b,c)\hat{i}=\langle \cos b\cos c,\cos b\sin c,-\sin b \rangle
-```
+$$
 Notice that there is no roll $a$ in the forward vector: this is because roll simply rotates the vector around in-place as if the vector arrow tip was a propeller, without changing its direction.
 
 ##### Pitch Direction
@@ -185,10 +199,12 @@ Let $\boldsymbol{R}^{-1}$ be the inverse rotation of $\boldsymbol{R}$. \
 Then, $\boldsymbol{R}^{-1}\boldsymbol{R}=\boldsymbol{R}\boldsymbol{R}^{-1}=\boldsymbol{I}$.
 
 Rotation multiplication follows the associative property:
-```math
-(\boldsymbol{R}_1\boldsymbol{R}_2)\boldsymbol{R}_3=\boldsymbol{R}_1(\boldsymbol{R}_2\boldsymbol{R}_3) \\
-(\boldsymbol{R}_1\boldsymbol{R}_2)\vec{v}=\boldsymbol{R}_1(\boldsymbol{R}_2\vec{v})
-```
+$$
+\begin{gather*}
+    (\boldsymbol{R}_1\boldsymbol{R}_2)\boldsymbol{R}_3=\boldsymbol{R}_1(\boldsymbol{R}_2\boldsymbol{R}_3) \\
+    (\boldsymbol{R}_1\boldsymbol{R}_2)\vec{v}=\boldsymbol{R}_1(\boldsymbol{R}_2\vec{v}) \\
+\end{gather*}
+$$
 
 3D rotations do NOT follow the commutative property in general:
 $$\boldsymbol{R}_1\boldsymbol{R}_2\ne\boldsymbol{R}_2\boldsymbol{R}_1$$
@@ -197,21 +213,25 @@ $$\boldsymbol{R}_1\boldsymbol{R}_2\ne\boldsymbol{R}_2\boldsymbol{R}_1$$
 We will use simple equations that describe how position, velocity, and acceleration are related.
 
 For constant velocity:
-```math
-x=vt \\
-v=\frac{x}{t}\\
-```
+$$
+\begin{gather*}
+    x=vt \\
+    v=\frac{x}{t} \\
+\end{gather*}
+$$
 
 For constant acceleration:
-```math
-v=at \\
-a=\frac{v}{t} \\
-```
+$$
+\begin{gather*}
+    v=at \\
+    a=\frac{v}{t} \\
+\end{gather*}
+$$
 
 Kinematics motion equation, for constant acceleration, where $v_0$ is initial velocity:
-```math
+$$
 x=v_0t+\frac{1}{2}at^2
-```
+$$
 
 ## Variables
 This specific projectile launch problem will now be described.
@@ -222,7 +242,7 @@ Try to remember all of the variable symbols.
 
 ### Givens
 These are the given (always known) variables that are used to calculate the unknowns.
-```math
+$$
 \begin{align*}
     &\vec{P}_{xyz}\coloneqq(\text{robot position}) \\
     &\vec{V}_{xy}\coloneqq(\text{robot velocity}) \\
@@ -231,33 +251,35 @@ These are the given (always known) variables that are used to calculate the unkn
     &\vec{Q}_{xyz}\coloneqq(\text{launcher position, RCS}) \\
     &g\coloneqq(\text{gravitational acceleration constant})\approx9.8m/s^2 \\
 \end{align*}
-```
+$$
 
 ### Unknowns
 These are the unknown (controllable) variables that must be determined.
-```math
+$$
 \begin{align*}
     &\theta\coloneqq(\text{launcher pitch, FCS}) \\
     &\alpha\coloneqq(\text{launcher yaw, FCS}) \\
     &u\coloneqq(\text{projectile exit speed}) \\
 \end{align*}
-```
+$$
 The projectile exit speed is actually a function of both the flywheel angular speed and the launcher pitch, due to the launching mechanism. Define $U$ as this function.
-```math
-\omega\coloneqq(\text{flywheel angular speed}) \\
-u\coloneqq U(\omega,\theta) \\
-```
+$$
+\begin{gather*}
+    \omega\coloneqq(\text{flywheel angular speed}) \\
+    u\coloneqq U(\omega,\theta) \\
+\end{gather*}
+$$
 Additionally, time of flight is an important derived unknown that appears in the calculations.
-```math
+$$
 t\coloneqq(\text{time of flight})
-```
+$$
 The launch angles must be converted to RCS for the final result.
-```math
+$$
 \begin{align*}
     &\theta_r\coloneqq(\text{launcher pitch, RCS}) \\
     &\alpha_r\coloneqq(\text{launcher yaw, RCS}) \\
 \end{align*}
-```
+$$
 The two "core" unknowns are $\theta$ and $u$, while $\alpha$ and $t$ are usually derived unknowns. ($\alpha_r$ and $\theta_r$ are directly derived.)
 
 ### Notes
@@ -289,44 +311,40 @@ Set up some common and useful definitions for convenience.
 ### Displacement
 Many of the given parameters are primarily just used to calculate the known displacement (muzzle) from the projectile exit point to the target.
 
-```math
+$$
 \vec{S}_{xyz}\coloneqq(\text{target displacement})
-```
-```math
+$$
+$$
 \begin{align*}
     &\vec{M}_{xyz}\coloneqq(\text{muzzle position, FCS})=\vec{P}+\boldsymbol{R}_R\vec{Q} \\
     &\vec{S}=\vec{T}-\vec{M} \\
+    &(\text{substitute for }\vec{M})\implies\vec{S}=\vec{T}-(\vec{P}+\boldsymbol{R}_R\vec{Q})
 \end{align*}
-```
-```math
-(\text{substitute for }\vec{M})\implies\vec{S}=\vec{T}-(\vec{P}+\boldsymbol{R}_R\vec{Q})
-```
+$$
 (Note that there are operations available in code for applying the robot pose to the launcher position as a change of reference frame.)
 
 ### Exit Velocity
 The initial exit velocity $\vec{v}$ is the launch vector with magnitude $u$ at angles $\theta$ and $\alpha$, plus the contributing robot velocity. It is unknown. \
 Also define $\hat{w}$ as the unit launch direction (ignoring $\vec{V}$), which is the forward vector of the rotation from the launch angles.
-```math
+$$
 \begin{align*}
     &\hat{w}\coloneqq(\text{unit launch direction, FCS})\coloneqq\boldsymbol{R}(0,-\theta,\alpha)\hat{i} \\
     (\text{forward vector})\implies&\hat{w}=\langle\cos\theta\cos\alpha,\cos\theta\sin\alpha,\sin\theta\rangle \\
     &\vec{v}_{xyz}\coloneqq(\text{projectile exit velocity at muzzle, FCS})=u\hat{w}+\vec{V} \\
 \end{align*}
-```
-```math
 \begin{align*}
     &v_x=u\cos\theta\cos\alpha+V_x \\
     &v_y=u\cos\theta\sin\alpha+V_y \\
     &v_z=u\sin\theta \\
 \end{align*}
-```
+$$
 
 ### Gravity Vector
 For convenience, let $\vec{g}$ be the gravitational acceleration vector. Also notice that this is the only acceleration acting on the projectile during the trajectory. \
 Note the *negative* component.
-```math
+$$
 \vec{g}\coloneqq\langle0,0,-g\rangle
-```
+$$
 
 ### Horizontal Effective Displacement
 Define $\vec{L}$ as the horizontal ($x$ and $y$ directions only) "effective displacement" vector, dependent on $t$. \
@@ -338,12 +356,12 @@ It is like 'subtracting $\vec{V}$ from both sides.
 Now, the situation is like we are attempting to launch a moving target with velocity $-\vec{V}$, from a static launcher, so we must *predict the target's future position*.
 
 So, define the very useful vector of the effective horizontal displacement:
-```math
+$$
 \vec{L}_{xy}\coloneqq(\text{horizontal effective displacement})
-```
-```math
+$$
+$$
 \vec{L}=\vec{S}_{xy}-\vec{V}t=\langle S_x-V_xt,S_y-V_yt\rangle
-```
+$$
 
 ## Approaches
 Due to the multiple unknowns, there is a large solution space for getting the projectile from the muzzle to the target; either zero or infinitely many solutions. Some are better or more appropriate than others. Also, due to physical limitations, only a subset of these theoretically possible solutions are valid for our robot.
@@ -356,6 +374,7 @@ Guess less unknowns, and the solution space is too large. More, and the describe
 $\alpha$ and $t$ do not make much sense as a parameter since they are more easily derived from the other unknowns, and it is harder to guess a good and valid trajectory with these.
 
 Therefore, there are only two reasonable approaches:
+
 - Make $\theta$ (launch pitch) a parameter
 - Make $u$ (exit speed) a parameter
 
@@ -368,26 +387,26 @@ Also, in both approaches, the main strategy is to find the finite set of valid $
 $\alpha$ can be directly calculated if $t$ is known.
 
 Start with the definition of constant velocity for the horizontal direction:
-```math
+$$
 \hookrightarrow\vec{v}_{xy}=\frac{\vec{S}_{xy}}{t}
-```
-```math
+$$
+$$
 \begin{align*}
     (\text{subtitute for }\vec{v}_{xy})\implies&\langle u\cos\theta\cos\alpha+V_x,u\cos\theta\sin\alpha+V_y \rangle=\frac{\vec{S}_{xy}}{t} \\
     (\text{subtract }\vec{V}\text{ from sides})\implies&\langle u\cos\theta\cos\alpha,u\cos\theta\sin\alpha \rangle=\frac{\vec{S}_{xy}}{t}-\vec{V} \\
     (\text{multiply sides by }t)\implies&\langle ut\cos\theta\cos\alpha,ut\cos\theta\sin\alpha \rangle =\vec{S}_{xy}-\vec{V}t \\
     (\text{subtitute }\vec{L}\text{ in})\implies&\langle ut\cos\theta\cos\alpha,ut\cos\theta\sin\alpha \rangle=\vec{L} \\
 \end{align*}
-```
+$$
 Now, take the angle of the vector on each side.
-```math
+$$
 \begin{align*}
     (\text{take angle of sides})\implies&\angle\langle ut\cos\theta\cos\alpha,ut\cos\theta\sin\alpha \rangle=\angle\vec{L} \\
     (\text{use definition of }\angle)\implies&\arctan(\frac{ut\cos\theta\sin\alpha}{ut\cos\theta\cos\alpha})=\angle\vec{L} \\
     (\text{simplify fraction})\implies&\arctan(\tan\alpha)=\angle\vec{L} \\
     (\text{inverse functions cancel})\implies&\boxed{\alpha=\angle\vec{L}}
 \end{align*}
-```
+$$
 Intuitively: if we choose the reference frame so that the launcher is static, then the launch angle is simply aiming at the future position of the target.
 
 #### Equation of $u$, $\theta$, and $t$.
@@ -396,18 +415,18 @@ An equation containing $u$, $\theta$, and $t$ is useful in both approaches to ei
 The most efficient way to find this is to use the horizontal velocity which has no acceleration.
 
 Start with one of the intermediate equations derived just earlier for calculating $\alpha$ with $t$, before the step of taking the angle.
-```math
+$$
 \langle ut\cos\theta\cos\alpha,ut\cos\theta\sin\alpha \rangle=\vec{L}
-```
+$$
 Instead of taking the angle of the vector on each side, take the magnitude.
-```math
+$$
 \begin{align*}
     (\text{take magnitude of sides})\implies&\lVert\langle ut\cos\theta\cos\alpha,ut\cos\theta\sin\alpha \rangle\rVert=\lVert\vec{L}\rVert \\
     (\text{factor out scalars})\implies&(ut\cos\theta)\lVert\langle\cos\alpha,\sin\alpha \rangle\rVert=\lVert\vec{L}\rVert \\
     (\text{unit vector: }\lVert\langle\cos\alpha,\sin\alpha\rangle\rVert=1)\implies&ut\cos\theta=\lVert\vec{L}\rVert \\
     (\text{divide sides by }t\cos\theta)\implies&\boxed{u=\frac{\lVert\vec{L}\rVert}{t\cos\theta}} \\
 \end{align*}
-```
+$$
 Intuitively: if we choose the reference frame so that the launcher is static, then the exit speed multipled by time is equal to the total horizontal distance to the future target.
 
 
@@ -418,81 +437,83 @@ Suppose $\theta$ is a parameter for the purposes of our calculations.
 
 #### Derive Equation for $t$
 Consider the vertical direction only ($z$ component). Start with the kinematics equation:
-```math
+$$
 \hookrightarrow S_z=v_zt-\frac{1}{2}gt^2
-```
+$$
 Recall three definitions from earlier:
 $$v_z=u\sin\theta$$
 $$u=\frac{\lVert\vec{L}\rVert}{t\cos\theta}$$
 $$\vec{L}=\vec{S}_{xy}-\vec{V}t$$
 
 Substitute:
-```math
+$$
 \begin{align*}
     (\text{substitute for }v_z)\implies&S_z=(u\sin\theta)t-\frac{1}{2}gt^2 \\
     (\text{substitute for }u)\implies&S_z=(\frac{\lVert\vec{L}\rVert}{t\cos\theta})(\sin\theta)t-\frac{1}{2}gt^2 \\
     (\text{substitute for }\vec{L})\implies&S_z=(\frac{\lVert\vec{S}_{xy}-\vec{V}t\rVert}{t\cos\theta})(\sin\theta)t-\frac{1}{2}gt^2 \\
 \end{align*}
-```
+$$
 We now have an equation with only one unknown, $t$. Simplify the equation:
-```math
+$$
 \begin{align*}
     (\text{rearrange fraction})\implies&S_z=\lVert\vec{S}_{xy}-\vec{V}t\rVert\frac{t\sin\theta}{t\cos\theta}-\frac{1}{2}gt^2 \\
     (\text{simplify fraction})\implies&S_z=\lVert\vec{S}_{xy}-\vec{V}t\rVert\tan\theta-\frac{1}{2}gt^2 \\
 \end{align*}
-```
+$$
 
 #### Solve for Vector Magnitude
 Solve for the vector magnitude expression before continuing:
-```math
+$$
 \vec{S}_{xy}-\vec{V}t=\langle S_x-V_xt,S_y-V_yt\rangle
-```
-```math
+$$
+$$
 \begin{align*}
     (\text{magnitude formula})\implies&\lVert\vec{S}_{xy}-\vec{V}t\rVert=\sqrt{(S_x-V_xt)^2+(S_y-V_yt)^2} \\
     (\text{apply squaring})\implies&\lVert\vec{S}_{xy}-\vec{V}t\rVert=\sqrt{(S_x^2-2S_xV_xt+V_x^2t^2)+(S_y^2-2S_yV_yt+V_y^2t^2)} \\
     (\text{rearrange terms})\implies&\lVert\vec{S}_{xy}-\vec{V}t\rVert=\sqrt{S_x^2+S_y^2-2S_xV_xt-2S_yV_yt+V_x^2t^2+V_y^2t^2} \\
     (\text{factor out each }t\text{ power})\implies&\lVert\vec{S}_{xy}-\vec{V}t\rVert=\sqrt{(S_x^2+S_y^2)-2(S_xV_x+S_yV_y)t+(V_x^2+V_y^2)t^2} \\
 \end{align*}
-```
+$$
 By vector properties:
-```math
-V_x^2+V_y^2=\lVert\vec{V}\rVert^2 \\
-S_x^2+S_y^2=\lVert\vec{S}_{xy}\rVert^2 \\
-S_xV_x+S_yV_y=S_xV_x+S_yV_y+(S_z\cdot0)=\vec{S}\cdot\vec{V} \\
-```
-```math
+$$
+\begin{gather*}
+    V_x^2+V_y^2=\lVert\vec{V}\rVert^2 \\
+    S_x^2+S_y^2=\lVert\vec{S}_{xy}\rVert^2 \\
+    S_xV_x+S_yV_y=S_xV_x+S_yV_y+(S_z\cdot0)=\vec{S}\cdot\vec{V} \\
+\end{gather*}
+$$
+$$
 (\text{substitute})\implies\lVert\vec{S}_{xy}-\vec{V}t\rVert=\sqrt{\lVert\vec{S}_{xy}\rVert^2-2(\vec{S}\cdot\vec{V})t+\lVert\vec{V}\rVert^2t^2} \\
-```
+$$
 
 #### Convert $t$ Equation to Quartic
 Now, substite for the vector magnitude in the original equation:
-```math
+$$
 \begin{align*}
     (\text{substitute for magnitude})\implies&S_z=(\sqrt{\lVert\vec{S}_{xy}\rVert^2-2(\vec{S}\cdot\vec{V})t+\lVert\vec{V}\rVert^2t^2})(\tan\theta)-\frac{1}{2}gt^2 \\
     (\text{add }\frac{1}{2}gt^2\text{ to sides})\implies&S_z+\frac{1}{2}gt^2=(\sqrt{\lVert\vec{S}_{xy}\rVert^2-2(\vec{S}\cdot\vec{V})t+\lVert\vec{V}\rVert^2t^2})(\tan\theta) \\
     (\text{square sides})\implies&(S_z+\frac{1}{2}gt^2)^2=((\sqrt{\lVert\vec{S}_{xy}\rVert^2-2(\vec{S}\cdot\vec{V})t+\lVert\vec{V}\rVert^2t^2})(\tan\theta))^2 \\
     (\text{apply squaring})\implies&S_z^2+S_zgt^2+\frac{1}{4}g^2t^4=(\lVert\vec{S}_{xy}\rVert^2-2(\vec{S}\cdot\vec{V})t+\lVert\vec{V}\rVert^2t^2)(\tan^2\theta) \\
 \end{align*}
-```
+$$
 For conciseness, define a symbol for $\tan^2\theta$, a known constant.
-```math
+$$
 M\coloneqq\tan^2\theta
-```
-```math
+$$
+$$
 \begin{align*}
     (\text{substitute }M\text{ in})\implies&S_z^2+S_zgt^2+\frac{1}{4}g^2t^4=(\lVert\vec{S}_{xy}\rVert^2-2(\vec{S}\cdot\vec{V})t+\lVert\vec{V}\rVert^2t^2)M \\
     (\text{distribute M})\implies&S_z^2+S_zgt^2+\frac{1}{4}g^2t^4=M\lVert\vec{S}_{xy}\rVert^2-2M(\vec{S}\cdot\vec{V})t+M\lVert\vec{V}\rVert^2t^2 \\
     (\text{rearrange terms})\implies&\frac{1}{4}g^2t^4+S_zgt^2-M\lVert\vec{V}\rVert^2t^2+2M(\vec{S}\cdot\vec{V})t+S_z^2-M\lVert\vec{S}_{xy}\rVert^2=0 \\
     (\text{factor out each }t\text{ power})\implies&\boxed{(\frac{1}{4}g^2)t^4+(S_zg-M\lVert\vec{V}\rVert^2)t^2+2M(\vec{S}\cdot\vec{V})t+(S_z^2-M\lVert\vec{S}_{xy}\rVert^2)=0} \\
 \end{align*} \\
-```
+$$
 We now have a quartic polynomial in $t$ containing no other unknowns. \
 In standard form, the coefficients are as follows:
-```math
+$$
 At^4+Bt^3+Ct^2+Dt+E=0 \\
-```
-```math
+$$
+$$
 \begin{align*}
     &A=\frac{1}{4}g^2 \\
     &B=0 \\
@@ -500,10 +521,10 @@ At^4+Bt^3+Ct^2+Dt+E=0 \\
     &D=2M(\vec{S}\cdot\vec{V}) \\
     &E=S_z^2-M\lVert\vec{S}_{xy}\rVert^2
 \end{align*}
-```
-```math
+$$
+$$
 (M=\tan^2\theta)
-```
+$$
 We can now find the solutions for $t$ and use it to calculate the other unknowns.
 
 ### 2. Find $\alpha$ and $u$
@@ -511,15 +532,15 @@ $\vec{L}$ is now known.
 
 #### Calculating $\alpha$
 From the common calculations earlier:
-```math
+$$
 \boxed{\alpha=\angle\vec{L}}
-```
+$$
 
 #### Calculating $u$
 From the common calculations earlier:
-```math
+$$
 \boxed{u=\frac{\lVert\vec{L}\rVert}{t\cos\theta}}
-```
+$$
 
 ## $u$ Parameter Approach
 Suppose $u$ is a parameter for the purposes of our calculations.
@@ -528,70 +549,72 @@ Suppose $u$ is a parameter for the purposes of our calculations.
 
 #### Vector Kinematics Equation
 Start with the kinematics motion equation, for 3D space:
-```math
+$$
 \hookrightarrow\vec{S}=\vec{v}t+\frac{1}{2}\vec{g}t^2
-```
+$$
 Rearrange:
-```math
+$$
 \begin{align*}
     (\text{substitute for }\vec{v})\implies&\vec{S}=(u\hat{w}+\vec{V})t+\frac{1}{2}\vec{g}t^2 \\
     (\text{distribute }t)\implies&\vec{S}=u\hat{w}t+\vec{V}t+\frac{1}{2}\vec{g}t^2 \\
     (\text{rearrange terms})\implies&\vec{S}-\frac{1}{2}\vec{g}t^2-\vec{V}t=u\hat{w}t \\
 \end{align*}
-```
+$$
 
 #### Eliminate Other Unknowns $\alpha$, $\theta$
 The only other unknown variable in the equation is $\hat{w}$, which contains both $\alpha$ and $\theta$ unknowns. Use vector magnitude to eliminate $\hat{w}$, since $\lVert\hat{w}\rVert=1$:
-```math
+$$
 (\text{take magnitude of sides})\implies\left\lVert\vec{S}-\frac{1}{2}\vec{g}t^2-\vec{V}t\right\rVert=\lVert u\hat{w}t \rVert \\
-```
-```math
+$$
+$$
 (\text{right side: pull out scalars})\quad\lVert u\hat{w}t \rVert=u\lVert\hat{w}\rVert t=u(1)t=ut
-```
-```math
+$$
+$$
 (\text{substitute right side back in})\implies\left\lVert\vec{S}-\frac{1}{2}\vec{g}t^2-\vec{V}t\right\rVert=ut \\
-```
+$$
 The result is an equation with only one unknown variable, $t$.
 
 #### Convert Equation to Quartic
 The left side of the equation has a vector with components and magnitude:
-```math
+$$
 (\text{left side vector})\quad(\vec{S}-\frac{1}{2}\vec{g}t^2-\vec{V}t)\,=\,\langle S_x-V_xt,S_y-V_yt,S_z+\frac{1}{2}gt^2 \rangle
-```
-```math
+$$
+$$
 (\text{magnitude formula})\quad\lVert\vec{S}-\frac{1}{2}\vec{g}t^2-\vec{V}t\rVert=\sqrt{(S_x-V_xt)^2+(S_y-V_yt)^2+(S_z+\frac{1}{2}gt^2)^2} \\
-```
+$$
 Substitute the formula for the magnitude of the vector in on the left.
-```math
+$$
 \begin{align*}
     (\text{substitute magnitude on left})\implies&\sqrt{(S_x-V_xt)^2+(S_y-V_yt)^2+(S_z+\frac{1}{2}gt^2)^2}=ut \\
     (\text{square sides})\implies&(S_x-V_xt)^2+(S_y-V_yt)^2+(S_z+\frac{1}{2}gt^2)^2=(ut)^2 \\
 \end{align*}
-```
+$$
 Expand and rearrange into standard quartic form:
-```math
+$$
 \begin{align*}
     (\text{apply squaring})\implies&(S_x^2-2S_xV_xt+V_x^2t^2)+(S_y^2-2S_yV_yt+V_y^2t^2)+(S_z^2+S_zgt^2+\frac{1}{4}g^2t^4)=u^2t^2 \\
     (\text{rearrange terms by }t\text{ factor})\implies&\frac{g^2}{4}t^4+S_zgt^2+V_x^2t^2+V_y^2t^2-u^2t^2-2S_xV_xt-2S_yV_yt+S_x^2+S_y^2+S_z^2=0 \\
     (\text{factor out each }t\text{ power})\implies&(\frac{g^2}{4})t^4+(S_zg+V_x^2+V_y^2-u^2)t^2-2(S_xV_x+S_yV_y)t+(S_x^2+S_y^2+S_z^2)=0 \\
 \end{align*}
-```
+$$
 
 Finally, simplify with vector properties:
-```math
-V_x^2+V_y^2=\lVert\vec{V}\rVert^2 \\
-S_x^2+S_y^2+S_z^2=\lVert\vec{S}\rVert^2 \\
-S_xV_x+S_yV_y=S_xV_x+S_yV_y+(S_z\cdot0)=\vec{S}\cdot\vec{V} \\
-```
-```math
+$$
+\begin{gather*}
+    V_x^2+V_y^2=\lVert\vec{V}\rVert^2 \\
+    S_x^2+S_y^2+S_z^2=\lVert\vec{S}\rVert^2 \\
+    S_xV_x+S_yV_y=S_xV_x+S_yV_y+(S_z\cdot0)=\vec{S}\cdot\vec{V} \\
+\end{gather*}
+$$
+$$
 (\text{substitute})\implies\boxed{(\frac{g^2}{4})t^4+(S_zg+\lVert\vec{V}\rVert^2-u^2)t^2-2(\vec{S}\cdot\vec{V})t+\lVert\vec{S}\rVert^2=0}
-```
+$$
 We now have a quartic polynomial in $t$ containing no other unknowns. \
 In standard form, the coefficients are as follows:
-```math
+$$
 At^4+Bt^3+Ct^2+Dt+E=0 \\
-```
-```math
+$$
+$$
 \begin{align*}
     &A=\frac{1}{4}g^2 \\
     &B=0 \\
@@ -599,7 +622,7 @@ At^4+Bt^3+Ct^2+Dt+E=0 \\
     &D=-2(\vec{S}\cdot\vec{V}) \\
     &E=\lVert\vec{S}\rVert^2
 \end{align*}
-```
+$$
 We can now find the solutions for $t$ and use it to calculate the other unknowns.
 
 ### 2. Find $\alpha$ and $\theta$ from $t$
@@ -607,22 +630,22 @@ $\vec{L}$ is now known.
 
 #### Calculating $\alpha$
 From the common calculations earlier:
-```math
+$$
 \boxed{\alpha=\angle\vec{L}}
-```
+$$
 
 #### Calculating $\theta$
 From the common calculations earlier:
-```math
+$$
 u=\frac{\lVert\vec{L}\rVert}{t\cos\theta}
-```
+$$
 Solve for $\theta$:
-```math
+$$
 \begin{align*}
     (\text{multiply sides by }\frac{\cos\theta}{u})\implies&\cos\theta=\frac{\lVert\vec{L}\rVert}{ut} \\
     (\text{take }\arccos\text{ of sides})\implies&\boxed{\theta=\arccos(\frac{\lVert\vec{L}\rVert}{ut})} \\
 \end{align*}
-```
+$$
 (Since $\theta$ is physically always in the interval $[0,\frac{\pi}{2}]$, there is no need to find other valid angles.)
 
 ## Analysis of $t$ Quartic
@@ -632,9 +655,9 @@ For both, $A=\frac{1}{4}g^2$ and $B=0$. \
 A quartic with $B=0$ is called a *depressed quartic*, and it is simpler to solve for its roots.
 
 Note that we are looking for physically possible solutions.
-```math
+$$
 t\in\mathbb{R}^+\enspace(t\text{ must be real and positive})
-```
+$$
 For an arbitrary quartic, there may be 0, 2, or 4 real solutions for $t$.
 
 For the $u$ parameter approach, intuitively there can probably be only either 0 or 2 real positive solutions for $t$ corresponding to a high and low trajectory.
@@ -660,81 +683,83 @@ $\alpha$ can then be calculated without finding $t$. In fact, the magnitude of t
 
 ### Problem Description
 Given:
-```math
+$$
 u,\,\theta,\,\vec{V},\,\vec{S}_{xy}
-```
+$$
 Find $\alpha$ such that $\vec{v}_{xy}$ and $\vec{S}_{xy}$ are parallel.
 
 ### Calculations
 For conciseness, define:
-```math
-\phi\coloneqq\angle\vec{S}_{xy} \\
-\sigma\coloneqq u\cos\theta \\
-```
+$$
+\begin{gather*}
+    \phi\coloneqq\angle\vec{S}_{xy} \\
+    \sigma\coloneqq u\cos\theta \\
+\end{gather*}
+$$
 Then:
-```math
+$$
 \begin{align*}
     &\vec{v}_{xy}=\langle u\cos\theta\cos\alpha+V_x,u\cos\theta\sin\alpha+V_y \rangle \\
     (\text{substitute }\sigma\text{ in})\implies&\vec{v}_{xy}=\langle \sigma\cos\alpha+V_x,\sigma\sin\alpha+V_y \rangle \\
 \end{align*}
-```
-```math
+$$
+$$
 \begin{align*}
     &\vec{S}_{xy}=\langle S_x,S_y \rangle \\
     (\text{vector properties})\implies&\vec{S}_{xy}=\lVert\vec{S}_{xy}\rVert\langle\cos\angle\vec{S}_{xy},\sin\angle\vec{S}_{xy}\rangle \\
     (\text{distribute and substitute }\phi\text{ in})\implies&\vec{S}_{xy}=\langle\lVert\vec{S}_{xy}\rVert\cos\phi,\lVert\vec{S}_{xy}\rVert\sin\phi\rangle \\
 \end{align*}
-```
+$$
 
 One way to see if two vectors are parallel is to check that their slopes are the same:
-```math
+$$
 \hookrightarrow\frac{v_y}{v_x}=\frac{S_y}{S_x}
-```
-```math
+$$
+$$
 \begin{align*}
     (\text{substitute for all values})\implies&\frac{\sigma\sin\alpha+V_y}{\sigma\cos\alpha+V_x}=\frac{\lVert\vec{S}_{xy}\rVert\sin\phi}{\lVert\vec{S}_{xy}\rVert\cos\phi}=\frac{\sin\phi}{\cos\phi} \\
     (\text{cross multiply})\implies&(\sigma\sin\alpha+V_y)\cos\phi=(\sigma\cos\alpha+V_x)\sin\phi \\
     (\text{distribute})\implies&\sigma\sin\alpha\cos\phi+V_y\cos\phi=\sigma\cos\alpha\sin\phi+V_x\sin\phi \\
     (\text{rearrange terms})\implies&\sigma\sin\alpha\cos\phi-\sigma\cos\alpha\sin\phi=V_x\sin\phi-V_y\cos\phi \\
 \end{align*}
-```
+$$
 The right side can be simplified using vector cross product:
-```math
+$$
 \begin{align*}
     (\text{cross product formula})\qquad&\vec{V}\times\vec{S}_{xy}=V_xS_y-V_yS_x \\
     (\text{substitute for }S_x,S_y)\implies&\vec{V}\times\vec{S}_{xy}=V_x(\lVert\vec{S}_{xy}\rVert\sin\phi)-V_y(\lVert\vec{S}_{xy}\rVert\cos\phi) \\
     (\text{divide sides by }\lVert\vec{S}_{xy}\rVert)\implies&\frac{\vec{V}\times\vec{S}_{xy}}{\lVert\vec{S}_{xy}\rVert}=V_x\sin\phi-V_y\cos\phi \\
 \end{align*}
-```
+$$
 Substitute the expression into the equation and continue:
-```math
+$$
 \begin{align*}
     (\text{substitute})\implies&\sigma\sin\alpha\cos\phi-\sigma\cos\alpha\sin\phi=\frac{\vec{V}\times\vec{S}_{xy}}{\lVert\vec{S}_{xy}\rVert} \\
     (\text{divide by }\sigma)\implies&\sin\alpha\cos\phi-\cos\alpha\sin\phi=\frac{\vec{V}\times\vec{S}_{xy}}{\sigma\lVert\vec{S}_{xy}\rVert} \\
 \end{align*}
-```
+$$
 Now, for the left side, use the sine difference identity:
-```math
+$$
 \sin(\alpha-\phi)=\sin\alpha\cos\phi-\cos\alpha\sin\phi
-```
+$$
 Substitute and solve for $\alpha$:
-```math
+$$
 \begin{align*}
     (\text{subsitute with identity})\implies&\sin(\alpha-\phi)=\frac{\vec{V}\times\vec{S}_{xy}}{\sigma\lVert\vec{S}_{xy}\rVert} \\
     (\text{take arcsin of sides})\implies&\alpha-\phi=\arcsin(\frac{\vec{V}\times\vec{S}_{xy}}{\sigma\lVert\vec{S}_{xy}\rVert}) \\
     (\text{add }\phi\text{ to sides})\implies&\alpha=\phi+\arcsin(\frac{\vec{V}\times\vec{S}_{xy}}{\sigma\lVert\vec{S}_{xy}\rVert}) \\
 \end{align*}
-```
+$$
 Substitute the expressions for $\phi$ and $\sigma$ back in:
-```math
+$$
 \boxed{\alpha=\angle\vec{S}_{xy}+\arcsin(\frac{\vec{V}\times\vec{S}_{xy}}{u\cos(\theta)\lVert\vec{S}_{xy}\rVert})}
-```
+$$
 We will ignore the second branch/solution of $\arcsin$ giving a second $\alpha$ (corresponding to a related *supplementary* angle facing in the wrong direction).
 
 A real solution for $\alpha$ exists when the $\arcsin$ input is in $\arcsin$'s domain (valid inputs) of $[-1, 1]$:
-```math
+$$
 \left\lvert\frac{\vec{V}\times\vec{S}_{xy}}{u\cos(\theta)\lVert\vec{S}_{xy}\rVert}\right\rvert\le1\iff\alpha\in\mathbb{R}
-```
+$$
 
 ## Converting to Robot Coordinate System
 Since $\alpha$ and $\theta$ are in field coordinate system, they must first be converted to the robot coordinate system in order to be usable by the robot.
@@ -746,24 +771,24 @@ If $\text{pitch}(\boldsymbol{R}_R)=\text{roll}(\boldsymbol{R}_R)=0$ (the robot i
 
 The yaw is offset by the robot yaw. \
 The pitch is the same since the robot is flat.
-```math
+$$
 \begin{align*}
     &\hookrightarrow\boxed{\alpha_r=\alpha-\text{yaw}(\boldsymbol{R}_R)} \\
     &\hookrightarrow\boxed{\theta_r=\theta} \\
 \end{align*}
-```
+$$
 
 ### Generalization
 To generalize to any arbitrary $\boldsymbol{R}_R$, use either intuition or rotation algebra.
 
 Define or recall:
-```math
+$$
 \begin{align*}
     &\boldsymbol{R}_R\coloneqq(\text{robot 3D rotation, FCS}) \\
     &\hat{w}\coloneqq(\text{unit launch direction})=\boldsymbol{R}(0,-\theta,\alpha)\hat{i} \\
     &\boldsymbol{R}_S\coloneqq(\text{launcher rotation, RCS})=\boldsymbol{R}(0,-\theta_r,\alpha_r) \\
 \end{align*}
-```
+$$
 (Negative pitch tilts upwards for 3D rotations.)
 
 #### Intuition
@@ -773,142 +798,144 @@ Convert the direction $\hat{w}$ to RCS. (Find $\hat{w}$ relative to the robot ro
 
 #### Rigorous Algebra
 The direction of $\boldsymbol{R}_S$, after being converted to FCS by applying $\boldsymbol{R}_R$, is $\hat{w}$.
-```math
+$$
 \hookrightarrow\boldsymbol{R}_R\boldsymbol{R}_S\hat{i}=\hat{w}
-```
-```math
+$$
+$$
 \begin{align*}
     (\text{apply }\boldsymbol{R}_R^{-1}\text{ to sides})\implies&\boldsymbol{R}_R^{-1}(\boldsymbol{R}_R\boldsymbol{R}_S\hat{i})=\boldsymbol{R}_R^{-1}(\hat{w}) \\
     (\text{associative property})\implies&(\boldsymbol{R}_R^{-1}\boldsymbol{R}_R)\boldsymbol{R}_S\hat{i}=\boldsymbol{R}_R^{-1}\hat{w} \\
     (\text{substitute }\boldsymbol{R}_R^{-1}\boldsymbol{R}_R=\boldsymbol{I})\implies&(\boldsymbol{I})\boldsymbol{R}_S\hat{i}=\boldsymbol{R}_R^{-1}\hat{w} \\
     (\text{applying }\boldsymbol{I}\text{ has no effect})\implies&\boldsymbol{R}_S\hat{i}=\boldsymbol{R}_R^{-1}\hat{w} \\
 \end{align*}
-```
+$$
 We find that the direction of $\boldsymbol{R}_S$ is $\boldsymbol{R}_R^{-1}\hat{w}$, which is actually just $\hat{w}$ in RCS.
 
 #### Finding $\theta_r$ and $\alpha_r$ from $\hat{d}$
 $\hat{d}$ is the desired direction unit vector:
-```math
-\hat{d}\coloneqq(\hat{w}\text{ in RCS})=\boldsymbol{R}_R^{-1}\hat{w} \\
-\hat{d}=(\text{forward vector of }\boldsymbol{R}_S)
-```
+$$
+\begin{gather*}
+    \hat{d}\coloneqq(\hat{w}\text{ in RCS})=\boldsymbol{R}_R^{-1}\hat{w} \\
+    \hat{d}=(\text{forward vector of }\boldsymbol{R}_S)
+\end{gather*}
+$$
 Simply use the components of $\hat{d}$ to find $\theta_r$ and $\alpha_r$, keeping $\text{roll}(\boldsymbol{R}_S)=0$.
-```math
+$$
 \begin{align*}
     &\hookrightarrow-\theta_r=\text{pitch}(\boldsymbol{R}_S)=\arcsin(\frac{d_z}{\lVert\hat{d}\rVert}) \\
     &\hookrightarrow\alpha_r=\text{yaw}(\boldsymbol{R}_S)=\angle{\vec{d}_{xy}} \\
 \end{align*}
-```
-```math
 \begin{align*}
     \implies&\boxed{\theta_r=-\arcsin(d_z)} \\
     \implies&\boxed{\alpha_r=\text{atan2}(d_y,d_x)}
 \end{align*}
-```
+$$
 
 ## Solution
 Summary of findings, without intermediate calculations.
 
 ### Variables
 Given:
-```math
+$$
 \vec{P}_{xyz}, \vec{V}_{xy},\boldsymbol{R}_R,\vec{T}_{xyz},\vec{Q}_{xyz},g
-```
+$$
 Find values for:
-```math
+$$
 \alpha,\enspace\theta,\enspace u
-```
-```math
+$$
+$$
 \alpha_r,\enspace\theta_r
-```
+$$
 For convenience, define:
-```math
+$$
 \vec{S}_{xyz}=\vec{T}-(\vec{P}+\boldsymbol{R}_R\vec{Q})
-```
+$$
 Now, choose either $u$ or $\theta$ to make a parameter, and give it a guessed or set value.
 
 ### Find $t$
 Solve a depressed quartic for time $t$:
-```math
+$$
 At^4+Ct^2+Dt+E=0
-```
-```math
+$$
+$$
 A=\frac{1}{4}g^2
-```
+$$
 Coefficients if $\theta$ is a parameter:
-```math
+$$
 \begin{align*}
     &C=S_zg-M\lVert\vec{V}\rVert^2 \\
     &D=2M(\vec{S}\cdot\vec{V}) \\
     &E=S_z^2-M\lVert\vec{S}_{xy}\rVert^2
 \end{align*} \\
+$$
+$$
 (M=\tan^2\theta)
-```
+$$
 Coefficients if $u$ is a parameter:
-```math
+$$
 \begin{align*}
     &C=S_zg+\lVert\vec{V}\rVert^2-u^2 \\
     &D=-2(\vec{S}\cdot\vec{V}) \\
     &E=\lVert\vec{S}\rVert^2
 \end{align*}
-```
+$$
 $t$ must be real and positive.
-```math
+$$
 t\in\mathbb{R}^+\enspace
-```
+$$
 Choose a $t$ based on its size, with larger $t$ having a steeper trajectory.
 
 (If there is no valid $t$, try another $\theta$ or approach.)
 
 ### Find Unknowns
 For convenience, define:
-```math
+$$
 \vec{L}_{xy}\coloneqq\vec{S}_{xy}-\vec{V}t
-```
+$$
 Find $\alpha$:
-```math
+$$
 \boxed{\alpha=\angle\vec{L}}
-```
+$$
 If $\theta$ is a parameter, find $u$:
-```math
+$$
 \boxed{u=\frac{\lVert\vec{L}\rVert}{t\cos\theta}}
-```
+$$
 
 If $u$ is a parameter, find $\theta$:
-```math
+$$
 \boxed{\theta=\arccos(\frac{\lVert\vec{L}\rVert}{ut})}
-```
+$$
 
 ### Ignoring $z$ Direction
 If the $z$ component of the target position is not important, then choose any $\theta$ and $u$.
 
 Then, find $\alpha$:
-```math
+$$
 \boxed{\alpha=\angle\vec{S}_{xy}+\arcsin(\frac{\vec{V}\times\vec{S}_{xy}}{u\cos(\theta)\lVert\vec{S}_{xy}\rVert})}
-```
+$$
 
 ### Convert $\theta$ and $\alpha$ to RCS
 If robot is not tilted:
-```math
+$$
 \begin{align*}
     &\boxed{\alpha_r=\alpha-\text{yaw}(\boldsymbol{R}_R)} \\
     &\boxed{\theta_r=\theta} \\
 \end{align*}
-```
-```math
+$$
+$$
 (\text{pitch}(\boldsymbol{R}_R)=\text{roll}(\boldsymbol{R}_R)=0)
-```
+$$
 In general, for any robot rotation:
-```math
-\hat{w}=\langle\cos\theta\cos\alpha,\cos\theta\sin\alpha,\sin\theta\rangle \\
-\hat{d}\coloneqq\boldsymbol{R}_R^{-1}\hat{w}=(\hat{w}\text{ in RCS}) \\
-```
-```math
+$$
+\begin{gather*}
+    \hat{w}=\langle\cos\theta\cos\alpha,\cos\theta\sin\alpha,\sin\theta\rangle \\
+    \hat{d}\coloneqq\boldsymbol{R}_R^{-1}\hat{w}=(\hat{w}\text{ in RCS}) \\
+\end{gather*}
 \begin{align*}
     &\boxed{\theta_r=-\arcsin(d_z)} \\
     &\boxed{\alpha_r=\text{atan2}(d_y,d_x)}
 \end{align*}
-```
+$$
 
 ## Physical Considerations
 
@@ -981,6 +1008,7 @@ These approaches must be chosen and used by the robot program, possibly multiple
 The parameter values necessary for each approach also need to be decided.
 
 The goal of the trajectory:
+
 - Make it to or into the target (success)
 - Reduce expected error
 - Minimize the impact of error on success
@@ -990,6 +1018,7 @@ The goal of the trajectory:
 
 #### $\theta$ Parameter Approach
 The main pro is that there are obvious choices for $\theta$:
+
 - The maximum $\theta$ achievable (assuming under 80 degrees)
 - The $\theta$ that minimizes $u$ for the trajectory
 - The elevation angle of the target
@@ -998,9 +1027,9 @@ The main pro is that there are obvious choices for $\theta$:
 The maximum $\theta$ is a great or ideal trajectory for a hub target because steep trajectories are more accurate and consistent, since trajectory error causes less error in horizontal distance. However, this trajectory also has the longest duration.
 
 The $\theta$ that minimizes $u$ is given by:
-```math
+$$
 \theta=\frac{1}{2}(\frac{\pi}{2}+\text{atan2}(S_z,\lVert\vec{S}_{xy}\rVert))
-```
+$$
 The proof of this requires calculus and is left as an exercise to the reader. \
 This $\theta$ is useful because it is the theoretical 'safest' or 'most valid' trajectory; if there are any valid trajectories (launching the target is achievable), then the trajectory for this $\theta$ is valid too because it only requires the minimum $u$.
 
@@ -1127,4 +1156,4 @@ Some techniques used in the calculations for the $u$ parameter approach and igno
 None of this file was written with AI.
 
 ## License
-REBUILT Trajectory Calculations  © 2026 by Anthony Le is licensed under Creative Commons Attribution 4.0 International. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/
+REBUILT Trajectory Calculations  © 2026 by Anthony Le is licensed under Creative Commons Attribution 4.0 International. To view a copy of this license, visit [https://creativecommons.org/licenses/by/4.0/](https://creativecommons.org/licenses/by/4.0/)

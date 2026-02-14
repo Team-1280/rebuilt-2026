@@ -1,0 +1,43 @@
+name: Markdown LaTeX PDF
+
+on:
+  push:
+    paths:
+      - 'trajectory/trajectory.md'
+      - 'trajectory/template.tex'
+      - '.github/workflows/trajectory-pdf.yml'
+
+jobs:
+  convert_via_pandoc:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v6
+
+      - name: Setup TinyTeX
+        uses: r-lib/actions/setup-tinytex@v2
+
+      - name: Install LaTeX packages
+        run: tlmgr install mathtools parskip || true
+
+      - name: Setup pandoc
+        uses: r-lib/actions/setup-pandoc@v2
+        with:
+          pandoc-version: '3.9'
+
+      - name: Convert markdown to PDF
+        run: |
+          pandoc \
+            trajectory/trajectory.md \
+            -o output/trajectory.pdf \
+            --template=trajectory/template.tex \
+            --shift-heading-level-by=-1
+        # Locally:
+        # cd trajectory
+        # pandoc trajectory.md -o trajectory.pdf --template=template.tex --shift-heading-level-by=-1
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trajectory
+          path: output/trajectory.pdf
