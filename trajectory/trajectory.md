@@ -40,6 +40,7 @@ There are not many difficult concepts or complex operations; instead, simple equ
 Fancy tricks, esoteric or technical concepts, and profound or clever insights are avoided.
 
 The general structure of each section of math is this:
+
 1. Define variables: givens, unknowns, useful definitions
 2. Use simple intuition or physics to create an equation with the variables
 3. Perform many algebraic operations on the equation one-by-one to change it into a more useful equation
