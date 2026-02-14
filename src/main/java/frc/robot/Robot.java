@@ -37,15 +37,15 @@ public class Robot extends TimedRobot implements Sendable {
     private final Field2d field = new Field2d();
 
     public Robot() {
-        autoChooser = AutoBuilder.buildAutoChooser();
+        autoChooser = AutoBuilder.buildAutoChooser("test");
         initDashboard();
         initBindings();
     }
 
     private void initDashboard() {
+        SmartDashboard.putData("Auto Chooser", autoChooser);
         SmartDashboard.putData("Robot", this);
         SmartDashboard.putData("Field", field);
-        SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
     private void initBindings() {
@@ -81,7 +81,14 @@ public class Robot extends TimedRobot implements Sendable {
     }
 
     @Override
-    public void autonomousInit() {}
+    public void autonomousInit() {
+        Command scheduledAutonomousCommand = getAutonomousCommand();
+
+    if (scheduledAutonomousCommand != null) {
+      scheduledAutonomousCommand.schedule();
+      SmartDashboard.putData(scheduledAutonomousCommand);
+    }
+    }
 
     @Override
     public void autonomousPeriodic() {}
