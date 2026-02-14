@@ -84,10 +84,10 @@ public class Robot extends TimedRobot implements Sendable {
     public void autonomousInit() {
         Command scheduledAutonomousCommand = getAutonomousCommand();
 
-    if (scheduledAutonomousCommand != null) {
-      CommandScheduler.getInstance().schedule(scheduledAutonomousCommand);
-      SmartDashboard.putData(scheduledAutonomousCommand);
-    }
+        if (scheduledAutonomousCommand != null) {
+            CommandScheduler.getInstance().schedule(scheduledAutonomousCommand);
+            SmartDashboard.putData(scheduledAutonomousCommand);
+        }
     }
 
     @Override
