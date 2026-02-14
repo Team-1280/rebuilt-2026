@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.TunerConstants;
+import frc.robot.fieldzoning.FieldZoning;
 import frc.robot.vision.VisionSubsystem;
 
 public class Robot extends TimedRobot implements Sendable {
@@ -110,5 +111,17 @@ public class Robot extends TimedRobot implements Sendable {
         builder.addStringProperty("robot pose", () -> drivetrain.getState().Pose.toString(), null);
         builder.addStringProperty(
                 "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
+        builder.addBooleanProperty(
+                "red alliance zone",
+                () -> FieldZoning.isInRedAllianceZone(drivetrain.getState().Pose),
+                null);
+        builder.addBooleanProperty(
+                "blue alliance zone",
+                () -> FieldZoning.isInBlueAllianceZone(drivetrain.getState().Pose),
+                null);
+        builder.addBooleanProperty(
+                "neutral zone",
+                () -> FieldZoning.isInNeutralZone(drivetrain.getState().Pose),
+                null);
     }
 }
