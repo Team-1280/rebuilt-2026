@@ -5,6 +5,7 @@ src/main/java/frc/robot/BuildConstants.java
 
 ./.bloop
 ./.metals
+./.vscode
 
 ### C++ ###
 # Prerequisites

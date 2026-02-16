@@ -42,9 +42,10 @@ deploy {
         }
     }
 }
+
 spotless {
     java {
-        googleJavaFormat().aosp().
+        googleJavaFormat().aosp().reorderImports(true)
     }
 }
 project.compileJava.dependsOn(createVersionFile)
