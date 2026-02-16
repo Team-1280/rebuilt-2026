@@ -1,5 +1,6 @@
 package frc.robot.intake;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -7,6 +8,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeSubsystem extends SubsystemBase {
@@ -24,12 +26,24 @@ public class IntakeSubsystem extends SubsystemBase {
         targetIntakeAngle = IntakeConst.MAX_ANGLE;
     }
 
+    private void moveRollerSpeed(double speed) {
+        rollerMotor.set(speed);
+    }
+
+    public double getRollerSpeed() {
+        return rollerMotor.get();
+    }
+
     public void rollersOn() {
-        rollerMotor.set(IntakeConfig.ROLLER_SPEED);
+        moveRollerSpeed(IntakeConfig.ROLLER_SPEED);
     }
 
     public void rollersOff() {
-        rollerMotor.stopMotor();
+        moveRollerSpeed(0.0);
+    }
+
+    public Angle getIntakeAngle() {
+        return deployMotor.getPosition().getValue();
     }
 
     public void intakeDown() {
@@ -48,5 +62,21 @@ public class IntakeSubsystem extends SubsystemBase {
                                 IntakeConst.MIN_ANGLE.in(Rotations),
                                 IntakeConst.MAX_ANGLE.in(Rotations)));
         deployMotor.setControl(new MotionMagicVoltage(targetIntakeAngle));
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addDoubleProperty("intake angle (deg)", () -> getIntakeAngle().in(Degrees), null);
+        builder.addDoubleProperty(
+                "intake target angle (deg)",
+                () -> targetIntakeAngle.in(Degrees),
+                (intakeAngle) -> moveIntake(Degrees.of(intakeAngle)));
+        builder.addDoubleProperty(
+                "intake angle error (deg)",
+                () -> getIntakeAngle().minus(targetIntakeAngle).in(Degrees),
+                null);
+
+        builder.addDoubleProperty(
+                "rollers speed (frac)", this::getRollerSpeed, this::moveRollerSpeed);
     }
 }
