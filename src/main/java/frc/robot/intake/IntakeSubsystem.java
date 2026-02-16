@@ -26,22 +26,6 @@ public class IntakeSubsystem extends SubsystemBase {
         targetIntakeAngle = IntakeConst.MAX_ANGLE;
     }
 
-    private void moveRollerSpeed(double speed) {
-        rollerMotor.set(speed);
-    }
-
-    public double getRollerSpeed() {
-        return rollerMotor.get();
-    }
-
-    public void rollersOn() {
-        moveRollerSpeed(IntakeConfig.ROLLER_SPEED);
-    }
-
-    public void rollersOff() {
-        moveRollerSpeed(0.0);
-    }
-
     public Angle getIntakeAngle() {
         return deployMotor.getPosition().getValue();
     }
@@ -64,6 +48,27 @@ public class IntakeSubsystem extends SubsystemBase {
         deployMotor.setControl(new MotionMagicVoltage(targetIntakeAngle));
     }
 
+    private void moveRollerSpeed(double speed) {
+        rollerMotor.set(speed);
+    }
+
+    private double getRollerSpeed() {
+        return rollerMotor.get();
+    }
+
+    public void rollersOn() {
+        moveRollerSpeed(IntakeConfig.ROLLER_SPEED);
+    }
+
+    public void rollersOff() {
+        moveRollerSpeed(0.0);
+    }
+
+    public void stow() {
+        rollersOff();
+        moveIntake(IntakeConst.MAX_ANGLE);
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("intake angle (deg)", () -> getIntakeAngle().in(Degrees), null);
@@ -77,6 +82,6 @@ public class IntakeSubsystem extends SubsystemBase {
                 null);
 
         builder.addDoubleProperty(
-                "rollers speed (frac)", this::getRollerSpeed, this::moveRollerSpeed);
+                "roller speed (frac)", this::getRollerSpeed, this::moveRollerSpeed);
     }
 }
