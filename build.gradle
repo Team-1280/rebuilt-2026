@@ -44,6 +44,7 @@ deploy {
 
 spotless {
     java {
+        targetExclude("src/main/java/frc/robot/BuildConstants.java")
         googleJavaFormat().aosp().reorderImports(true)
     }
 }
