@@ -14,7 +14,6 @@ public final class HoodConfig {
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
     static {
-        motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         motorConfig.CurrentLimits.StatorCurrentLimit = MOTOR_CURRENT_LIMIT.in(Amps);
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motorConfig.MotorOutput.Inverted =

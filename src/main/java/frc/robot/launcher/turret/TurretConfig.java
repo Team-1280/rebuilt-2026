@@ -12,7 +12,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 
-public class TurretConfig {
+public final class TurretConfig {
     public static final Angle STOW_YAW = Degrees.of(0); // TODO
 
     public static final Angle DEADZONE_MIN_ANGLE = Degrees.of(0); // TODO
@@ -23,7 +23,6 @@ public class TurretConfig {
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
     static {
-        motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         motorConfig.CurrentLimits.StatorCurrentLimit = MOTOR_CURRENT_LIMIT.in(Amps);
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motorConfig.MotorOutput.Inverted =
