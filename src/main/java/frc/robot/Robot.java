@@ -8,7 +8,6 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -34,13 +33,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot implements Sendable {
 
-    private final Pigeon2 pigeon = new Pigeon2(26); // Also in TunerConstants.kPigeonId
-
-    private final CommandSwerveDrivetrain drivetrain =
-            new OdometryDrivetrain(
-                    () -> pigeon.getAngularVelocityZDevice().getValue().in(RadiansPerSecond),
-                    () -> 0.0 // TODO: slip ratio supplier
-                    );
+    private final CommandSwerveDrivetrain drivetrain = new OdometryDrivetrain();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
