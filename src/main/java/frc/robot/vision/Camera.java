@@ -9,6 +9,7 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class Camera {
@@ -58,6 +59,16 @@ public class Camera {
      * @param result
      * @return true if the result should be used, false otherwise
      */
+    /**
+     * Returns all unread pipeline results from this camera without processing them for pose
+     * estimation. Useful for direct target access (e.g., aux camera hub targeting).
+     *
+     * @return The raw unread pipeline results
+     */
+    public List<PhotonPipelineResult> getUnreadResults() {
+        return camera.getAllUnreadResults();
+    }
+
     public boolean shouldUseResult(PhotonPipelineResult result) {
         return result.hasTargets()
                 && result.getBestTarget().getPoseAmbiguity() < VisionConst.MAX_AMBIGUITY;

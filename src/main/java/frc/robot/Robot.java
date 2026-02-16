@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
+import frc.robot.turret.TurretSubsystem;
 import frc.robot.vision.VisionSubsystem;
 
 import org.littletonrobotics.junction.LoggedRobot;
@@ -42,6 +43,8 @@ public class Robot extends LoggedRobot implements Sendable {
                     () -> 0.0 // TODO: slip ratio supplier
                     );
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
+    private final TurretSubsystem turret =
+            new TurretSubsystem(() -> drivetrain.getState().Pose, vision);
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
@@ -70,7 +73,8 @@ public class Robot extends LoggedRobot implements Sendable {
             // // Read replay log
             // Logger.setReplaySource(new WPILOGReader(logPath));
             // // Save outputs to a new log
-            // Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+            // Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath,
+            // "_sim")));
         }
         // Start logging! No more data receivers, replay sources, or metadata values may
         // be added.
@@ -82,6 +86,7 @@ public class Robot extends LoggedRobot implements Sendable {
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
         SmartDashboard.putData("Vision", vision);
+        SmartDashboard.putData("Turret", turret);
     }
 
     private void initBindings() {
