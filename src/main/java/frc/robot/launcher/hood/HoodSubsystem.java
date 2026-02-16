@@ -15,8 +15,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class HoodSubsystem extends SubsystemBase {
     private static final TalonFX motor = new TalonFX(HoodConst.MOTOR_ID);
 
+    private static Angle targetPitch;
+
     public HoodSubsystem() {
         motor.getConfigurator().apply(HoodConfig.motorConfig);
+
+        // Hardstop startup angle
+        motor.setPosition(HoodConst.MAX_PITCH);
+        targetPitch = HoodConst.MAX_PITCH;
     }
 
     public void movePitch(Angle pitch) {
@@ -38,9 +44,12 @@ public class HoodSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        builder.addDoubleProperty("pitch (deg)", () -> getPitch().in(Degrees), null);
         builder.addDoubleProperty(
-                "pitch (deg)",
-                () -> getPitch().in(Degrees),
+                "target pitch (deg)",
+                () -> targetPitch.in(Degrees),
                 (pitch) -> movePitch(Degrees.of(pitch)));
+        builder.addDoubleProperty(
+                "pitch error (deg)", () -> getPitch().minus(targetPitch).in(Degrees), null);
     }
 }

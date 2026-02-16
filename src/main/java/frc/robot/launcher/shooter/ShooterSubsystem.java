@@ -15,6 +15,8 @@ public class ShooterSubsystem extends SubsystemBase {
     private final TalonFX rightLeaderMotor = new TalonFX(ShooterConst.RIGHT_LEADER_MOTOR_ID);
     private final TalonFX leftFollowerMotor = new TalonFX(ShooterConst.LEFT_FOLLOWER_MOTOR_ID);
 
+    private AngularVelocity targetAngularVelocity = RotationsPerSecond.of(0.0);
+
     public ShooterSubsystem() {
         rightLeaderMotor.getConfigurator().apply(ShooterConfig.motorConfig);
         leftFollowerMotor.getConfigurator().apply(ShooterConfig.motorConfig);
@@ -24,7 +26,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void moveAngularVelocity(AngularVelocity angularVelocity) {
-        rightLeaderMotor.setControl(new MotionMagicVelocityVoltage(angularVelocity));
+        targetAngularVelocity = angularVelocity;
+        rightLeaderMotor.setControl(new MotionMagicVelocityVoltage(targetAngularVelocity));
     }
 
     public AngularVelocity getAngularVelocity() {
@@ -38,9 +41,15 @@ public class ShooterSubsystem extends SubsystemBase {
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty(
-                "angular velocity (RPS)",
-                () -> getAngularVelocity().in(RotationsPerSecond),
+                "angular velocity (RPS)", () -> getAngularVelocity().in(RotationsPerSecond), null);
+        builder.addDoubleProperty(
+                "target angular velocity (RPS)",
+                () -> targetAngularVelocity.in(RotationsPerSecond),
                 (double angularVelocity) ->
                         moveAngularVelocity(RotationsPerSecond.of(angularVelocity)));
+        builder.addDoubleProperty(
+                "angular velocity error (RPS)",
+                () -> getAngularVelocity().minus(targetAngularVelocity).in(RotationsPerSecond),
+                null);
     }
 }

@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class FeederSubsystem extends SubsystemBase {
     private final TalonFX motor = new TalonFX(FeederConst.MOTOR_ID);
 
+    private AngularVelocity targetAngularVelocity = RotationsPerSecond.of(0.0);
+
     public FeederSubsystem() {
         motor.getConfigurator().apply(FeederConfig.motorConfig);
     }
@@ -21,7 +23,8 @@ public class FeederSubsystem extends SubsystemBase {
     }
 
     public void moveAngularVelocity(AngularVelocity angularVelocity) {
-        motor.setControl(new MotionMagicVelocityVoltage(angularVelocity));
+        targetAngularVelocity = angularVelocity;
+        motor.setControl(new MotionMagicVelocityVoltage(targetAngularVelocity));
     }
 
     public void start() {
@@ -35,9 +38,15 @@ public class FeederSubsystem extends SubsystemBase {
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty(
-                "angular velocity (RPS)",
-                () -> getAngularVelocity().in(RotationsPerSecond),
+                "angular velocity (RPS)", () -> getAngularVelocity().in(RotationsPerSecond), null);
+        builder.addDoubleProperty(
+                "target angular velocity (RPS)",
+                () -> targetAngularVelocity.in(RotationsPerSecond),
                 (double angularVelocity) ->
                         moveAngularVelocity(RotationsPerSecond.of(angularVelocity)));
+        builder.addDoubleProperty(
+                "angular velocity error (RPS)",
+                () -> getAngularVelocity().minus(targetAngularVelocity).in(RotationsPerSecond),
+                null);
     }
 }

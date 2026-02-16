@@ -23,6 +23,7 @@ public class TurretSubsystem extends SubsystemBase {
         motor.getConfigurator().apply(TurretConfig.motorConfig);
         encoder.getConfigurator().apply(TurretConfig.encoderConfig);
 
+        // Conventional startup yaw
         targetYaw = TurretConfig.STOW_YAW;
     }
 
