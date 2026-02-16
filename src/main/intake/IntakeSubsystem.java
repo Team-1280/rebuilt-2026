@@ -7,19 +7,19 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeSubsystem extends SubsystemBase {
     private static final TalonFX deployMotor = new TalonFX(IntakeConst.DEPLOY_MOTOR_ID);
-    private static final TalonFX intakeMotor = new TalonFX(IntakeConst.INTAKE_MOTOR_ID);
+    private static final TalonFX rollerMotor = new TalonFX(IntakeConst.ROLLER_MOTOR_ID);
 
     public IntakeSubsystem() {
-        deployMotor.getConfigurator().apply(IntakeConfig.deployConfig);
-        intakeMotor.getConfigurator().apply(IntakeConfig.intakeConfig);
+        deployMotor.getConfigurator().apply(IntakeConfig.deployMotorConfig);
+        rollerMotor.getConfigurator().apply(IntakeConfig.rollerMotorConfig);
     }
 
-    public void intakeOn() {
-        intakeMotor.set(IntakeConfig.INTAKE_SPEED);
+    public void rollersOn() {
+        rollerMotor.set(IntakeConfig.ROLLER_SPEED);
     }
 
-    public void intakeOff() {
-        intakeMotor.set(0);
+    public void rollersOff() {
+        rollerMotor.stopMotor();
     }
 
     public void intakeDown() {
