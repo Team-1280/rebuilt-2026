@@ -13,9 +13,15 @@ public class IntakeSubsystem extends SubsystemBase {
     private static final TalonFX deployMotor = new TalonFX(IntakeConst.DEPLOY_MOTOR_ID);
     private static final TalonFX rollerMotor = new TalonFX(IntakeConst.ROLLER_MOTOR_ID);
 
+    private Angle targetIntakeAngle;
+
     public IntakeSubsystem() {
         deployMotor.getConfigurator().apply(IntakeConfig.deployMotorConfig);
         rollerMotor.getConfigurator().apply(IntakeConfig.rollerMotorConfig);
+
+        // Hardstop startup angle
+        deployMotor.setPosition(IntakeConst.MAX_ANGLE);
+        targetIntakeAngle = IntakeConst.MAX_ANGLE;
     }
 
     public void rollersOn() {
@@ -27,19 +33,20 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void intakeDown() {
-        moveIntake(IntakeConfig.DOWN_ANGLE);
+        moveIntake(IntakeConst.MIN_ANGLE);
     }
 
     public void intakeUp() {
-        moveIntake(IntakeConfig.UP_ANGLE);
+        moveIntake(IntakeConst.MAX_ANGLE);
     }
 
     private void moveIntake(Angle angle) {
-        double clampedAngle =
-                MathUtil.clamp(
-                        angle.in(Rotations),
-                        IntakeConst.MIN_ANGLE.in(Rotations),
-                        IntakeConst.MAX_ANGLE.in(Rotations));
-        deployMotor.setControl(new MotionMagicVoltage(clampedAngle));
+        targetIntakeAngle =
+                Rotations.of(
+                        MathUtil.clamp(
+                                angle.in(Rotations),
+                                IntakeConst.MIN_ANGLE.in(Rotations),
+                                IntakeConst.MAX_ANGLE.in(Rotations)));
+        deployMotor.setControl(new MotionMagicVoltage(targetIntakeAngle));
     }
 }
