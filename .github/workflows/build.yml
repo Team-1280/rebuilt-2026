@@ -11,11 +11,13 @@ on:
     branches: [main]
     paths-ignore:
       - '**.md'
+      - 'trajectory/**'
 
   pull_request:
     branches: [main]
     paths-ignore:
       - '**.md'
+      - 'trajectory/**'
 
   workflow_dispatch:
 
@@ -45,7 +47,9 @@ jobs:
       # Grant execute permission for gradlew
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
+        
+      - name: Sanitize formatting
+        run: ./gradlew spotlessApply
       # Runs a single command using the runners shell
       - name: Compile and run tests on robot code
         run: ./gradlew build

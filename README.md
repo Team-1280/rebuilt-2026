@@ -75,5 +75,15 @@ These only go by angles; avoid pressing more than one button at once.
 - https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
 - https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html#joystick-and-controller-coordinate-system
 
+## Gradle Commands
+Formatting:
+```
+./gradlew spotlessApply
+```
+
+## Generated, Templated, and Imported Code
+- `TunerConstants.java` is entirely auto-generated
+- `CommandSwerveDrivetrain` is entirely from a template
+
 ## Attribution
 AI (GitHub Copilot) may sometimes be used for autocomplete (e.g. writing specific lines and writing documentation).

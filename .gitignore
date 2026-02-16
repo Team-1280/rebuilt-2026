@@ -1,8 +1,12 @@
 # This gitignore has been specially created by the WPILib team.
 # If you remove items from this file, intellisense might break.
 
+# Custom
+src/main/java/frc/robot/build
+
 ./.bloop
 ./.metals
+./.vscode
 
 ### C++ ###
 # Prerequisites
@@ -83,6 +87,8 @@ hs_err_pid*
 .DS_Store
 .AppleDouble
 .LSOverride
+.metals
+.bloop
 
 # Icon must end with two \r
 Icon
