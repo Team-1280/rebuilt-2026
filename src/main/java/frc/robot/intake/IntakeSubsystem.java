@@ -1,3 +1,7 @@
+package frc.robot.intake;
+
+import static edu.wpi.first.units.Units.Rotations;
+
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
