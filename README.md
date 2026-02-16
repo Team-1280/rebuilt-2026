@@ -1,8 +1,5 @@
 # REBUILT 2026
 
-##
-execute `gradlew spotlessApply` to fix formatting
-
 ## Contributing, Conforming and Terms
 
 Visit [Contributing.md](./CONTRIBUTING.md)
@@ -77,6 +74,12 @@ These only go by angles; avoid pressing more than one button at once.
 - https://hal7df.github.io/pauls-tutorials/wpi/ch2/user-input.html
 - https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
 - https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html#joystick-and-controller-coordinate-system
+
+## Gradle Commands
+Formatting:
+```
+./gradlew spotlessApply
+```
 
 ## Generated, Templated, and Imported Code
 - `TunerConstants.java` is entirely auto-generated
