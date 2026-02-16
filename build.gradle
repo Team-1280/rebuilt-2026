@@ -45,18 +45,19 @@ deploy {
 
 spotless {
     java {
-        targetExclude("src/main/java/frc/robot/BuildConstants.java")
+        targetExclude("src/main/java/frc/robot/build/*")
         googleJavaFormat().aosp().reorderImports(true)
     }
 }
+
 project.compileJava.dependsOn(createVersionFile)
 gversion {
   srcDir       = "src/main/java/"
-  classPackage = "frc.robot"
+  classPackage = "frc.robot.build"
   className    = "BuildConstants"
   dateFormat   = "yyyy-MM-dd HH:mm:ss z"
   timeZone     = "America/Los_Angeles" // Use preferred time zone
-  indent       = "  "
+  indent       = "    "
 }
 
 def deployArtifact = deploy.targets.roborio.artifacts.frcJava
@@ -101,6 +102,7 @@ dependencies {
     def akitJson = new groovy.json.JsonSlurper().parseText(new File(projectDir.getAbsolutePath() + "/vendordeps/AdvantageKit.json").text)
     annotationProcessor "org.littletonrobotics.akit:akit-autolog:$akitJson.version"
 }
+
 task(eventDeploy) {
     doLast {
         if (project.gradle.startParameter.taskNames.any({ it.toLowerCase().contains("deploy") })) {
