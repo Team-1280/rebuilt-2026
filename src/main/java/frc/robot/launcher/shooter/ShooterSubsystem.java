@@ -23,7 +23,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 new Follower(rightLeaderMotor.getDeviceID(), MotorAlignmentValue.Opposed));
     }
 
-    public void setAngularVelocity(AngularVelocity angularVelocity) {
+    public void moveAngularVelocity(AngularVelocity angularVelocity) {
         rightLeaderMotor.setControl(new MotionMagicVelocityVoltage(angularVelocity));
     }
 
@@ -38,8 +38,9 @@ public class ShooterSubsystem extends SubsystemBase {
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty(
-                "speed (RPS)",
+                "angular velocity (RPS)",
                 () -> getAngularVelocity().in(RotationsPerSecond),
-                (double speed) -> setAngularVelocity(RotationsPerSecond.of(speed)));
+                (double angularVelocity) ->
+                        moveAngularVelocity(RotationsPerSecond.of(angularVelocity)));
     }
 }

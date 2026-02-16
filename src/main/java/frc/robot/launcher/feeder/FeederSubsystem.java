@@ -16,27 +16,28 @@ public class FeederSubsystem extends SubsystemBase {
         motor.getConfigurator().apply(FeederConfig.motorConfig);
     }
 
-    public AngularVelocity getSpeed() {
+    public AngularVelocity getAngularVelocity() {
         return motor.getVelocity().getValue();
     }
 
-    public void setSpeed(AngularVelocity speed) {
-        motor.setControl(new MotionMagicVelocityVoltage(speed));
+    public void moveAngularVelocity(AngularVelocity angularVelocity) {
+        motor.setControl(new MotionMagicVelocityVoltage(angularVelocity));
     }
 
-    public void startSpinning() {
-        setSpeed(FeederConfig.MOTOR_SPEED);
+    public void start() {
+        moveAngularVelocity(FeederConfig.ANGULAR_VELOCITY);
     }
 
-    public void stopSpinning() {
+    public void stop() {
         motor.stopMotor();
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty(
-                "Feeder speed (RPS)",
-                () -> getSpeed().in(RotationsPerSecond),
-                (double speed) -> setSpeed(RotationsPerSecond.of(speed)));
+                "angular velocity (RPS)",
+                () -> getAngularVelocity().in(RotationsPerSecond),
+                (double angularVelocity) ->
+                        moveAngularVelocity(RotationsPerSecond.of(angularVelocity)));
     }
 }

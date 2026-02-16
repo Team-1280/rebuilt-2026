@@ -9,7 +9,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Current;
 
 public final class ShooterConfig {
-    // NOTE: these configurations are shared for both; they are identical other than orientation
+    // NOTE: these configurations are shared for both motors; identical other than orientation
     // TODO: add correct current limit
     public static final Current MOTOR_CURRENT_LIMIT = Amps.of(80);
 

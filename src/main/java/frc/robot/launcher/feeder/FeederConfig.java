@@ -11,7 +11,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 
 public final class FeederConfig {
-    public static final AngularVelocity MOTOR_SPEED = RotationsPerSecond.of(-1); // TODO
+    public static final AngularVelocity ANGULAR_VELOCITY = RotationsPerSecond.of(-1); // TODO
     public static final Current MOTOR_CURRENT_LIMIT = Amps.of(80);
 
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();

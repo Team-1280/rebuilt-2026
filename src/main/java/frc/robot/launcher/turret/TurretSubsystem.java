@@ -12,6 +12,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+// Note: yaw of 0 is facing forward
 public class TurretSubsystem extends SubsystemBase {
     private final TalonFX motor = new TalonFX(TurretConst.MOTOR_ID);
     private final CANcoder encoder = new CANcoder(TurretConst.ENCODER_ID);
@@ -26,7 +27,6 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void moveYaw(Angle yaw) {
-        // Note: yaw of 0 is facing forward
         targetYaw =
                 Rotations.of(
                         MathUtil.clamp(
