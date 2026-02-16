@@ -16,19 +16,24 @@ public class TurretSubsystem extends SubsystemBase {
     private final TalonFX motor = new TalonFX(TurretConst.MOTOR_ID);
     private final CANcoder encoder = new CANcoder(TurretConst.ENCODER_ID);
 
+    private Angle targetYaw;
+
     public TurretSubsystem() {
         motor.getConfigurator().apply(TurretConfig.motorConfig);
         encoder.getConfigurator().apply(TurretConfig.encoderConfig);
+
+        targetYaw = TurretConfig.STOW_YAW;
     }
 
     public void moveYaw(Angle yaw) {
         // Note: yaw of 0 is facing forward
-        double clampedYaw =
-                MathUtil.clamp(
-                        yaw.in(Rotations),
-                        TurretConst.MIN_ANGLE.in(Rotations),
-                        TurretConst.MAX_ANGLE.in(Rotations));
-        motor.setControl(new MotionMagicVoltage(clampedYaw));
+        targetYaw =
+                Rotations.of(
+                        MathUtil.clamp(
+                                yaw.in(Rotations),
+                                TurretConst.MIN_ANGLE.in(Rotations),
+                                TurretConst.MAX_ANGLE.in(Rotations)));
+        motor.setControl(new MotionMagicVoltage(targetYaw));
     }
 
     public Angle getYaw() {
@@ -41,7 +46,10 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        builder.addDoubleProperty("yaw (deg)", () -> getYaw().in(Degrees), null);
         builder.addDoubleProperty(
-                "yaw (deg)", () -> getYaw().in(Degrees), (yaw) -> moveYaw(Degrees.of(yaw)));
+                "target yaw (deg)", () -> targetYaw.in(Degrees), (yaw) -> moveYaw(Degrees.of(yaw)));
+        builder.addDoubleProperty(
+                "yaw error (deg)", () -> getYaw().minus(targetYaw).in(Degrees), null);
     }
 }
