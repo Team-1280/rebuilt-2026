@@ -13,6 +13,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 
 public final class TurretConfig {
+    /** Stow yaw and the expected startup yaw */
     public static final Angle STOW_YAW = Degrees.of(0); // TODO
 
     public static final Angle DEADZONE_MIN_ANGLE = Degrees.of(0); // TODO
