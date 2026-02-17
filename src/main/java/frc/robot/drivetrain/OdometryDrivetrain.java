@@ -1,5 +1,7 @@
 package frc.robot.drivetrain;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -78,6 +80,14 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     // TODO: Tune const
     private static final double SLIP_DETECTION_THRESHOLD = 2.0;
 
+    /**
+     * Supply current value that indicates a drive motor fault or disconnection.
+     *
+     * <p>When a TalonFX reports this value for supply current, it typically means CAN communication
+     * has been lost or the motor is disconnected.
+     */
+    private static final double SUPPLY_CURRENT_FAULT_VALUE = -1.0;
+
     /** Minimum distance at which vision measurements are trusted, in meters. */
     private static final double TRUST_VISION_RANGE_MIN = 0.25;
 
@@ -105,6 +115,16 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
      */
     private boolean slipDetected = false;
 
+    /**
+     * Whether all drive motors report a fault supply current (-1).
+     *
+     * <p>Indicates CAN communication loss or motor disconnection.
+     */
+    private boolean driveCurrentFault = false;
+
+    /** TalonFX references for the 4 drive motors (odd CAN IDs: 1, 3, 5, 7). */
+    private final TalonFX[] driveMotors;
+
     /** Constructs the drivetrain with odometry trust logic. */
     public OdometryDrivetrain() {
         super(
@@ -115,6 +135,12 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
                 TunerConstants.BackLeft,
                 TunerConstants.BackRight);
         lastPose = getState().Pose; // Initialize with actual starting pose
+
+        // Cache drive motor references (modules 0-3: FL, FR, BL, BR)
+        driveMotors = new TalonFX[4];
+        for (int i = 0; i < 4; i++) {
+            driveMotors[i] = getModule(i).getDriveMotor();
+        }
     }
 
     /**
@@ -187,14 +213,31 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         double slipError = Math.abs(omegaOdometry - omegaInertial);
         slipDetected = slipError > SLIP_DETECTION_THRESHOLD;
 
+        // DETECT DRIVE MOTOR FAULT: If all drive motors (odd CAN IDs) report -1
+        // supply current, it indicates CAN loss or disconnection - treat as slip.
+        driveCurrentFault = true;
+        for (TalonFX motor : driveMotors) {
+            if (motor.getSupplyCurrent().getValueAsDouble() != SUPPLY_CURRENT_FAULT_VALUE) {
+                driveCurrentFault = false;
+                break;
+            }
+        }
+        if (driveCurrentFault) {
+            slipDetected = true;
+        }
+
         // Trust odometry less when slip is detected
         double odometryTrust = gaussianTrust(slipError, SLIP_DETECTION_THRESHOLD);
+        if (driveCurrentFault) {
+            odometryTrust = 0.0; // Zero trust when all drive motors report fault
+        }
         cachedOdometryTrust = odometryTrust;
 
         // Update telemetry - AdvantageKit friendly direct logging
         Logger.recordOutput("Odometry/Pose", currentPose);
         Logger.recordOutput("Odometry/Trust", odometryTrust);
         Logger.recordOutput("Odometry/SlipDetected", slipDetected);
+        Logger.recordOutput("Odometry/DriveCurrentFault", driveCurrentFault);
         Logger.recordOutput("Odometry/Omega/Inertial", omegaInertial);
         Logger.recordOutput("Odometry/Omega/Odometry", omegaOdometry);
         Logger.recordOutput("Odometry/Omega/Pigeon", omegaPigeon);
