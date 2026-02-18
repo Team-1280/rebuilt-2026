@@ -49,13 +49,19 @@ public class TurretSubsystem extends SubsystemBase {
      * @param guessYaw a guess of the current turret yaw, used to calibrate the encoder
      */
     private void calibrateYaw(Angle guessYaw) {
-        // All variable values are in encoder rotations
+        // Variable values are in encoder rotations
         // Get the encoder position in rotations
         double encoderPosition = encoder.getPosition().getValueAsDouble();
         // Use only the phase of position since the encoder is off by a whole number of rotations
         double encoderPhase = MathUtil.inputModulus(encoderPosition, -0.5, 0.5);
+        // Clamp the guess to the turret's physical limits, to avoid erroneous guesses
+        double clampedGuessYaw =
+                MathUtil.clamp(
+                        guessYaw.in(Rotations),
+                        TurretConst.MIN_ANGLE.in(Rotations),
+                        TurretConst.MAX_ANGLE.in(Rotations));
         // Convert the guess yaw to encoder rotations
-        double guessPosition = guessYaw.in(Rotations) * TurretConst.ENCODER_TO_MECHANISM_RATIO;
+        double guessPosition = clampedGuessYaw * TurretConst.ENCODER_TO_MECHANISM_RATIO;
         // Find the closest whole number of rotations, relative to the encoder phase
         double roundedGuessOffset = Math.round(guessPosition - encoderPhase);
         // Convert back to absolute, to get the coterminal encoder position closest to the guess
