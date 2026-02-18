@@ -23,8 +23,50 @@ public class TurretSubsystem extends SubsystemBase {
         motor.getConfigurator().apply(TurretConfig.motorConfig);
         encoder.getConfigurator().apply(TurretConfig.encoderConfig);
 
-        // Conventional startup yaw
-        targetYaw = TurretConfig.STOW_YAW;
+        // Conventional or expected startup yaw
+        calibrateYaw(TurretConfig.STOW_YAW);
+        targetYaw = TurretConfig.STOW_YAW; // Note: this may be inaccurate until the turret is moved
+    }
+
+    /**
+     * Calibrate the encoder of the turret using a guess of the current yaw.
+     *
+     * <p>This is necessary because the encoder has many rotations per mechanism rotation, but it
+     * only tracks the position within one rotation on boot, so it may be off by a whole number of
+     * rotations on startup. Only the phase of the encoder is always correct.
+     *
+     * <p>To calibrate the encoder, the method finds the coterminal (off by whole rotations, so some
+     * phase) encoder position the closest to the guess, and then sets the encoder position to that.
+     *
+     * <p>For the calibration to be correct, the guess yaw must be within (1 rotation / (2 *
+     * ENCODER_TO_MECHANISM_RATIO)) of the actual yaw, on either side. Guessing outside of this
+     * range will cause the measured turret yaw to be off by a multiple of (1 rotation /
+     * ENCODER_TO_MECHANISM_RATIO).
+     *
+     * <p>For an ENCODER_TO_MECHANISM_RATIO of 8.5, this maximum error is 1/17 of a rotation, or
+     * about 21.18 degrees (giving a total window of about 42.35 degrees).
+     *
+     * @param guessYaw a guess of the current turret yaw, used to calibrate the encoder
+     */
+    private void calibrateYaw(Angle guessYaw) {
+        // Variable values are in encoder rotations
+        // Get the encoder position in rotations
+        double encoderPosition = encoder.getPosition().getValueAsDouble();
+        // Use only the phase of position since the encoder is off by a whole number of rotations
+        double encoderPhase = MathUtil.inputModulus(encoderPosition, -0.5, 0.5);
+        // Clamp the guess to the turret's physical limits, to avoid erroneous guesses
+        double clampedGuessYaw =
+                MathUtil.clamp(
+                        guessYaw.in(Rotations),
+                        TurretConst.MIN_ANGLE.in(Rotations),
+                        TurretConst.MAX_ANGLE.in(Rotations));
+        // Convert the guess yaw to encoder rotations
+        double guessPosition = clampedGuessYaw * TurretConst.ENCODER_TO_MECHANISM_RATIO;
+        // Find the closest whole number of rotations, relative to the encoder phase
+        double roundedGuessOffset = Math.round(guessPosition - encoderPhase);
+        // Convert back to absolute, to get the coterminal encoder position closest to the guess
+        double calibratedEncoderPosition = roundedGuessOffset + encoderPhase;
+        encoder.setPosition(calibratedEncoderPosition);
     }
 
     public void moveYaw(Angle yaw) {
@@ -47,7 +89,11 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("yaw (deg)", () -> getYaw().in(Degrees), null);
+        // Use this dashboard property setter to calibrate yaw if necessary after startup
+        builder.addDoubleProperty(
+                "YAW (deg)",
+                () -> getYaw().in(Degrees),
+                (guessYaw) -> calibrateYaw(Degrees.of(guessYaw)));
         builder.addDoubleProperty(
                 "target yaw (deg)", () -> targetYaw.in(Degrees), (yaw) -> moveYaw(Degrees.of(yaw)));
         builder.addDoubleProperty(
