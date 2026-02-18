@@ -2,13 +2,8 @@ package frc.robot.launcher;
 
 import static edu.wpi.first.units.Units.Radians;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -17,9 +12,6 @@ import frc.robot.launcher.hood.HoodSubsystem;
 import frc.robot.launcher.shooter.ShooterSubsystem;
 import frc.robot.launcher.turret.TurretSubsystem;
 
-import java.util.Optional;
-import java.util.function.Supplier;
-
 /** Class containing and managing all launcher subsystems */
 public class LauncherAssembly {
     public final ShooterSubsystem shooter = new ShooterSubsystem();
@@ -27,11 +19,10 @@ public class LauncherAssembly {
     public final HoodSubsystem hood = new HoodSubsystem();
     public final TurretSubsystem turret = new TurretSubsystem();
 
-    public Command runAutoAim(
-            Supplier<Pose3d> robotPoseSupplier, Supplier<Translation3d> targetPositionSupplier) {
+    public Command runAutoAim() { // TODO
         Runnable run =
                 () -> {
-                    trajectoryAutoAim(robotPoseSupplier.get(), targetPositionSupplier.get());
+                    // TODO
                 };
         Runnable end =
                 () -> {
@@ -41,37 +32,13 @@ public class LauncherAssembly {
         return Commands.runEnd(run, end, shooter, feeder, hood, turret);
     }
 
-    private void trajectoryAutoAim(Pose3d robotPose, Translation3d targetPosition) {
-        // TODO: use robot to muzzle translation instead of null
-        // The muzzle reference frame (pointing with 0 yaw and pitch), with translation and rotation
-        Pose3d muzzlePose = robotPose.transformBy(new Transform3d(null, Rotation3d.kZero));
-        Translation3d displacement = targetPosition.minus(muzzlePose.getTranslation());
-
-        // TODO: trajectory calculations
-        boolean shouldLaunch = true; // TODO
-        Rotation3d launchFieldDirection = null; // TODO
-        Optional<LinearVelocity> launchVelocity = Optional.empty(); // TODO
-
-        Rotation3d launchRobotDirection = launchFieldDirection.relativeTo(muzzlePose.getRotation());
-        Optional<AngularVelocity> shooterAngularVelocity = launchVelocity.map(v -> null); // TODO
-
-        if (shouldLaunch) {
-            feeder.start();
-        } else {
-            feeder.stop();
-        }
-        shooterAngularVelocity.ifPresentOrElse(shooter::moveAngularVelocity, shooter::stop);
-        aimDirection(launchRobotDirection);
+    private void trajectoryAutoAim() {
+        // TODO
     }
 
     public void aimDirection(Angle pitch, Angle yaw) {
         hood.movePitch(pitch);
         turret.moveYaw(yaw);
-    }
-
-    public void aimDirection(Rotation3d rotation) {
-        // Note: roll is ignored since it doesn't affect direction
-        aimDirection(rotation.getMeasureY(), rotation.getMeasureZ());
     }
 
     public void aimDirection(Translation3d direction) {
