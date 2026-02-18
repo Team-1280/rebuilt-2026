@@ -64,14 +64,14 @@ public class LauncherAssembly {
         aimDirection(launchRobotDirection);
     }
 
-    public void aimDirection(Angle yaw, Angle pitch) {
-        turret.moveYaw(yaw);
+    public void aimDirection(Angle pitch, Angle yaw) {
         hood.movePitch(pitch);
+        turret.moveYaw(yaw);
     }
 
     public void aimDirection(Rotation3d rotation) {
         // Note: roll is ignored since it doesn't affect direction
-        aimDirection(rotation.getMeasureZ(), rotation.getMeasureY());
+        aimDirection(rotation.getMeasureY(), rotation.getMeasureZ());
     }
 
     public void aimDirection(Translation3d direction) {
@@ -79,9 +79,9 @@ public class LauncherAssembly {
             // Gimbal lock: can't determine yaw
             return;
         }
-        double yawRad = Math.atan2(direction.getY(), direction.getX());
         double pitchRad = Math.asin(direction.getZ() / direction.getNorm());
-        aimDirection(Radians.of(yawRad), Radians.of(pitchRad));
+        double yawRad = Math.atan2(direction.getY(), direction.getX());
+        aimDirection(Radians.of(pitchRad), Radians.of(yawRad));
     }
 
     public void stow() {
