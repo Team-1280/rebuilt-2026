@@ -71,8 +71,8 @@ public final class PolynomialSolver {
         }
         // Trigonometric method
         // Three real roots
-        double r = Math.sqrt(-4 * p / 3);
-        double phi = Math.acos(-q / (2 * p * Math.sqrt(-3 * p))) / 3;
+        double r = 2 * Math.sqrt(-p / 3);
+        double phi = Math.acos(-4 * q / (r * r * r)) / 3;
         double[] roots = new double[3];
         for (int k = 0; k < 3; k++) {
             roots[k] = r * Math.cos(phi + k * 2 * Math.PI / 3) - b / (3 * a);
