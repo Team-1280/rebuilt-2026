@@ -27,15 +27,15 @@ public class TrajectoryParameters {
      * Construct the set of trajectory calculation parameters.
      *
      * @param robotPose the pose of the robot in the field coordinate system
+     * @param robotVelocity the horizontal velocity of the robot in the field coordinate system
      * @param launcherTransform the transform from the robot to the launcher's launcher (fuel exit)
      * @param targetTranslation the position of the target in the field coordinate system
-     * @param robotVelocity the horizontal velocity of the robot in the field coordinate system
      */
     public TrajectoryParameters(
             Pose3d robotPose,
+            Translation2d robotVelocity,
             Transform3d launcherTransform,
-            Translation3d targetTranslation,
-            Translation2d robotVelocity) {
+            Translation3d targetTranslation) {
         launcherPose = robotPose.transformBy(launcherTransform);
         displacement = targetTranslation.minus(getLauncherTranslation());
         // TODO: consider accounting for robot angular velocity in the lanucher velocity
