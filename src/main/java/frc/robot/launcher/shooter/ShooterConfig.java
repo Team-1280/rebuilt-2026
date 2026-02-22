@@ -1,14 +1,18 @@
 package frc.robot.launcher.shooter;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 
 public final class ShooterConfig {
+    public static final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(0.0); // TODO
+
     // NOTE: these configurations are shared for both motors; identical other than orientation
     // TODO: add correct current limit
     public static final Current MOTOR_CURRENT_LIMIT = Amps.of(80);
