@@ -37,10 +37,11 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      # Checkout your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Set up Git repository
+        uses: actions/checkout@v6
 
-      # Declares the repository safe and not under dubious ownership.
+      # Declare the repository safe and not under dubious ownership.
       - name: Add repository to git safe directories
         run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
@@ -50,6 +51,7 @@ jobs:
         
       - name: Sanitize formatting
         run: ./gradlew spotlessApply
-      # Runs a single command using the runners shell
+
+      # Run a single command using the runners shell
       - name: Compile and run tests on robot code
         run: ./gradlew build

@@ -12,9 +12,9 @@ This document contains all specifications and requirements for the program.
 ## Controls
 
 ### Drive
-Left Joystick: Move (field-oriented)
-Right Joystick X: Rotate
-Right Joystick Button: Reset robot heading to 0
+- Left Joystick: Move (field-oriented)
+- Right Joystick X: Rotate
+- Right Joystick Button: Reset robot heading to 0
 
 ## Trajectory Calculations and Math
 See [trajectory.pdf](./trajectory/trajectory.pdf).
@@ -23,8 +23,7 @@ See [trajectory.pdf](./trajectory/trajectory.pdf).
 The prewritten code must be available public, on a public forum post such as Chief Delphi,
 before kickoff. From R303 of (2026) Game Manual.
 
-
-## Xbox Controller Mappings
+## Xbox Controller Keyboard Mappings
 What each control is in SmartDashboard, in Keyboard Settings.
 
 Set Keyboard 0 controls to these when you need each specific control.
