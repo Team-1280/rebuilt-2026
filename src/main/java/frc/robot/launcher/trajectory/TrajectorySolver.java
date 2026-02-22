@@ -12,7 +12,22 @@ import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.stream.DoubleStream;
 
-/** Class with utilities for finding optimal launcher trajectories. */
+/**
+ * Class with utilities for finding optimal launcher trajectories.
+ *
+ * <p>To use: Create a TrajectoryParameters object with the necessary variables, and a
+ * TrajectoryConstraints with the constraints on the trajectory.
+ *
+ * <p>Then, pass these two objects into either TrajectorySolver.solve() or
+ * TrajectorySolver.solveIgnoringVertical() (if target height does not matter).
+ *
+ * <p>The returned Trajectory has the calculated unknowns; use methods to get launcher pitch, yaw,
+ * and flywheel speed.
+ *
+ * <p>This trajectory may be invalid, which should be checked. If it is invalid, the given pitch,
+ * yaw, and flywheel speed are still usable (for continuity), though they may be outside of the
+ * mechanical limits of the launcher so clamping should happen.
+ */
 public class TrajectorySolver {
     private TrajectorySolver() {} // not an instantiable class
 
