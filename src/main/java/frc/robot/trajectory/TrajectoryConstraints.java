@@ -1,6 +1,6 @@
-package frc.robot.launcher.trajectory;
+package frc.robot.trajectory;
 
-import static frc.robot.launcher.trajectory.TrajectoryConst.GRAVITY;
+import static frc.robot.trajectory.TrajectoryConst.GRAVITY;
 
 import java.util.ArrayList;
 

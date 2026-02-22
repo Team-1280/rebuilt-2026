@@ -1,11 +1,11 @@
-package frc.robot.launcher.trajectory;
+package frc.robot.trajectory;
 
-import static frc.robot.launcher.trajectory.TrajectoryConst.GRAVITY;
+import static frc.robot.trajectory.TrajectoryConst.GRAVITY;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 
-import frc.robot.launcher.trajectory.TrajectoryConstraints.SoftConstraint;
+import frc.robot.trajectory.TrajectoryConstraints.SoftConstraint;
 import frc.robot.util.PolynomialSolver;
 
 import java.util.Arrays;

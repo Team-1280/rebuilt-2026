@@ -1,4 +1,4 @@
-package frc.robot.launcher.trajectory;
+package frc.robot.trajectory;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;

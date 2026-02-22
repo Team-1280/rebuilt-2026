@@ -1,4 +1,4 @@
-package frc.robot.launcher.trajectory;
+package frc.robot.trajectory;
 
 /** Configurable or tunable constants for trajectory calculations */
 public final class TrajectoryConfig {

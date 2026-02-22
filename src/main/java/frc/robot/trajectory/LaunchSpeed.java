@@ -1,4 +1,4 @@
-package frc.robot.launcher.trajectory;
+package frc.robot.trajectory;
 
 public class LaunchSpeed {
     /** Estimate the launch speed given a flywheel speed and field launch pitch. */

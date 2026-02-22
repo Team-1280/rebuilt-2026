@@ -1,4 +1,4 @@
-package frc.robot.launcher.trajectory;
+package frc.robot.trajectory;
 
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
