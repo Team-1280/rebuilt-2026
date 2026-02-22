@@ -10,6 +10,6 @@ public final class ShooterConst {
     public static final int LEFT_FOLLOWER_MOTOR_ID = -1;
 
     // flywheel and backrollers - 1:1 pulley ratios currently
-    public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
+    public static final Distance FLYWHEEL_RADIUS = Inches.of(2.0);
     public static final Distance BACKROLLER_RADIUS = Inches.of(1.125);
 }
