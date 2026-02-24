@@ -18,5 +18,7 @@ public final class HoodConfig {
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motorConfig.MotorOutput.Inverted =
                 InvertedValue.CounterClockwise_Positive; // TODO - Positive is shooting
+        motorConfig.Feedback.SensorToMechanismRatio = HoodConst.ROTOR_TO_MECHANISM_RATIO;
+        motorConfig.Slot0.GravityArmPositionOffset = 0.0; // TODO: find
     }
 }
