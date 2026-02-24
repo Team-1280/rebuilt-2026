@@ -47,7 +47,7 @@ import org.littletonrobotics.junction.Logger;
  * <li>Gyro consensus failure (three-source pairwise disagreement)
  * <li>Angular jerk (sudden rotation change --bumps or collisions)
  * <li>Linear bump acceleration (NavX2 world-linear accelerometers)
- * <li>Input correlation failure (robot moving against commanded direction —
+ * <li>Input correlation failure (robot moving against commanded direction --
  * defense)
  * <li>Drive motor CAN fault (all motors report -1 A supply current)
  * </ul>
