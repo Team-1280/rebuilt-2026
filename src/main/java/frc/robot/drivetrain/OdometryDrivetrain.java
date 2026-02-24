@@ -7,127 +7,173 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 
+import frc.robot.vision.VisionConst;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
- * OdometryDrivetrain extends the base swerve drivetrain with logic that dynamically determines how
- * much the robot should trust odometry vs vision.
+ * OdometryDrivetrain extends the base swerve drivetrain with a homotopy evidence fusion pipeline
+ * that determines how much the robot should trust odometry vs vision.
  *
- * <p>This class solves a specific mechanical problem: when swerve modules lift off the ground
- * (e.g., over bumps), wheel encoders report false motion ("slip"). This implementation detects slip
- * by comparing rotation rates from:
+ * <p>The trust system is modeled using an {@link Evidence} monoid: each sensor disagreement maps to
+ * an evidence weight via a Gaussian morphism, and composing evidence values via {@code and()}
+ * yields their categorical product — the intersection of all trust "proofs" (analogous to shared
+ * homotopy classes in HoTT). The composite evidence drives vision covariance interpolation.
  *
- * <ul>
- *   <li>Gyroscopes (inertial, reliable during lift)
- *   <li>Encoder-based odometry (unreliable during lift)
- * </ul>
- *
- * and dynamically adjusts trust in vision measurements accordingly.
- *
- * <p>This class is designed to be readable by rookies:
+ * <p>Trust is reduced by:
  *
  * <ul>
- *   <li>All math is explained at a high level
- *   <li>No assumptions about probability or estimation theory
- *   <li>Comments explain "why", not just "what"
+ *   <li>Gyro consensus failure (three-source pairwise disagreement)
+ *   <li>Angular jerk (sudden rotation change — bumps or collisions)
+ *   <li>Linear bump acceleration (NavX2 world-linear accelerometers)
+ *   <li>Input correlation failure (robot moving against commanded direction — defense)
+ *   <li>Drive motor CAN fault (all motors report −1 A supply current)
  * </ul>
  */
 public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
 
-    /**
-     * How often odometry is updated, in Hz.
-     *
-     * <p>This should match the CAN update rate of the drivetrain hardware.
-     */
+    /** Odometry thread frequency, must match CAN update rate. */
     private static final double ODOMETRY_UPDATE_FREQUENCY = CommandSwerveIO.ODOMETRY_FREQ;
 
-    /**
-     * Vision standard deviations when vision is performing very well.
-     *
-     * <p>Lower values mean "trust vision more".
-     *
-     * <p>Order is: [x meters, y meters, rotation radians]
-     */
+    /** Vision standard deviations when fully trusted (low = trust more). */
     private static final Matrix<N3, N1> VISION_STD_BEST = VecBuilder.fill(0.05, 0.05, 0.04);
 
-    /**
-     * Vision standard deviations when vision is performing very poorly.
-     *
-     * <p>Higher values mean "trust vision less".
-     */
+    /** Vision standard deviations when minimally trusted (high = trust less). */
     private static final Matrix<N3, N1> VISION_STD_WORST = VecBuilder.fill(0.60, 0.60, 0.40);
 
     /**
-     * Acceptable disagreement between two gyro angular velocity measurements before trust is
-     * reduced.
+     * Gaussian sigma for pairwise gyro agreement, in rad/s.
      *
-     * <p>Units are radians per second.
+     * <p>Disagreements larger than this reduce per-source weights.
      */
     private static final double GYRO_AGREEMENT_SIGMA = 1.5;
 
     /**
-     * Acceptable disagreement between odometry-derived rotation rate and gyro rotation rate.
+     * Gaussian sigma for wheel-vs-inertial omega disagreement, in rad/s.
      *
-     * <p>When wheels lift off ground, encoder odometry reports false rotation. This threshold
-     * detects that slip condition.
-     *
-     * <p>Units are radians per second.
+     * <p>Large disagreements indicate wheel slip.
      */
     // TODO: Tune const
     private static final double SLIP_DETECTION_THRESHOLD = 2.0;
 
     /**
-     * Supply current value that indicates a drive motor fault or disconnection.
+     * Gaussian sigma for angular jerk, in rad/s².
      *
-     * <p>When a TalonFX reports this value for supply current, it typically means CAN communication
-     * has been lost or the motor is disconnected.
+     * <p>High jerk indicates sudden rotation change (bump, collision, or tipping).
      */
+    private static final double JERK_SIGMA = 8.0;
+
+    /**
+     * Gaussian sigma for linear bump acceleration, in m/s².
+     *
+     * <p>Values from NavX2 world-linear accelerometers (g → m/s²).
+     */
+    private static final double BUMP_ACCEL_SIGMA = 4.0;
+
+    /** Threshold below which commanded speed is treated as zero (being pushed / parked). */
+    private static final double COMMAND_DEADBAND = 0.05;
+
+    /**
+     * Gaussian sigma for unexpected robot motion under zero command, in m/s.
+     *
+     * <p>Motion above this level while commanding zero indicates external force (defense push).
+     */
+    private static final double PUSH_DETECTION_SIGMA = 0.3;
+
+    /** Supply current value reported by TalonFX when CAN is lost or motor is disconnected. */
     private static final double SUPPLY_CURRENT_FAULT_VALUE = -1.0;
 
-    /** Minimum distance at which vision measurements are trusted, in meters. */
+    /** Minimum target distance for trusted vision measurements, in meters. */
     private static final double TRUST_VISION_RANGE_MIN = 0.25;
 
-    /** Maximum distance at which vision measurements are trusted, in meters. */
+    /** Maximum target distance for trusted vision measurements, in meters. */
     private static final double TRUST_VISION_RANGE_MAX = 3.5;
 
-    /** Pose from the previous loop, used to compute angular velocity from odometry. */
+    // -------------------------------------------------------------------------
+    // Evidence monoid
+    // -------------------------------------------------------------------------
+
+    /**
+     * Commutative monoid for categorical trust fusion.
+     *
+     * <p>{@code Evidence} represents a proof that sensor readings are consistent. The unit element
+     * ({@code weight = 1}) means "no evidence against". Composing two evidences with {@code and()}
+     * takes their product — the categorical AND / intersection of proofs. In HoTT terms this is the
+     * shared homotopy class of multiple sensor paths.
+     *
+     * <p>The Gaussian morphism {@code of(error, sigma)} lifts an absolute sensor disagreement into
+     * evidence space: small errors → evidence near 1, large errors → evidence near 0.
+     */
+    private record Evidence(double weight) {
+        /** Gaussian morphism: maps absolute error to evidence weight in [0, 1]. */
+        static Evidence of(double error, double sigma) {
+            return new Evidence(Math.exp(-Math.abs(error) / sigma));
+        }
+
+        /** Categorical product (AND): the intersection of two proofs. */
+        Evidence and(Evidence other) {
+            return new Evidence(this.weight * other.weight);
+        }
+
+        /** Monoid unit: full trust, no evidence against. */
+        static Evidence unit() {
+            return new Evidence(1.0);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // State
+    // -------------------------------------------------------------------------
+
+    /** Pose from the previous loop iteration, used to derive odometry omega. */
     private Pose2d lastPose = new Pose2d();
 
     /** FPGA timestamp from the previous loop iteration. */
     private double lastTimeSec = Timer.getFPGATimestamp();
 
+    /** Consensus omega from the previous loop iteration, used to compute angular jerk. */
+    private double lastOmegaInertial = 0.0;
+
     /**
-     * Cached trust value for odometry.
+     * Cached composite trust value for encoder-based odometry.
      *
-     * <p>1.0 means "trust odometry fully" (no slip detected), 0.0 means "do not trust odometry"
-     * (severe slip detected).
+     * <p>1.0 = fully trustworthy, 0.0 = completely untrustworthy.
      */
     private double cachedOdometryTrust = 1.0;
 
-    /**
-     * Whether slip was detected in the most recent update cycle.
-     *
-     * <p>Used for telemetry and potential future recovery logic.
-     */
+    /** Cached Pose3d with NavX2 tilt, updated each periodic loop. */
+    private Pose3d cachedPose3d = new Pose3d();
+
+    /** Whether slip was detected in the most recent update cycle. */
     private boolean slipDetected = false;
 
-    /**
-     * Whether all drive motors report a fault supply current (-1).
-     *
-     * <p>Indicates CAN communication loss or motor disconnection.
-     */
+    /** Whether all drive motors report a CAN-fault supply current. */
     private boolean driveCurrentFault = false;
 
-    /** Third gyroscope — NavX2 connected via MXP (SPI), used for inertial cross-checking. */
-    private final AHRS navX2 = new AHRS(AHRS.NavXComType.kMXP_SPI);
+    /**
+     * Most recently commanded chassis speeds, used for push-detection.
+     *
+     * <p>Updated each loop by {@link #setCommandedSpeeds(ChassisSpeeds)}.
+     */
+    private ChassisSpeeds commandedSpeeds = new ChassisSpeeds();
 
-    /** TalonFX references for the 4 drive motors (odd CAN IDs: 1, 3, 5, 7). */
+    /** Third gyroscope — NavX2 connected via MXP (SPI), used for inertial cross-checking. */
+    private final AHRS navX2 = new AHRS(AHRS.NavXComType.kMXP_UART);
+
+    /** TalonFX references for the 4 drive motors (modules 0–3: FL, FR, BL, BR). */
     private final TalonFX[] driveMotors;
+
+    // -------------------------------------------------------------------------
+    // Construction
+    // -------------------------------------------------------------------------
 
     /** Constructs the drivetrain with odometry trust logic. */
     public OdometryDrivetrain() {
@@ -138,87 +184,206 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
                 TunerConstants.FrontRight,
                 TunerConstants.BackLeft,
                 TunerConstants.BackRight);
-        lastPose = getState().Pose; // Initialize with actual starting pose
+        lastPose = getState().Pose;
 
-        // Cache drive motor references (modules 0-3: FL, FR, BL, BR)
         driveMotors = new TalonFX[4];
         for (int i = 0; i < 4; i++) {
             driveMotors[i] = getModule(i).getDriveMotor();
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Public API
+    // -------------------------------------------------------------------------
+
     /**
-     * Computes a trust value using exponential decay.
+     * Updates the commanded chassis speeds for push-detection.
      *
-     * <p>If error is small, trust is near 1. If error is large, trust approaches 0.
+     * <p>Call this each loop from teleop or auto with the speeds the controller is requesting. When
+     * the robot moves opposite to the command, {@code inputCorrelationTrust} drops, reducing
+     * odometry trust.
      *
-     * @param error absolute difference between two measurements
-     * @param sigma how tolerant we are of error (larger = more tolerant)
-     * @return trust value between 0 and 1
+     * @param speeds commanded chassis speeds (field-relative or robot-relative, consistent with
+     *     {@code getState().Speeds})
      */
-    private static double gaussianTrust(double error, double sigma) {
-        return Math.exp(-Math.abs(error) / sigma);
+    public void setCommandedSpeeds(ChassisSpeeds speeds) {
+        this.commandedSpeeds = speeds;
     }
 
     /**
-     * Linearly interpolates between two standard deviation matrices.
+     * Returns the current composite trust level in encoder-based odometry.
      *
-     * <p>alpha = 0 returns worst, alpha = 1 returns best.
+     * <p>1.0 = fully trustworthy, 0.0 = completely untrustworthy.
      */
-    private static Matrix<N3, N1> interpolateMatrices(
-            Matrix<N3, N1> worst, Matrix<N3, N1> best, double alpha) {
-        return VecBuilder.fill(
-                MathUtil.interpolate(worst.get(0, 0), best.get(0, 0), alpha),
-                MathUtil.interpolate(worst.get(1, 0), best.get(1, 0), alpha),
-                MathUtil.interpolate(worst.get(2, 0), best.get(2, 0), alpha));
+    public double getOdometryTrust() {
+        return cachedOdometryTrust;
     }
+
+    /**
+     * Returns whether wheel slip was detected in the most recent update cycle.
+     *
+     * <p>Slip indicates one or more swerve modules have lifted, causing encoder odometry to report
+     * false motion.
+     */
+    public boolean isSlipDetected() {
+        return slipDetected;
+    }
+
+    /**
+     * Returns the latest 3D pose with NavX2 tilt (roll/pitch) applied.
+     *
+     * <p>X/Y match the 2D odometry pose; Z is 0; rotation includes measured roll and pitch from the
+     * NavX2 for 3D visualization in AdvantageScope.
+     */
+    public Pose3d getPose3d() {
+        return cachedPose3d;
+    }
+
+    /**
+     * Adds a vision measurement with trust dynamically adjusted by the composite evidence pipeline.
+     *
+     * <p>Vision is rejected when:
+     *
+     * <ul>
+     *   <li>The target is too close or too far (range filter)
+     *   <li>The measurement arrived late while odometry is unreliable (latency + slip filter)
+     * </ul>
+     *
+     * <p>When two or more targets are visible (multi-tag PnP), the trust boost is maximal because
+     * multi-tag PnP is unambiguous. With a single tag, the boost scales inversely with ambiguity.
+     *
+     * @param pose estimated robot pose from vision
+     * @param timestampSeconds FPGA timestamp of the measurement
+     * @param distanceMeters average distance to the targets used
+     * @param ambiguity pose ambiguity of the best target (0 = unambiguous, 1 = fully ambiguous)
+     * @param numTargets number of AprilTag targets used in the estimate
+     */
+    public void addVisionMeasurement(
+            Pose2d pose,
+            double timestampSeconds,
+            double distanceMeters,
+            double ambiguity,
+            int numTargets) {
+        if (distanceMeters < TRUST_VISION_RANGE_MIN || distanceMeters > TRUST_VISION_RANGE_MAX) {
+            Logger.recordOutput("Vision/Rejected/Reason", "Range");
+            return;
+        }
+
+        double latency = Timer.getFPGATimestamp() - timestampSeconds;
+        if (latency > 0.2 && cachedOdometryTrust < 0.3) {
+            Logger.recordOutput("Vision/Rejected/Reason", "HighLatencyDuringSlip");
+            return;
+        }
+
+        // Multi-tag PnP is unambiguous; single-tag trust scales with ambiguity
+        double targetTrustBoost =
+                numTargets >= 2 ? 1.0 : (1.0 - ambiguity / VisionConst.MAX_AMBIGUITY);
+        double visionTrustFactor = cachedOdometryTrust * targetTrustBoost;
+
+        Matrix<N3, N1> visionStd =
+                interpolateMatrices(
+                        VISION_STD_WORST, VISION_STD_BEST, 0.2 + 0.8 * visionTrustFactor);
+
+        super.addVisionMeasurement(pose, timestampSeconds, visionStd);
+        Logger.recordOutput("Vision/Accepted/Pose", pose);
+        Logger.recordOutput("Vision/Accepted/StdDev/X", visionStd.get(0, 0));
+        Logger.recordOutput("Vision/Accepted/StdDev/Y", visionStd.get(1, 0));
+        Logger.recordOutput("Vision/Accepted/StdDev/Theta", visionStd.get(2, 0));
+        Logger.recordOutput("Vision/Accepted/TrustFactor", visionTrustFactor);
+        Logger.recordOutput("Vision/Accepted/NumTargets", numTargets);
+        Logger.recordOutput("Vision/Accepted/Ambiguity", ambiguity);
+    }
+
+    // -------------------------------------------------------------------------
+    // Periodic
+    // -------------------------------------------------------------------------
 
     @Override
     public void periodic() {
         super.periodic();
 
-        // Compute time since last update
         double now = Timer.getFPGATimestamp();
         double dt = now - lastTimeSec;
         lastTimeSec = now;
 
-        // Protect against divide-by-zero and extremely small timesteps
         if (dt <= 1e-4 || Double.isNaN(dt)) {
             return;
         }
 
         Pose2d currentPose = getState().Pose;
 
-        // Read angular velocities from all three sources
-        double omegaPigeon =
-                Units.degreesToRadians(
-                        getPigeon2().getAngularVelocityZWorld().getValueAsDouble()); // Pigeon2
-        double omegaNavX2 = Units.degreesToRadians(navX2.getRate()); // NavX2 MXP
-        double omegaRio = getState().Speeds.omegaRadiansPerSecond; // Kinematics estimated
-
-        // Determine how much the two physical inertial gyros agree with each other
-        double gyroAgreement = Math.abs(omegaPigeon - omegaNavX2);
-        double gyroAgreementTrust = gaussianTrust(gyroAgreement, GYRO_AGREEMENT_SIGMA);
-
-        // Blend the two physical gyro readings — this is our inertial "ground truth"
-        double omegaInertial =
-                gyroAgreementTrust * omegaPigeon + (1.0 - gyroAgreementTrust) * omegaNavX2;
-
-        // Compute rotation rate derived purely from encoder odometry (unreliable during
+        // ----- 1. Three-source gyro angular velocities -----
+        // G1: Pigeon2 (CTRE, high-frequency, primary navigation gyro)
+        // G2: NavX2 MXP (Studica AHRS, independent IMU, cross-check)
+        // G3: WPILib kinematics estimate (derived from wheel encoders, suspect during
         // slip)
+        double G1 =
+                Units.degreesToRadians(getPigeon2().getAngularVelocityZWorld().getValueAsDouble());
+        double G2 = Units.degreesToRadians(navX2.getRate());
+        double G3 = getState().Speeds.omegaRadiansPerSecond;
+
+        // ----- 2. Pairwise evidence (categorical morphisms in trust category) -----
+        Evidence e12 = Evidence.of(G1 - G2, GYRO_AGREEMENT_SIGMA); // Pigeon2 vs NavX2
+        Evidence e13 = Evidence.of(G1 - G3, GYRO_AGREEMENT_SIGMA); // Pigeon2 vs kinematics
+        Evidence e23 = Evidence.of(G2 - G3, GYRO_AGREEMENT_SIGMA); // NavX2 vs kinematics
+
+        // Weight each source by its agreement with the other two.
+        // If one source is an outlier, its two pairwise evidences are low → low weight.
+        double w1 = e12.weight() * e13.weight(); // G1 trusted when it agrees with G2 and G3
+        double w2 = e12.weight() * e23.weight(); // G2 trusted when it agrees with G1 and G3
+        double w3 = e13.weight() * e23.weight(); // G3 trusted when it agrees with G1 and G2
+        double wTotal = w1 + w2 + w3;
+
+        // Weighted consensus omega; fallback to Pigeon2 if all three badly disagree
+        double omegaInertial = wTotal < 1e-9 ? G1 : (w1 * G1 + w2 * G2 + w3 * G3) / wTotal;
+
+        // Categorical product of all pairwise agreements → overall gyro consensus trust
+        double gyroConsensusTrust = e12.and(e13).and(e23).weight();
+
+        // ----- 3. Angular jerk detection -----
+        double angularJerk = (omegaInertial - lastOmegaInertial) / dt;
+        Evidence jerkEvidence = Evidence.of(angularJerk, JERK_SIGMA);
+        lastOmegaInertial = omegaInertial;
+
+        // ----- 4. Linear bump detection (NavX2 world-linear accelerometers) -----
+        // getWorldLinearAccelX/Y return values in g; convert to m/s²
+        double bumpAccel =
+                Math.hypot(navX2.getWorldLinearAccelX(), navX2.getWorldLinearAccelY()) * 9.8;
+        Evidence bumpEvidence = Evidence.of(bumpAccel, BUMP_ACCEL_SIGMA);
+
+        // ----- 5. Input correlation (push / defense detection) -----
+        double cmdLinear =
+                Math.hypot(commandedSpeeds.vxMetersPerSecond, commandedSpeeds.vyMetersPerSecond);
+        double actLinear =
+                Math.hypot(
+                        getState().Speeds.vxMetersPerSecond, getState().Speeds.vyMetersPerSecond);
+        double cmdOmega = commandedSpeeds.omegaRadiansPerSecond;
+        double actOmega = getState().Speeds.omegaRadiansPerSecond;
+
+        double inputCorrelationTrust;
+        if (cmdLinear < COMMAND_DEADBAND && Math.abs(cmdOmega) < COMMAND_DEADBAND) {
+            // Zero command: motion means something external is pushing the robot
+            inputCorrelationTrust = gaussianTrust(actLinear, PUSH_DETECTION_SIGMA);
+        } else {
+            // Non-zero command: check if velocity direction aligns with intent
+            double linearDot =
+                    (commandedSpeeds.vxMetersPerSecond * getState().Speeds.vxMetersPerSecond
+                                    + commandedSpeeds.vyMetersPerSecond
+                                            * getState().Speeds.vyMetersPerSecond)
+                            / Math.max(cmdLinear * actLinear, 1e-6);
+            // Punish opposite-sign rotation (being spun against command)
+            double omegaCorr = cmdOmega * actOmega < 0 ? 0.2 : 1.0;
+            inputCorrelationTrust = 0.5 + 0.5 * linearDot * omegaCorr;
+        }
+
         double deltaTheta =
                 MathUtil.angleModulus(
                         currentPose.getRotation().getRadians()
                                 - lastPose.getRotation().getRadians());
         double omegaOdometry = deltaTheta / dt;
-
-        // DETECT SLIP: When wheels lift, encoder odometry reports false rotation
-        // while gyros (inertial sensors) remain accurate. Large disagreement = slip.
         double slipError = Math.abs(omegaOdometry - omegaInertial);
         slipDetected = slipError > SLIP_DETECTION_THRESHOLD;
 
-        // DETECT DRIVE MOTOR FAULT: If all drive motors (odd CAN IDs) report -1
-        // supply current, it indicates CAN loss or disconnection - treat as slip.
         driveCurrentFault = true;
         for (TalonFX motor : driveMotors) {
             if (motor.getSupplyCurrent().getValueAsDouble() != SUPPLY_CURRENT_FAULT_VALUE) {
@@ -230,114 +395,75 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
             slipDetected = true;
         }
 
-        // Trust odometry less when slip is detected
-        double odometryTrust = gaussianTrust(slipError, SLIP_DETECTION_THRESHOLD);
+        Evidence wheelEvidence =
+                Evidence.of(slipError, SLIP_DETECTION_THRESHOLD)
+                        .and(jerkEvidence)
+                        .and(bumpEvidence)
+                        .and(new Evidence(inputCorrelationTrust));
         if (driveCurrentFault) {
-            odometryTrust = 0.0; // Zero trust when all drive motors report fault
+            wheelEvidence = new Evidence(0.0);
         }
-        cachedOdometryTrust = odometryTrust;
+        cachedOdometryTrust = wheelEvidence.weight();
 
-        // Update telemetry - AdvantageKit friendly direct logging
+        // ----- 9. Pose3d with NavX2 tilt -----
+        double roll = Units.degreesToRadians(navX2.getRoll());
+        double pitch = Units.degreesToRadians(navX2.getPitch());
+        cachedPose3d =
+                new Pose3d(
+                        currentPose.getX(),
+                        currentPose.getY(),
+                        0.0,
+                        new Rotation3d(roll, pitch, currentPose.getRotation().getRadians()));
+
+        // ----- Telemetry -----
         Logger.recordOutput("Odometry/Pose", currentPose);
-        Logger.recordOutput("Odometry/Trust", odometryTrust);
+        Logger.recordOutput("Odometry/Pose3d", cachedPose3d);
+        Logger.recordOutput("Odometry/Trust/Composite", cachedOdometryTrust);
+        Logger.recordOutput("Odometry/Trust/Jerk", jerkEvidence.weight());
+        Logger.recordOutput("Odometry/Trust/Bump", bumpEvidence.weight());
+        Logger.recordOutput("Odometry/Trust/InputCorrelation", inputCorrelationTrust);
         Logger.recordOutput("Odometry/SlipDetected", slipDetected);
         Logger.recordOutput("Odometry/DriveCurrentFault", driveCurrentFault);
-        Logger.recordOutput("Odometry/Omega/Inertial", omegaInertial);
+        Logger.recordOutput("Odometry/Gyro/Consensus", gyroConsensusTrust);
+        Logger.recordOutput("Odometry/Gyro/Agreement/P2NavX", e12.weight());
+        Logger.recordOutput("Odometry/Gyro/Agreement/P2Kin", e13.weight());
+        Logger.recordOutput("Odometry/Gyro/Agreement/NavXKin", e23.weight());
+        Logger.recordOutput("Odometry/Omega/Consensus", omegaInertial);
+        Logger.recordOutput("Odometry/Omega/NavX2", G2);
+        Logger.recordOutput("Odometry/Omega/Pigeon", G1);
+        Logger.recordOutput("Odometry/Omega/Kinematics", G3);
         Logger.recordOutput("Odometry/Omega/Odometry", omegaOdometry);
-        Logger.recordOutput("Odometry/Omega/Pigeon", omegaPigeon);
-        Logger.recordOutput("Odometry/Omega/NavX2", omegaNavX2);
-        Logger.recordOutput("Odometry/Omega/Rio", omegaRio);
         Logger.recordOutput("Odometry/Omega/Disagreement", slipError);
+        Logger.recordOutput("Odometry/Jerk/Angular", angularJerk);
+        Logger.recordOutput("Odometry/Jerk/LinearBump", bumpAccel);
 
-        // Prepare for next iteration
         lastPose = currentPose;
     }
 
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
     /**
-     * Adds a vision measurement with dynamically adjusted trust based on current odometry
-     * reliability.
+     * Computes trust via exponential decay.
      *
-     * <p>Vision is rejected if:
-     *
-     * <ul>
-     *   <li>The measurement is flagged as noisy
-     *   <li>The target is too close (parallax errors dominate)
-     *   <li>The target is too far (low resolution, high noise)
-     *   <li>Odometry is unreliable (slip detected) AND the vision timestamp is old (we can't
-     *       accurately correct for latency without trustworthy odometry)
-     * </ul>
-     *
-     * <p>When odometry is unreliable due to slip, we increase vision standard deviations (reduce
-     * trust) because:
-     *
-     * <ul>
-     *   <li>Vision timestamp correction relies on odometry to estimate robot motion during latency
-     *   <li>If odometry is lying due to wheel slip, timestamp correction becomes inaccurate
-     * </ul>
-     *
-     * @param pose estimated robot pose from vision
-     * @param timestampSeconds timestamp of the measurement (FPGA timestamp in seconds)
-     * @param distanceMeters distance to the vision target
-     * @param noisy whether the measurement is known to be unreliable
+     * <p>Small error → trust near 1; large error → trust near 0. Equivalent to {@code
+     * Evidence.of(error, sigma).weight()}.
      */
-    public void addVisionMeasurement(
-            Pose2d pose, double timestampSeconds, double distanceMeters, boolean noisy) {
-        // REJECT: Obviously bad measurements
-        if (noisy
-                || distanceMeters < TRUST_VISION_RANGE_MIN
-                || distanceMeters > TRUST_VISION_RANGE_MAX) {
-            Logger.recordOutput("Vision/Rejected/Reason", "RangeOrNoisy");
-            return;
-        }
-
-        // REJECT: Vision measurements that arrived too late when odometry is unreliable
-        // Reason: We can't accurately correct for latency without trustworthy odometry
-        double latency = Timer.getFPGATimestamp() - timestampSeconds;
-        if (latency > 0.2 && cachedOdometryTrust < 0.3) {
-            Logger.recordOutput("Vision/Rejected/Reason", "HighLatencyDuringSlip");
-            return;
-        }
-
-        // DYNAMIC TRUST: When odometry is unreliable (slip), reduce vision trust
-        // because timestamp correction depends on odometry. When odometry is
-        // trustworthy,
-        // we can fully trust well-conditioned vision measurements.
-        double visionTrustFactor = cachedOdometryTrust; // 1.0 = full trust, 0.0 = minimal trust
-        Matrix<N3, N1> visionStd =
-                interpolateMatrices(
-                        VISION_STD_WORST, VISION_STD_BEST, 0.2 + 0.8 * visionTrustFactor);
-
-        // ACCEPT: Inject into Kalman filter with appropriate uncertainty
-        super.addVisionMeasurement(pose, timestampSeconds, visionStd);
-        Logger.recordOutput("Vision/Accepted/Pose", pose);
-        Logger.recordOutput("Vision/Accepted/StdDev/X", visionStd.get(0, 0));
-        Logger.recordOutput("Vision/Accepted/StdDev/Y", visionStd.get(1, 0));
-        Logger.recordOutput("Vision/Accepted/StdDev/Theta", visionStd.get(2, 0));
-        Logger.recordOutput("Vision/Accepted/TrustFactor", visionTrustFactor);
+    private static double gaussianTrust(double error, double sigma) {
+        return Math.exp(-Math.abs(error) / sigma);
     }
 
     /**
-     * Returns the current trust level in encoder-based odometry.
+     * Linearly interpolates between two standard deviation matrices.
      *
-     * <p>1.0 = fully trustworthy (no slip), 0.0 = completely untrustworthy (severe slip).
-     *
-     * <p>Useful for other subsystems that need to know if odometry is currently reliable.
-     *
-     * @return odometry trust value between 0 and 1
+     * <p>alpha = 0 returns {@code worst}, alpha = 1 returns {@code best}.
      */
-    public double getOdometryTrust() {
-        return cachedOdometryTrust;
-    }
-
-    /**
-     * Returns whether wheel slip was detected in the most recent update cycle.
-     *
-     * <p>Slip detection indicates that one or more swerve modules have lifted off the ground,
-     * causing encoder-based odometry to report false motion.
-     *
-     * @return true if slip was detected
-     */
-    public boolean isSlipDetected() {
-        return slipDetected;
+    private static Matrix<N3, N1> interpolateMatrices(
+            Matrix<N3, N1> worst, Matrix<N3, N1> best, double alpha) {
+        return VecBuilder.fill(
+                MathUtil.interpolate(worst.get(0, 0), best.get(0, 0), alpha),
+                MathUtil.interpolate(worst.get(1, 0), best.get(1, 0), alpha),
+                MathUtil.interpolate(worst.get(2, 0), best.get(2, 0), alpha));
     }
 }

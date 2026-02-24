@@ -12,7 +12,9 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.Sendable;
@@ -23,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.build.BuildConstants; // generated file: build to resolve
-import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.vision.VisionSubsystem;
 
@@ -34,14 +35,26 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot implements Sendable {
 
-    private final CommandSwerveDrivetrain drivetrain = new OdometryDrivetrain();
+    private final OdometryDrivetrain drivetrain = new OdometryDrivetrain();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
+    /** Maximum linear drive speed in m/s. */
+    private final double maxSpeed = MetersPerSecond.of(1.60).in(MetersPerSecond);
+
+    /** Maximum angular drive speed in rad/s. */
+    private final double maxAngularSpeed = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
+
     private final Field2d field = new Field2d();
+
     StructPublisher<Pose2d> posePublisher =
             NetworkTableInstance.getDefault().getStructTopic("Robot Pose", Pose2d.struct).publish();
+
+    StructPublisher<Pose3d> pose3dPublisher =
+            NetworkTableInstance.getDefault()
+                    .getStructTopic("Robot Pose3d", Pose3d.struct)
+                    .publish();
 
     public Robot() {
         initLogger(); // must happen first
@@ -74,26 +87,24 @@ public class Robot extends LoggedRobot implements Sendable {
         SmartDashboard.putData("Robot", this);
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
+        pose3dPublisher.set(new Pose3d());
         SmartDashboard.putData("Vision", vision);
     }
 
     private void initBindings() {
-        // Drive bindings
-        double speed = MetersPerSecond.of(1.60).in(MetersPerSecond);
-        double angularSpeed = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
         final SwerveRequest.FieldCentric driveRequest =
                 new SwerveRequest.FieldCentric()
-                        .withDeadband(speed * 0.1)
-                        .withRotationalDeadband(angularSpeed * 0.1)
+                        .withDeadband(maxSpeed * 0.1)
+                        .withRotationalDeadband(maxAngularSpeed * 0.1)
                         .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
                         () ->
                                 driveRequest
-                                        .withVelocityX(-controller.getLeftY() * speed)
-                                        .withVelocityY(-controller.getLeftX() * speed)
+                                        .withVelocityX(-controller.getLeftY() * maxSpeed)
+                                        .withVelocityY(-controller.getLeftX() * maxSpeed)
                                         .withRotationalRate(
-                                                -controller.getRightX() * angularSpeed)));
+                                                -controller.getRightX() * maxAngularSpeed)));
 
         controller
                 .rightStick()
@@ -108,6 +119,7 @@ public class Robot extends LoggedRobot implements Sendable {
         CommandScheduler.getInstance().run();
         field.setRobotPose(drivetrain.getState().Pose);
         posePublisher.set(drivetrain.getState().Pose);
+        pose3dPublisher.set(drivetrain.getPose3d());
     }
 
     @Override
@@ -120,7 +132,15 @@ public class Robot extends LoggedRobot implements Sendable {
     public void teleopInit() {}
 
     @Override
-    public void teleopPeriodic() {}
+    public void teleopPeriodic() {
+        // Inform the trust pipeline what the driver is commanding so it can detect
+        // if the robot is being pushed against its intended direction (defense).
+        drivetrain.setCommandedSpeeds(
+                new ChassisSpeeds(
+                        -controller.getLeftY() * maxSpeed,
+                        -controller.getLeftX() * maxSpeed,
+                        -controller.getRightX() * maxAngularSpeed));
+    }
 
     @Override
     public void disabledInit() {}

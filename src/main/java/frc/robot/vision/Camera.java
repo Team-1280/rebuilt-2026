@@ -1,6 +1,7 @@
 package frc.robot.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 
 import org.photonvision.EstimatedRobotPose;
@@ -14,6 +15,14 @@ import java.util.Optional;
 public class Camera {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
+
+    /** A vision measurement with all metadata needed for trust computation. */
+    public record VisionMeasurement(
+            Pose2d pose,
+            double timestampSeconds,
+            double distanceMeters,
+            double ambiguity,
+            int numTargets) {}
 
     /**
      * Create a new Camera representing a physical vision camera on the robot.
@@ -30,13 +39,13 @@ public class Camera {
     }
 
     /**
-     * Updates the camera and returns estimated robot poses from the latest unread results. Should
-     * be called periodically.
+     * Updates the camera and returns vision measurements from the latest unread results. Should be
+     * called periodically.
      *
-     * @return The latest estimated robot poses from the results, if available
+     * @return The latest vision measurements, including distance, ambiguity, and target count
      */
-    public ArrayList<EstimatedRobotPose> update() {
-        ArrayList<EstimatedRobotPose> estimatedPoses = new ArrayList<>();
+    public ArrayList<VisionMeasurement> update() {
+        ArrayList<VisionMeasurement> measurements = new ArrayList<>();
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
             if (!shouldUseResult(result)) {
                 continue;
@@ -46,16 +55,29 @@ public class Camera {
             if (estimate.isEmpty()) {
                 continue;
             }
-            estimatedPoses.add(estimate.get());
+            EstimatedRobotPose est = estimate.get();
+            double dist =
+                    est.targetsUsed.stream()
+                            .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
+                            .average()
+                            .orElse(Double.MAX_VALUE);
+            int numTargets = est.targetsUsed.size();
+            double ambiguity = result.getBestTarget().getPoseAmbiguity();
+            measurements.add(
+                    new VisionMeasurement(
+                            est.estimatedPose.toPose2d(),
+                            est.timestampSeconds,
+                            dist,
+                            ambiguity,
+                            numTargets));
         }
-        return estimatedPoses;
+        return measurements;
     }
 
     /**
-     * Decides whether to use the given pipeline result for pose estimation. This method should be
-     * extended more to filter out bad results.
+     * Decides whether to use the given pipeline result for pose estimation.
      *
-     * @param result
+     * @param result the pipeline result to evaluate
      * @return true if the result should be used, false otherwise
      */
     public boolean shouldUseResult(PhotonPipelineResult result) {
