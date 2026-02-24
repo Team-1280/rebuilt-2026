@@ -2,6 +2,7 @@ package frc.robot.drivetrain;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+// TODO: Studica vendor deps not properly imported in WPILib yet -- add vendordep when available
 import com.studica.frc.AHRS;
 
 import edu.wpi.first.math.MathUtil;
@@ -34,7 +35,7 @@ import org.littletonrobotics.junction.Logger;
  * disagreement maps to
  * an evidence weight via a Gaussian morphism, and composing evidence values via
  * {@code and()}
- * yields their categorical product — the intersection of all trust "proofs"
+ * yields their categorical product --the intersection of all trust "proofs"
  * (analogous to shared
  * homotopy classes in HoTT). The composite evidence drives vision covariance
  * interpolation.
@@ -44,11 +45,11 @@ import org.littletonrobotics.junction.Logger;
  *
  * <ul>
  * <li>Gyro consensus failure (three-source pairwise disagreement)
- * <li>Angular jerk (sudden rotation change — bumps or collisions)
+ * <li>Angular jerk (sudden rotation change --bumps or collisions)
  * <li>Linear bump acceleration (NavX2 world-linear accelerometers)
  * <li>Input correlation failure (robot moving against commanded direction —
  * defense)
- * <li>Drive motor CAN fault (all motors report −1 A supply current)
+ * <li>Drive motor CAN fault (all motors report -1 A supply current)
  * </ul>
  */
 public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
@@ -80,7 +81,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     private static final double SLIP_DETECTION_THRESHOLD = 2.0;
 
     /**
-     * Gaussian sigma for angular jerk, in rad/s².
+     * Gaussian sigma for angular jerk, in rad/s^2.
      *
      * <p>
      * High jerk indicates sudden rotation change (bump, collision, or tipping).
@@ -88,10 +89,10 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     private static final double JERK_SIGMA = 8.0;
 
     /**
-     * Gaussian sigma for linear bump acceleration, in m/s².
+     * Gaussian sigma for linear bump acceleration, in m/s^2.
      *
      * <p>
-     * Values from NavX2 world-linear accelerometers (g → m/s²).
+     * Values from NavX2 world-linear accelerometers (g -> m/s^2).
      */
     private static final double BUMP_ACCEL_SIGMA = 4.0;
 
@@ -149,14 +150,14 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
      * unit element
      * ({@code weight = 1}) means "no evidence against". Composing two evidences
      * with {@code and()}
-     * takes their product — the categorical AND / intersection of proofs. In HoTT
+     * takes their product --the categorical AND / intersection of proofs. In HoTT
      * terms this is the
      * shared homotopy class of multiple sensor paths.
      *
      * <p>
      * The Gaussian morphism {@code of(error, sigma)} lifts an absolute sensor
      * disagreement into
-     * evidence space: small errors → evidence near 1, large errors → evidence near
+     * evidence space: small errors -> evidence near 1, large errors -> evidence near
      * 0.
      */
     private record Evidence(double weight) {
@@ -218,12 +219,12 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     private ChassisSpeeds commandedSpeeds = new ChassisSpeeds();
 
     /**
-     * Third gyroscope — NavX2 connected via MXP (SPI), used for inertial
+     * Third gyroscope --NavX2 connected via MXP (SPI), used for inertial
      * cross-checking.
      */
     private final AHRS navX2 = new AHRS(AHRS.NavXComType.kMXP_UART);
 
-    /** TalonFX references for the 4 drive motors (modules 0–3: FL, FR, BL, BR). */
+    /** TalonFX references for the 4 drive motors (modules 0-3: FL, FR, BL, BR). */
     private final TalonFX[] driveMotors;
 
     /**
@@ -285,7 +286,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         double y = Math.sin(dLon) * Math.cos(MECCA_LAT_RAD);
         double x = Math.cos(lat1) * Math.sin(MECCA_LAT_RAD)
                 - Math.sin(lat1) * Math.cos(MECCA_LAT_RAD) * Math.cos(dLon);
-        // atan2 → compass bearing in degrees (0 = North, CW positive)
+        // atan2 -> compass bearing in degrees (0 = North, CW positive)
         double compassBearingDeg = Math.toDegrees(Math.atan2(y, x));
         // Compass is CW from North; WPILib field angles are CCW from field X+
         return Rotation2d.fromDegrees(fieldXCompassDeg - compassBearingDeg);
@@ -341,7 +342,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
      * "joystick forward"
      * aligns with the Qibla (direction toward Mecca). Field-oriented swerve
      * continues to work
-     * perfectly — the gyro, odometry, and all field-centric math are completely
+     * perfectly --the gyro, odometry, and all field-centric math are completely
      * unaffected. Only
      * the mapping from joystick axes to field directions is rotated.
      *
@@ -522,7 +523,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         Evidence e23 = Evidence.of(G2 - G3, GYRO_AGREEMENT_SIGMA); // NavX2 vs kinematics
 
         // Weight each source by its agreement with the other two.
-        // If one source is an outlier, its two pairwise evidences are low → low weight.
+        // If one source is an outlier, its two pairwise evidences are low -> low weight.
         double w1 = e12.weight() * e13.weight(); // G1 trusted when it agrees with G2 and G3
         double w2 = e12.weight() * e23.weight(); // G2 trusted when it agrees with G1 and G3
         double w3 = e13.weight() * e23.weight(); // G3 trusted when it agrees with G1 and G2
@@ -531,7 +532,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         // Weighted consensus omega; fallback to Pigeon2 if all three badly disagree
         double omegaInertial = wTotal < 1e-9 ? G1 : (w1 * G1 + w2 * G2 + w3 * G3) / wTotal;
 
-        // Categorical product of all pairwise agreements → overall gyro consensus trust
+        // Categorical product of all pairwise agreements -> overall gyro consensus trust
         double gyroConsensusTrust = e12.and(e13).and(e23).weight();
 
         // ----- 3. Angular jerk detection -----
@@ -540,7 +541,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         lastOmegaInertial = omegaInertial;
 
         // ----- 4. Linear bump detection (NavX2 world-linear accelerometers) -----
-        // getWorldLinearAccelX/Y return values in g; convert to m/s²
+        // getWorldLinearAccelX/Y return values in g; convert to m/s^2
         double bumpAccel = Math.hypot(navX2.getWorldLinearAccelX(), navX2.getWorldLinearAccelY()) * 9.8;
         Evidence bumpEvidence = Evidence.of(bumpAccel, BUMP_ACCEL_SIGMA);
 
@@ -635,7 +636,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
      * Computes trust via exponential decay.
      *
      * <p>
-     * Small error → trust near 1; large error → trust near 0. Equivalent to {@code
+     * Small error -> trust near 1; large error -> trust near 0. Equivalent to {@code
      * Evidence.of(error, sigma).weight()}.
      */
     private static double gaussianTrust(double error, double sigma) {
