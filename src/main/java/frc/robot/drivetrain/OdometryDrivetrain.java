@@ -433,17 +433,14 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         // trust
         double gyroConsensusTrust = e12.and(e13).and(e23).weight();
 
-        // ----- 3. Angular jerk detection -----
         double angularJerk = (omegaInertial - lastOmegaInertial) / dt;
         Evidence jerkEvidence = Evidence.of(angularJerk, JERK_SIGMA);
         lastOmegaInertial = omegaInertial;
 
-        // ----- 4. Linear bump detection (NavX2 world-linear accelerometers) -----
         // getWorldLinearAccelX/Y return values in g; convert to m/s^2
         double bumpAccel = Math.hypot(navX2.getWorldLinearAccelX(), navX2.getWorldLinearAccelY()) * 9.8;
         Evidence bumpEvidence = Evidence.of(bumpAccel, BUMP_ACCEL_SIGMA);
 
-        // ----- 5. Input correlation (push / defense detection) -----
         double cmdLinear = Math.hypot(commandedSpeeds.vxMetersPerSecond, commandedSpeeds.vyMetersPerSecond);
         double actLinear = Math.hypot(
                 getState().Speeds.vxMetersPerSecond, getState().Speeds.vyMetersPerSecond);
