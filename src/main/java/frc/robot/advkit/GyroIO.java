@@ -5,6 +5,7 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.studica.frc.AHRS;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -29,6 +30,13 @@ public interface GyroIO {
         public double yawVelocityRadPerSec = 0.0;
         public double[] odometryYawTimestamps = new double[] {};
         public Rotation2d[] odometryYawPositions = new Rotation2d[] {};
+
+        // Gyro 3 (NavX2 MXP)
+        public boolean gyro3Connected = false;
+        public Rotation2d gyro3YawPosition = Rotation2d.kZero;
+        public double gyro3YawVelocityRadPerSec = 0.0;
+        public double[] gyro3OdometryYawTimestamps = new double[] {};
+        public Rotation2d[] gyro3OdometryYawPositions = new Rotation2d[] {};
     }
 
     public default void updateInputs(GyroIOInputs inputs) {}
@@ -42,6 +50,11 @@ public interface GyroIO {
             table.put("YawVelocityRadPerSec", yawVelocityRadPerSec);
             table.put("OdometryYawTimestamps", odometryYawTimestamps);
             table.put("OdometryYawPositions", odometryYawPositions);
+            table.put("Gyro3/Connected", gyro3Connected);
+            table.put("Gyro3/YawPosition", gyro3YawPosition);
+            table.put("Gyro3/YawVelocityRadPerSec", gyro3YawVelocityRadPerSec);
+            table.put("Gyro3/OdometryYawTimestamps", gyro3OdometryYawTimestamps);
+            table.put("Gyro3/OdometryYawPositions", gyro3OdometryYawPositions);
         }
 
         @Override
@@ -51,6 +64,14 @@ public interface GyroIO {
             yawVelocityRadPerSec = table.get("YawVelocityRadPerSec", yawVelocityRadPerSec);
             odometryYawTimestamps = table.get("OdometryYawTimestamps", odometryYawTimestamps);
             odometryYawPositions = table.get("OdometryYawPositions", odometryYawPositions);
+            gyro3Connected = table.get("Gyro3/Connected", gyro3Connected);
+            gyro3YawPosition = table.get("Gyro3/YawPosition", gyro3YawPosition);
+            gyro3YawVelocityRadPerSec =
+                    table.get("Gyro3/YawVelocityRadPerSec", gyro3YawVelocityRadPerSec);
+            gyro3OdometryYawTimestamps =
+                    table.get("Gyro3/OdometryYawTimestamps", gyro3OdometryYawTimestamps);
+            gyro3OdometryYawPositions =
+                    table.get("Gyro3/OdometryYawPositions", gyro3OdometryYawPositions);
         }
 
         public GyroIOInputsAutoLogged clone() {
@@ -60,6 +81,11 @@ public interface GyroIO {
             copy.yawVelocityRadPerSec = this.yawVelocityRadPerSec;
             copy.odometryYawTimestamps = this.odometryYawTimestamps.clone();
             copy.odometryYawPositions = this.odometryYawPositions.clone();
+            copy.gyro3Connected = this.gyro3Connected;
+            copy.gyro3YawPosition = this.gyro3YawPosition;
+            copy.gyro3YawVelocityRadPerSec = this.gyro3YawVelocityRadPerSec;
+            copy.gyro3OdometryYawTimestamps = this.gyro3OdometryYawTimestamps.clone();
+            copy.gyro3OdometryYawPositions = this.gyro3OdometryYawPositions.clone();
             return copy;
         }
     }
@@ -73,13 +99,15 @@ public interface GyroIO {
         private final Queue<Double> yawTimestampQueue;
         private final StatusSignal<AngularVelocity> yawVelocity = pigeon.getAngularVelocityZWorld();
 
+        // Gyro 3: NavX2 connected via MXP (SPI)
+        private final AHRS navX2 = new AHRS(AHRS.NavXComType.kMXP_SPI);
+
         public GyroIOPigeon2() {
             if (TunerConstants.DrivetrainConstants.Pigeon2Configs != null) {
                 pigeon.getConfigurator().apply(TunerConstants.DrivetrainConstants.Pigeon2Configs);
             } else {
                 pigeon.getConfigurator().apply(new Pigeon2Configuration());
             }
-
             pigeon.getConfigurator().setYaw(0.0);
             yaw.setUpdateFrequency(CommandSwerveIO.ODOMETRY_FREQ);
             yawVelocity.setUpdateFrequency(50.0);
@@ -101,6 +129,12 @@ public interface GyroIO {
                             .toArray(Rotation2d[]::new);
             yawTimestampQueue.clear();
             yawPositionQueue.clear();
+
+            // NavX2 does not support high-frequency Phoenix-style signal queuing;
+            // yaw timestamps/positions arrays are left empty and not used for odometry.
+            inputs.gyro3Connected = navX2.isConnected();
+            inputs.gyro3YawPosition = navX2.getRotation2d();
+            inputs.gyro3YawVelocityRadPerSec = Units.degreesToRadians(navX2.getRate());
         }
     }
 }

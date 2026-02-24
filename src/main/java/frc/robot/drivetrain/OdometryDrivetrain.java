@@ -1,6 +1,7 @@
 package frc.robot.drivetrain;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.studica.frc.AHRS;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
@@ -122,6 +123,9 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
      */
     private boolean driveCurrentFault = false;
 
+    /** Third gyroscope — NavX2 connected via MXP (SPI), used for inertial cross-checking. */
+    private final AHRS navX2 = new AHRS(AHRS.NavXComType.kMXP_SPI);
+
     /** TalonFX references for the 4 drive motors (odd CAN IDs: 1, 3, 5, 7). */
     private final TalonFX[] driveMotors;
 
@@ -185,20 +189,20 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
 
         Pose2d currentPose = getState().Pose;
 
-        // Read angular velocities from both sources
+        // Read angular velocities from all three sources
         double omegaPigeon =
                 Units.degreesToRadians(
-                        getPigeon2().getAngularVelocityZWorld().getValueAsDouble()); // Pigeon Gyro
+                        getPigeon2().getAngularVelocityZWorld().getValueAsDouble()); // Pigeon2
+        double omegaNavX2 = Units.degreesToRadians(navX2.getRate()); // NavX2 MXP
         double omegaRio = getState().Speeds.omegaRadiansPerSecond; // Kinematics estimated
 
-        // Determine how much the two gyro sources agree (both should be reliable)
-        double gyroAgreement = Math.abs(omegaPigeon - omegaRio);
+        // Determine how much the two physical inertial gyros agree with each other
+        double gyroAgreement = Math.abs(omegaPigeon - omegaNavX2);
         double gyroAgreementTrust = gaussianTrust(gyroAgreement, GYRO_AGREEMENT_SIGMA);
 
-        // Blend gyro readings based on agreement - this gives us our "ground truth"
-        // rotation rate
+        // Blend the two physical gyro readings — this is our inertial "ground truth"
         double omegaInertial =
-                gyroAgreementTrust * omegaPigeon + (1.0 - gyroAgreementTrust) * omegaRio;
+                gyroAgreementTrust * omegaPigeon + (1.0 - gyroAgreementTrust) * omegaNavX2;
 
         // Compute rotation rate derived purely from encoder odometry (unreliable during
         // slip)
@@ -241,6 +245,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         Logger.recordOutput("Odometry/Omega/Inertial", omegaInertial);
         Logger.recordOutput("Odometry/Omega/Odometry", omegaOdometry);
         Logger.recordOutput("Odometry/Omega/Pigeon", omegaPigeon);
+        Logger.recordOutput("Odometry/Omega/NavX2", omegaNavX2);
         Logger.recordOutput("Odometry/Omega/Rio", omegaRio);
         Logger.recordOutput("Odometry/Omega/Disagreement", slipError);
 
