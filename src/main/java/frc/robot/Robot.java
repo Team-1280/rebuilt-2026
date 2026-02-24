@@ -25,7 +25,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
+<<<<<<< fieldzoningbump
 import frc.robot.field.FieldZoning;
+=======
+import frc.robot.fieldzoning.FieldZoning;
+>>>>>>> field-zoning
 import frc.robot.vision.VisionSubsystem;
 
 import org.littletonrobotics.junction.LoggedRobot;
@@ -151,7 +155,9 @@ public class Robot extends LoggedRobot implements Sendable {
         builder.addStringProperty("robot pose", () -> drivetrain.getState().Pose.toString(), null);
         builder.addStringProperty(
                 "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
+
         builder.addBooleanProperty(
+<<<<<<< fieldzoningbump
                 "on bump", () -> FieldZoning.isOnBump(drivetrain.getState().Pose), null);
         builder.addStringProperty(
                 "alliance zone",
@@ -207,6 +213,18 @@ public class Robot extends LoggedRobot implements Sendable {
                     double a = p.getRotation().getRadians();
                     return p.getY() + 0.3429 * (Math.abs(Math.sin(a)) + Math.abs(Math.cos(a)));
                 },
+=======
+                "zoning/red alliance zone",
+                () -> FieldZoning.isInRedAllianceZone(drivetrain.getState().Pose),
+                null);
+        builder.addBooleanProperty(
+                "zoning/blue alliance zone",
+                () -> FieldZoning.isInBlueAllianceZone(drivetrain.getState().Pose),
+                null);
+        builder.addBooleanProperty(
+                "zoning/neutral zone",
+                () -> FieldZoning.isInNeutralZone(drivetrain.getState().Pose),
+>>>>>>> field-zoning
                 null);
     }
 }

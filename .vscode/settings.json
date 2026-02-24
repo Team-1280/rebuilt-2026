@@ -18,9 +18,7 @@
     {
       "name": "WPIlibUnitTests",
       "workingDirectory": "${workspaceFolder}/build/jni/release",
-      "vmargs": [
-        "-Djava.library.path=${workspaceFolder}/build/jni/release"
-      ],
+      "vmargs": [ "-Djava.library.path=${workspaceFolder}/build/jni/release" ],
       "env": {
         "LD_LIBRARY_PATH": "${workspaceFolder}/build/jni/release",
         "DYLD_LIBRARY_PATH": "${workspaceFolder}/build/jni/release"
@@ -60,6 +58,7 @@
     "edu.wpi.first.math.**.struct.*",
   ],
   "java.dependency.enableDependencyCheckup": false,
+
   "[java]": {
     "editor.defaultFormatter": "josevseb.google-java-format-for-vs-code",
 
@@ -72,9 +71,8 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit", // For auto-importing on save
   },
+
   "redhat.telemetry.enabled": false,
-  "wpilib.skipSelectSimulateExtension": true
-}
 
   "wpilib.skipSelectSimulateExtension": true,
   "java.compile.nullAnalysis.mode": "disabled"
