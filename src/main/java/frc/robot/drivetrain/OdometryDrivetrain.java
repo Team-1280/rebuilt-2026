@@ -131,11 +131,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     private static final double DEFAULT_VENUE_LAT = 37.8244069635729;
     private static final double DEFAULT_VENUE_LON = -122.00586640858481;
 
-    /**
-     * Compass bearing (degrees, CW from North) of the field's positive-X axis
-     * (toward the red
-     * alliance wall) for the default Houston venue. Adjust per-venue if needed.
-     */
     private static final double DEFAULT_FIELD_X_COMPASS_DEG = 90.0;
 
     // -------------------------------------------------------------------------
@@ -157,7 +152,8 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
      * <p>
      * The Gaussian morphism {@code of(error, sigma)} lifts an absolute sensor
      * disagreement into
-     * evidence space: small errors -> evidence near 1, large errors -> evidence near
+     * evidence space: small errors -> evidence near 1, large errors -> evidence
+     * near
      * 0.
      */
     private record Evidence(double weight) {
@@ -261,24 +257,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     // Public API
     // -------------------------------------------------------------------------
 
-    // ----- Mecca heading -----
-
-    /**
-     * Computes the Qibla direction as a WPILib field-space {@link Rotation2d}.
-     *
-     * <p>
-     * The Qibla is the compass direction from a given point on Earth toward the
-     * Kaaba in Mecca.
-     * The result is expressed in WPILib field coordinates (CCW-positive, 0 = field
-     * X+ = toward red
-     * alliance wall).
-     *
-     * @param venueLat         latitude of the competition venue in degrees
-     * @param venueLon         longitude of the competition venue in degrees
-     * @param fieldXCompassDeg compass bearing (CW from North) of the field X+ axis,
-     *                         in degrees
-     * @return direction toward Mecca in field coordinates
-     */
     private static Rotation2d computeQibla(
             double venueLat, double venueLon, double fieldXCompassDeg) {
         double lat1 = Math.toRadians(venueLat);
@@ -292,75 +270,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         return Rotation2d.fromDegrees(fieldXCompassDeg - compassBearingDeg);
     }
 
-    /**
-     * Returns a {@link Command} that auto-rotates the robot to face towards Mecca
-     * (the Qibla).
-     *
-     * <p>
-     * The driver retains full translational control via the provided velocity
-     * suppliers. The
-     * heading PID controller continuously corrects the robot's orientation toward
-     * the computed
-     * Qibla direction.
-     *
-     * @param vx               field-relative forward velocity supplier (m/s)
-     * @param vy               field-relative strafe velocity supplier (m/s)
-     * @param venueLat         latitude of the competition venue in degrees
-     * @param venueLon         longitude of the competition venue in degrees
-     * @param fieldXCompassDeg compass bearing of field X+ (toward red wall),
-     *                         degrees CW from North
-     */
-    public Command faceTowardsMecca(
-            DoubleSupplier vx,
-            DoubleSupplier vy,
-            double venueLat,
-            double venueLon,
-            double fieldXCompassDeg) {
-        Rotation2d qibla = computeQibla(venueLat, venueLon, fieldXCompassDeg);
-        Logger.recordOutput("Mecca/QiblaFieldAngleDeg", qibla.getDegrees());
-        return applyRequest(
-                () -> m_qiblaRequest
-                        .withVelocityX(vx.getAsDouble())
-                        .withVelocityY(vy.getAsDouble())
-                        .withTargetDirection(qibla));
-    }
-
-    /**
-     * Convenience overload using Houston, TX (FRC World Championship) as the
-     * default venue.
-     *
-     * @param vx field-relative forward velocity supplier (m/s)
-     * @param vy field-relative strafe velocity supplier (m/s)
-     */
-    public Command faceTowardsMecca(DoubleSupplier vx, DoubleSupplier vy) {
-        return faceTowardsMecca(
-                vx, vy, DEFAULT_VENUE_LAT, DEFAULT_VENUE_LON, DEFAULT_FIELD_X_COMPASS_DEG);
-    }
-
-    /**
-     * <b>Noninvasive trolling:</b> shifts the operator perspective so that
-     * "joystick forward"
-     * aligns with the Qibla (direction toward Mecca). Field-oriented swerve
-     * continues to work
-     * perfectly --the gyro, odometry, and all field-centric math are completely
-     * unaffected. Only
-     * the mapping from joystick axes to field directions is rotated.
-     *
-     * <p>
-     * The robot's spiritual compass is simply re-zeroed. The driver will
-     * instinctively push
-     * "forward" to drive toward Mecca without realising why it feels slightly off.
-     *
-     * <p>
-     * Call {@code setOperatorPerspectiveForward(Rotation2d.kZero)} (or the gyro
-     * reset binding)
-     * to undo.
-     *
-     * @param venueLat         latitude of the competition venue in degrees
-     * @param venueLon         longitude of the competition venue in degrees
-     * @param fieldXCompassDeg compass bearing of field X+ (toward red wall),
-     *                         degrees CW from North
-     */
     public void alignOperatorPerspectiveToMecca(
             double venueLat, double venueLon, double fieldXCompassDeg) {
         Rotation2d qibla = computeQibla(venueLat, venueLon, fieldXCompassDeg);
@@ -369,10 +278,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         Logger.recordOutput("Mecca/OperatorPerspectiveAligned", true);
     }
 
-    /**
-     * Convenience overload using Houston, TX (FRC World Championship) as the
-     * default venue.
-     */
     public void alignOperatorPerspectiveToMecca() {
         alignOperatorPerspectiveToMecca(
                 DEFAULT_VENUE_LAT, DEFAULT_VENUE_LON, DEFAULT_FIELD_X_COMPASS_DEG);
@@ -496,7 +401,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
 
     @Override
     public void periodic() {
-        super.periodic();
+        super.periodic(); // extends the drivetrain perodic
 
         double now = Timer.getFPGATimestamp();
         double dt = now - lastTimeSec;
@@ -508,22 +413,14 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
 
         Pose2d currentPose = getState().Pose;
 
-        // ----- 1. Three-source gyro angular velocities -----
-        // G1: Pigeon2 (CTRE, high-frequency, primary navigation gyro)
-        // G2: NavX2 MXP (Studica AHRS, independent IMU, cross-check)
-        // G3: WPILib kinematics estimate (derived from wheel encoders, suspect during
-        // slip)
-        double G1 = Units.degreesToRadians(getPigeon2().getAngularVelocityZWorld().getValueAsDouble());
-        double G2 = Units.degreesToRadians(navX2.getRate());
-        double G3 = getState().Speeds.omegaRadiansPerSecond;
+        double G1 = Units.degreesToRadians(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()); // pigeon2
+        double G2 = Units.degreesToRadians(navX2.getRate()); // navx2mxp
+        double G3 = getState().Speeds.omegaRadiansPerSecond;// kinematics
 
-        // ----- 2. Pairwise evidence (categorical morphisms in trust category) -----
         Evidence e12 = Evidence.of(G1 - G2, GYRO_AGREEMENT_SIGMA); // Pigeon2 vs NavX2
         Evidence e13 = Evidence.of(G1 - G3, GYRO_AGREEMENT_SIGMA); // Pigeon2 vs kinematics
         Evidence e23 = Evidence.of(G2 - G3, GYRO_AGREEMENT_SIGMA); // NavX2 vs kinematics
 
-        // Weight each source by its agreement with the other two.
-        // If one source is an outlier, its two pairwise evidences are low -> low weight.
         double w1 = e12.weight() * e13.weight(); // G1 trusted when it agrees with G2 and G3
         double w2 = e12.weight() * e23.weight(); // G2 trusted when it agrees with G1 and G3
         double w3 = e13.weight() * e23.weight(); // G3 trusted when it agrees with G1 and G2
@@ -532,7 +429,8 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         // Weighted consensus omega; fallback to Pigeon2 if all three badly disagree
         double omegaInertial = wTotal < 1e-9 ? G1 : (w1 * G1 + w2 * G2 + w3 * G3) / wTotal;
 
-        // Categorical product of all pairwise agreements -> overall gyro consensus trust
+        // Categorical product of all pairwise agreements -> overall gyro consensus
+        // trust
         double gyroConsensusTrust = e12.and(e13).and(e23).weight();
 
         // ----- 3. Angular jerk detection -----
@@ -628,15 +526,12 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         lastPose = currentPose;
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
     /**
      * Computes trust via exponential decay.
      *
      * <p>
-     * Small error -> trust near 1; large error -> trust near 0. Equivalent to {@code
+     * Small error -> trust near 1; large error -> trust near 0. Equivalent to
+     * {@code
      * Evidence.of(error, sigma).weight()}.
      */
     private static double gaussianTrust(double error, double sigma) {
