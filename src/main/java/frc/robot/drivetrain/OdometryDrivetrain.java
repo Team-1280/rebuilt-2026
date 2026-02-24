@@ -1,6 +1,7 @@
 package frc.robot.drivetrain;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.studica.frc.AHRS;
 
 import edu.wpi.first.math.MathUtil;
@@ -8,8 +9,12 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj2.command.Command;
+
+import java.util.function.DoubleSupplier;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -98,6 +103,24 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     private static final double TRUST_VISION_RANGE_MAX = 3.5;
 
     // -------------------------------------------------------------------------
+    // Mecca heading constants
+    // -------------------------------------------------------------------------
+
+    /** The Kaaba, Al-Masjid al-Haram, Mecca, Saudi Arabia. */
+    private static final double MECCA_LAT_RAD = Math.toRadians(21.3891);
+    private static final double MECCA_LON_RAD = Math.toRadians(39.8579);
+
+    /** Default venue: George R. Brown Convention Center, Houston, TX (FRC World Championship). */
+    private static final double DEFAULT_VENUE_LAT = 29.7523;
+    private static final double DEFAULT_VENUE_LON = -95.3677;
+
+    /**
+     * Compass bearing (degrees, CW from North) of the field's positive-X axis (toward the red
+     * alliance wall) for the default Houston venue. Adjust per-venue if needed.
+     */
+    private static final double DEFAULT_FIELD_X_COMPASS_DEG = 90.0;
+
+    // -------------------------------------------------------------------------
     // Evidence monoid
     // -------------------------------------------------------------------------
 
@@ -171,6 +194,10 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     /** TalonFX references for the 4 drive motors (modules 0–3: FL, FR, BL, BR). */
     private final TalonFX[] driveMotors;
 
+    /** Shared heading request used by {@link #faceTowardsMecca}. Gains configured in constructor. */
+    private final SwerveRequest.FieldCentricFacingAngle m_qiblaRequest =
+            new SwerveRequest.FieldCentricFacingAngle();
+
     // -------------------------------------------------------------------------
     // Construction
     // -------------------------------------------------------------------------
@@ -190,11 +217,111 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         for (int i = 0; i < 4; i++) {
             driveMotors[i] = getModule(i).getDriveMotor();
         }
+
+        m_qiblaRequest.HeadingController.setPID(5.0, 0.0, 0.1);
+        m_qiblaRequest.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     // -------------------------------------------------------------------------
     // Public API
     // -------------------------------------------------------------------------
+
+    // ----- Mecca heading -----
+
+    /**
+     * Computes the Qibla direction as a WPILib field-space {@link Rotation2d}.
+     *
+     * <p>The Qibla is the compass direction from a given point on Earth toward the Kaaba in Mecca.
+     * The result is expressed in WPILib field coordinates (CCW-positive, 0 = field X+ = toward red
+     * alliance wall).
+     *
+     * @param venueLat latitude of the competition venue in degrees
+     * @param venueLon longitude of the competition venue in degrees
+     * @param fieldXCompassDeg compass bearing (CW from North) of the field X+ axis, in degrees
+     * @return direction toward Mecca in field coordinates
+     */
+    private static Rotation2d computeQibla(
+            double venueLat, double venueLon, double fieldXCompassDeg) {
+        double lat1 = Math.toRadians(venueLat);
+        double dLon = MECCA_LON_RAD - Math.toRadians(venueLon);
+        double y = Math.sin(dLon) * Math.cos(MECCA_LAT_RAD);
+        double x = Math.cos(lat1) * Math.sin(MECCA_LAT_RAD)
+                - Math.sin(lat1) * Math.cos(MECCA_LAT_RAD) * Math.cos(dLon);
+        // atan2 → compass bearing in degrees (0 = North, CW positive)
+        double compassBearingDeg = Math.toDegrees(Math.atan2(y, x));
+        // Compass is CW from North; WPILib field angles are CCW from field X+
+        return Rotation2d.fromDegrees(fieldXCompassDeg - compassBearingDeg);
+    }
+
+    /**
+     * Returns a {@link Command} that auto-rotates the robot to face towards Mecca (the Qibla).
+     *
+     * <p>The driver retains full translational control via the provided velocity suppliers. The
+     * heading PID controller continuously corrects the robot's orientation toward the computed
+     * Qibla direction.
+     *
+     * @param vx field-relative forward velocity supplier (m/s)
+     * @param vy field-relative strafe velocity supplier (m/s)
+     * @param venueLat latitude of the competition venue in degrees
+     * @param venueLon longitude of the competition venue in degrees
+     * @param fieldXCompassDeg compass bearing of field X+ (toward red wall), degrees CW from North
+     */
+    public Command faceTowardsMecca(
+            DoubleSupplier vx,
+            DoubleSupplier vy,
+            double venueLat,
+            double venueLon,
+            double fieldXCompassDeg) {
+        Rotation2d qibla = computeQibla(venueLat, venueLon, fieldXCompassDeg);
+        Logger.recordOutput("Mecca/QiblaFieldAngleDeg", qibla.getDegrees());
+        return applyRequest(
+                () ->
+                        m_qiblaRequest
+                                .withVelocityX(vx.getAsDouble())
+                                .withVelocityY(vy.getAsDouble())
+                                .withTargetDirection(qibla));
+    }
+
+    /**
+     * Convenience overload using Houston, TX (FRC World Championship) as the default venue.
+     *
+     * @param vx field-relative forward velocity supplier (m/s)
+     * @param vy field-relative strafe velocity supplier (m/s)
+     */
+    public Command faceTowardsMecca(DoubleSupplier vx, DoubleSupplier vy) {
+        return faceTowardsMecca(
+                vx, vy, DEFAULT_VENUE_LAT, DEFAULT_VENUE_LON, DEFAULT_FIELD_X_COMPASS_DEG);
+    }
+
+    /**
+     * <b>Noninvasive trolling:</b> shifts the operator perspective so that "joystick forward"
+     * aligns with the Qibla (direction toward Mecca). Field-oriented swerve continues to work
+     * perfectly — the gyro, odometry, and all field-centric math are completely unaffected. Only
+     * the mapping from joystick axes to field directions is rotated.
+     *
+     * <p>The robot's spiritual compass is simply re-zeroed. The driver will instinctively push
+     * "forward" to drive toward Mecca without realising why it feels slightly off.
+     *
+     * <p>Call {@code setOperatorPerspectiveForward(Rotation2d.kZero)} (or the gyro reset binding)
+     * to undo.
+     *
+     * @param venueLat latitude of the competition venue in degrees
+     * @param venueLon longitude of the competition venue in degrees
+     * @param fieldXCompassDeg compass bearing of field X+ (toward red wall), degrees CW from North
+     */
+    public void alignOperatorPerspectiveToMecca(
+            double venueLat, double venueLon, double fieldXCompassDeg) {
+        Rotation2d qibla = computeQibla(venueLat, venueLon, fieldXCompassDeg);
+        setOperatorPerspectiveForward(qibla);
+        Logger.recordOutput("Mecca/QiblaFieldAngleDeg", qibla.getDegrees());
+        Logger.recordOutput("Mecca/OperatorPerspectiveAligned", true);
+    }
+
+    /** Convenience overload using Houston, TX (FRC World Championship) as the default venue. */
+    public void alignOperatorPerspectiveToMecca() {
+        alignOperatorPerspectiveToMecca(
+                DEFAULT_VENUE_LAT, DEFAULT_VENUE_LON, DEFAULT_FIELD_X_COMPASS_DEG);
+    }
 
     /**
      * Updates the commanded chassis speeds for push-detection.
