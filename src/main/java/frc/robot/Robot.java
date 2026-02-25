@@ -152,17 +152,19 @@ public class Robot extends LoggedRobot implements Sendable {
         builder.addStringProperty(
                 "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
 
-        builder.addBooleanProperty(
-                "on bump", () -> FieldZoning.isOnBump(drivetrain.getState().Pose), null);
+        // Field zoning
         builder.addStringProperty(
                 "zoning/zone",
                 () -> {
                     Pose2d pose = drivetrain.getState().Pose;
                     if (FieldZoning.isInRedAllianceZone(pose)) return "Red";
                     if (FieldZoning.isInBlueAllianceZone(pose)) return "Blue";
-                    if (FieldZoning.isInNeutralZone(pose)) return "Neutral";
                     return "Unknown";
                 },
+                null);
+        builder.addBooleanProperty(
+                "zoning/team alliance zone",
+                () -> FieldZoning.isInTeamAllianceZone(drivetrain.getState().Pose),
                 null);
         builder.addBooleanProperty(
                 "zoning/red alliance zone",
@@ -176,5 +178,7 @@ public class Robot extends LoggedRobot implements Sendable {
                 "zoning/neutral zone",
                 () -> FieldZoning.isInNeutralZone(drivetrain.getState().Pose),
                 null);
+        builder.addBooleanProperty(
+                "zoning/on bump", () -> FieldZoning.isOnBump(drivetrain.getState().Pose), null);
     }
 }
