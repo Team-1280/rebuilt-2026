@@ -112,6 +112,7 @@ public final class FieldZoning { // in meters
 
     // check if robot is colliding with any bump on the field
     public static boolean isOnBump(Pose2d pose) {
+        // TODO: since this uses AABB collision, there are false positives at bump corners
         return isCollidingWithBump(pose, BLUE_BUMP_CENTER_X, LEFT_BUMP_CENTER_Y)
                 || isCollidingWithBump(pose, BLUE_BUMP_CENTER_X, RIGHT_BUMP_CENTER_Y)
                 || isCollidingWithBump(pose, RED_BUMP_CENTER_X, LEFT_BUMP_CENTER_Y)
