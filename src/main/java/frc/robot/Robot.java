@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
-import frc.robot.fieldzoning.FieldZoning;
+import frc.robot.field.FieldZoning;
 import frc.robot.vision.VisionSubsystem;
 
 import org.littletonrobotics.junction.LoggedRobot;
@@ -152,6 +152,20 @@ public class Robot extends LoggedRobot implements Sendable {
         builder.addStringProperty(
                 "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
 
+        // Field zoning
+        builder.addStringProperty(
+                "zoning/zone",
+                () -> {
+                    Pose2d pose = drivetrain.getState().Pose;
+                    if (FieldZoning.isInRedAllianceZone(pose)) return "Red";
+                    if (FieldZoning.isInBlueAllianceZone(pose)) return "Blue";
+                    return "Unknown";
+                },
+                null);
+        builder.addBooleanProperty(
+                "zoning/team alliance zone",
+                () -> FieldZoning.isInTeamAllianceZone(drivetrain.getState().Pose),
+                null);
         builder.addBooleanProperty(
                 "zoning/red alliance zone",
                 () -> FieldZoning.isInRedAllianceZone(drivetrain.getState().Pose),
@@ -164,5 +178,7 @@ public class Robot extends LoggedRobot implements Sendable {
                 "zoning/neutral zone",
                 () -> FieldZoning.isInNeutralZone(drivetrain.getState().Pose),
                 null);
+        builder.addBooleanProperty(
+                "zoning/on bump", () -> FieldZoning.isOnBump(drivetrain.getState().Pose), null);
     }
 }
