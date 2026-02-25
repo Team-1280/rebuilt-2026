@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 // Note: yaw of 0 is facing forward
@@ -49,6 +50,13 @@ public class TurretSubsystem extends SubsystemBase {
      * @param guessYaw a guess of the current turret yaw, used to calibrate the encoder
      */
     private void calibrateYaw(Angle guessYaw) {
+        // Check if the guessed yaw is obviously outside of the valid turret yaw range and invalid
+        if (guessYaw.minus(TurretConst.MIN_ANGLE).in(Rotations) < -0.25
+                || guessYaw.minus(TurretConst.MAX_ANGLE).in(Rotations) > 0.25) {
+            DriverStation.reportWarning(
+                    "Turret calibration failed due to invalid out-of-bounds guess yaw", false);
+            return;
+        }
         // Variable values are in encoder rotations
         // Get the encoder position in rotations
         double encoderPosition = encoder.getPosition().getValueAsDouble();
