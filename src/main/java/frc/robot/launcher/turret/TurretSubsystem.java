@@ -17,6 +17,7 @@ public class TurretSubsystem extends SubsystemBase {
     private final TalonFX motor = new TalonFX(TurretConst.MOTOR_ID);
     private final CANcoder encoder = new CANcoder(TurretConst.ENCODER_ID);
 
+    /** Continuous desired turret yaw, raw. */
     private Angle targetYaw;
 
     public TurretSubsystem() {
@@ -69,7 +70,27 @@ public class TurretSubsystem extends SubsystemBase {
         encoder.setPosition(calibratedEncoderPosition);
     }
 
+    /** Move the turret to the best position pointing in the same direction as yaw. */
     public void moveYaw(Angle yaw) {
+        // Get current yaw in rotations
+        double currentYaw = getYaw().in(Rotations);
+        // Get desired yaw in rotations. We will find the best coterminal angle of it.
+        double desiredYaw = yaw.in(Rotations);
+        // Find a whole number of rotations to offset the desired yaw by, to be as close to the
+        // current yaw as possible, by rounding their difference (current relative to target)
+        double yawOffset = Math.round(currentYaw - desiredYaw);
+        // Calculate the lower and upper bounds on the offset to prevent the yaw from being invalid
+        double minOffset = Math.ceil(TurretConst.MIN_ANGLE.in(Rotations) - desiredYaw);
+        double maxOffset = Math.floor(TurretConst.MAX_ANGLE.in(Rotations) - desiredYaw);
+        // Clamp the offset between the minimum and maximum offsets
+        double clampedYawOffset = MathUtil.clamp(yawOffset, minOffset, maxOffset);
+        // Add this offset to the desired yaw to find the best target yaw
+        double rawYaw = desiredYaw + clampedYawOffset;
+        moveRawYaw(Rotations.of(rawYaw));
+    }
+
+    /** Move the turret to the exact position, ignoring coterminal positions. */
+    private void moveRawYaw(Angle yaw) {
         targetYaw =
                 Rotations.of(
                         MathUtil.clamp(
@@ -79,13 +100,14 @@ public class TurretSubsystem extends SubsystemBase {
         motor.setControl(new MotionMagicVoltage(targetYaw));
     }
 
+    /** Get the continuous yaw. */
     public Angle getYaw() {
         // Note: this call already uses the remote CANcoder and accounts for the mechanism ratio
         return motor.getPosition().getValue();
     }
 
     public void stow() {
-        moveYaw(TurretConfig.STOW_YAW);
+        moveRawYaw(TurretConfig.STOW_YAW);
     }
 
     @Override
@@ -96,7 +118,9 @@ public class TurretSubsystem extends SubsystemBase {
                 () -> getYaw().in(Degrees),
                 (guessYaw) -> calibrateYaw(Degrees.of(guessYaw)));
         builder.addDoubleProperty(
-                "target yaw (deg)", () -> targetYaw.in(Degrees), (yaw) -> moveYaw(Degrees.of(yaw)));
+                "target yaw, raw (deg)",
+                () -> targetYaw.in(Degrees),
+                (yaw) -> moveRawYaw(Degrees.of(yaw)));
         builder.addDoubleProperty(
                 "yaw error (deg)", () -> getYaw().minus(targetYaw).in(Degrees), null);
     }
