@@ -66,16 +66,15 @@ public final class FieldZoning { // in meters
     }
 
     public static boolean isInBlueAllianceZone(Pose2d pose) {
-        return getMaxXExtent(pose) <= BLUE_ALLIANCE_ZONE_DEPTH;
+        return getMinXExtent(pose) <= BLUE_ALLIANCE_ZONE_DEPTH;
     }
 
     public static boolean isInRedAllianceZone(Pose2d pose) {
-        return getMinXExtent(pose) >= RED_ALLIANCE_ZONE_START;
+        return getMaxXExtent(pose) >= RED_ALLIANCE_ZONE_START;
     }
 
     public static boolean isInNeutralZone(Pose2d pose) {
-        return getMaxXExtent(pose) >= BLUE_ALLIANCE_ZONE_DEPTH
-                && getMinXExtent(pose) <= RED_ALLIANCE_ZONE_START;
+        return !isInBlueAllianceZone(pose) && !isInRedAllianceZone(pose);
     }
 
     public static boolean isInTeamAllianceZone(Pose2d pose) {
