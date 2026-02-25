@@ -1,5 +1,7 @@
 package frc.robot.field;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -18,7 +20,7 @@ public final class FieldZoning { // in meters
 
     /** Get how far the robot bumpers extend, axis-aligned, from the center. */
     private static double getExtent(Rotation2d rotation) {
-        return FieldConst.ROBOT_HALF_SIZE
+        return FieldConst.ROBOT_HALF_SIZE.in(Meters)
                 * (Math.abs(rotation.getSin()) + Math.abs(rotation.getCos()));
     }
 
@@ -39,11 +41,12 @@ public final class FieldZoning { // in meters
     }
 
     public static boolean isInBlueAllianceZone(Pose2d pose) {
-        return getMinXExtent(pose) <= FieldConst.BLUE_ALLIANCE_ZONE_DEPTH;
+        return getMinXExtent(pose) <= FieldConst.ALLIANCE_ZONE_DEPTH.in(Meters);
     }
 
     public static boolean isInRedAllianceZone(Pose2d pose) {
-        return getMaxXExtent(pose) >= FieldConst.RED_ALLIANCE_ZONE_START;
+        return getMaxXExtent(pose)
+                >= FieldConst.FIELD_LENGTH.minus(FieldConst.ALLIANCE_ZONE_DEPTH).in(Meters);
     }
 
     public static boolean isInNeutralZone(Pose2d pose) {
