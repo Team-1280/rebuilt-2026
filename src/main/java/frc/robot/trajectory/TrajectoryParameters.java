@@ -119,7 +119,7 @@ public class TrajectoryParameters {
         Rotation3d launcherRotation = getLauncherRotation();
         return String.format(
                 "TrajectoryParameters[launcherTranslation=%s, launcherRotation=Rotation3d(%.4f,"
-                    + " %.4f, %.4f), displacement=%s, launcherVelocity=%s, elevationAngle=%.4f]",
+                        + " %.4f, %.4f), displacement=%s, launcherVelocity=%s, elevationAngle=%.4f]",
                 getLauncherTranslation(),
                 launcherRotation.getX(),
                 launcherRotation.getY(),
