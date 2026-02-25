@@ -1,6 +1,7 @@
 package frc.robot.field;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
@@ -33,36 +34,32 @@ public final class FieldZoning { // in meters
     private static final double LEFT_BUMP_CENTER_Y = 2.510; // 98.84 inches
     private static final double RIGHT_BUMP_CENTER_Y = 5.558; // 218.84 inches
 
-    // helper
+    // rectangle rotation helpers
+    /*
+     * for a square the max y extent is center + projection of half diagonal and the angle that
+     * extends the furthest is at the top of the square that is rotated and this happens at >45
+     * degrees from one of the sides
+     */
+
+    /** Get how far the robot bumpers extend, axis-aligned, from the center. */
+    private static double getExtent(Rotation2d rotation) {
+        return ROBOT_HALF_SIZE * (Math.abs(rotation.getSin()) + Math.abs(rotation.getCos()));
+    }
+
     private static double getMaxXExtent(Pose2d pose) {
-        double centerX = pose.getX();
-        double angle = pose.getRotation().getRadians();
-        /**
-         * for a square the max y extent is center + projection of half diagonal and the angle that
-         * extends the furthest is at the top of the square that is rotated and this happens at >45
-         * degrees from one of the sides
-         */
-        return centerX + ROBOT_HALF_SIZE * (Math.abs(Math.sin(angle)) + Math.abs(Math.cos(angle)));
+        return pose.getX() + getExtent(pose.getRotation());
     }
 
     private static double getMinXExtent(Pose2d pose) {
-        // for a minimum y of a square this is the y position of whatever corner points
-        // most downwards
-        double centerX = pose.getX();
-        double angle = pose.getRotation().getRadians();
-        return centerX - ROBOT_HALF_SIZE * (Math.abs(Math.sin(angle)) + Math.abs(Math.cos(angle)));
+        return pose.getX() - getExtent(pose.getRotation());
     }
 
     private static double getMaxYExtent(Pose2d pose) {
-        double centerY = pose.getY();
-        double angle = pose.getRotation().getRadians();
-        return centerY + ROBOT_HALF_SIZE * (Math.abs(Math.sin(angle)) + Math.abs(Math.cos(angle)));
+        return pose.getY() + getExtent(pose.getRotation());
     }
 
     private static double getMinYExtent(Pose2d pose) {
-        double centerY = pose.getY();
-        double angle = pose.getRotation().getRadians();
-        return centerY - ROBOT_HALF_SIZE * (Math.abs(Math.sin(angle)) + Math.abs(Math.cos(angle)));
+        return pose.getY() - getExtent(pose.getRotation());
     }
 
     public static boolean isInBlueAllianceZone(Pose2d pose) {
@@ -80,13 +77,11 @@ public final class FieldZoning { // in meters
     public static boolean isInTeamAllianceZone(Pose2d pose) {
         Optional<Alliance> alliance = DriverStation.getAlliance();
         if (alliance.isEmpty()) {
-            return false;
+            return false; // Return false for unknown alliance
         }
-        if (alliance.get() == Alliance.Blue) {
-            return isInBlueAllianceZone(pose);
-        } else {
-            return isInRedAllianceZone(pose);
-        }
+        return alliance.get() == Alliance.Blue
+                ? isInBlueAllianceZone(pose)
+                : isInRedAllianceZone(pose);
     }
 
     // helper method to check collision with a single bump
