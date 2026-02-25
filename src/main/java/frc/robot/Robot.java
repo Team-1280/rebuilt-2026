@@ -159,7 +159,7 @@ public class Robot extends LoggedRobot implements Sendable {
                     Pose2d pose = drivetrain.getState().Pose;
                     if (FieldZoning.isInRedAllianceZone(pose)) return "Red";
                     if (FieldZoning.isInBlueAllianceZone(pose)) return "Blue";
-                    return "Unknown";
+                    return "Neutral";
                 },
                 null);
         builder.addBooleanProperty(
