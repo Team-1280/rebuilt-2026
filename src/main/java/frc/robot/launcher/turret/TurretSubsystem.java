@@ -52,8 +52,6 @@ public class TurretSubsystem extends SubsystemBase {
         // Variable values are in encoder rotations
         // Get the encoder position in rotations
         double encoderPosition = encoder.getPosition().getValueAsDouble();
-        // Use only the phase of position since the encoder is off by a whole number of rotations
-        double encoderPhase = MathUtil.inputModulus(encoderPosition, -0.5, 0.5);
         // Clamp the guess to the turret's physical limits, to avoid erroneous guesses
         double clampedGuessYaw =
                 MathUtil.clamp(
@@ -63,9 +61,9 @@ public class TurretSubsystem extends SubsystemBase {
         // Convert the guess yaw to encoder rotations
         double guessPosition = clampedGuessYaw * TurretConst.ENCODER_TO_MECHANISM_RATIO;
         // Find the closest whole number of rotations, relative to the encoder phase
-        double roundedGuessOffset = Math.round(guessPosition - encoderPhase);
+        double roundedGuessOffset = Math.round(guessPosition - encoderPosition);
         // Convert back to absolute, to get the coterminal encoder position closest to the guess
-        double calibratedEncoderPosition = roundedGuessOffset + encoderPhase;
+        double calibratedEncoderPosition = roundedGuessOffset + encoderPosition;
         encoder.setPosition(calibratedEncoderPosition);
     }
 
