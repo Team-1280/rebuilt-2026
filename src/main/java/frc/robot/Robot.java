@@ -25,11 +25,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
-<<<<<<< fieldzoningbump
 import frc.robot.field.FieldZoning;
-=======
-import frc.robot.fieldzoning.FieldZoning;
->>>>>>> field-zoning
 import frc.robot.vision.VisionSubsystem;
 
 import org.littletonrobotics.junction.LoggedRobot;
@@ -157,10 +153,9 @@ public class Robot extends LoggedRobot implements Sendable {
                 "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
 
         builder.addBooleanProperty(
-<<<<<<< fieldzoningbump
                 "on bump", () -> FieldZoning.isOnBump(drivetrain.getState().Pose), null);
         builder.addStringProperty(
-                "alliance zone",
+                "zoning/zone",
                 () -> {
                     Pose2d pose = drivetrain.getState().Pose;
                     if (FieldZoning.isInRedAllianceZone(pose)) return "Red";
@@ -169,51 +164,7 @@ public class Robot extends LoggedRobot implements Sendable {
                     return "Unknown";
                 },
                 null);
-        builder.addStringProperty(
-                "start alliance zone",
-                () -> {
-                    Pose2d pose = drivetrain.getState().Pose;
-                    if (FieldZoning.isInTeamAllianceZone(pose)) {
-                        if (FieldZoning.isInBlueAllianceZone(pose)) return "Blue";
-                        if (FieldZoning.isInRedAllianceZone(pose)) return "Red";
-                    }
-                    return "Unknown";
-                },
-                null);
-
-        // bump collision debug stuff
-        builder.addDoubleProperty(
-                "robot min x",
-                () -> {
-                    Pose2d p = drivetrain.getState().Pose;
-                    double a = p.getRotation().getRadians();
-                    return p.getX() - 0.3429 * (Math.abs(Math.sin(a)) + Math.abs(Math.cos(a)));
-                },
-                null);
-        builder.addDoubleProperty(
-                "robot max x",
-                () -> {
-                    Pose2d p = drivetrain.getState().Pose;
-                    double a = p.getRotation().getRadians();
-                    return p.getX() + 0.3429 * (Math.abs(Math.sin(a)) + Math.abs(Math.cos(a)));
-                },
-                null);
-        builder.addDoubleProperty(
-                "robot min y",
-                () -> {
-                    Pose2d p = drivetrain.getState().Pose;
-                    double a = p.getRotation().getRadians();
-                    return p.getY() - 0.3429 * (Math.abs(Math.sin(a)) + Math.abs(Math.cos(a)));
-                },
-                null);
-        builder.addDoubleProperty(
-                "robot max y",
-                () -> {
-                    Pose2d p = drivetrain.getState().Pose;
-                    double a = p.getRotation().getRadians();
-                    return p.getY() + 0.3429 * (Math.abs(Math.sin(a)) + Math.abs(Math.cos(a)));
-                },
-=======
+        builder.addBooleanProperty(
                 "zoning/red alliance zone",
                 () -> FieldZoning.isInRedAllianceZone(drivetrain.getState().Pose),
                 null);
@@ -224,7 +175,6 @@ public class Robot extends LoggedRobot implements Sendable {
         builder.addBooleanProperty(
                 "zoning/neutral zone",
                 () -> FieldZoning.isInNeutralZone(drivetrain.getState().Pose),
->>>>>>> field-zoning
                 null);
     }
 }
