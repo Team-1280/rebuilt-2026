@@ -7,6 +7,9 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -26,7 +29,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /** Class containing and managing all launcher subsystems */
-public class LauncherAssembly {
+public class LauncherAssembly implements Sendable {
     public final ShooterSubsystem shooter = new ShooterSubsystem();
     public final FeederSubsystem feeder = new FeederSubsystem();
     public final HoodSubsystem hood = new HoodSubsystem();
@@ -56,6 +59,14 @@ public class LauncherAssembly {
         stopLaunching();
         hood.stow();
         turret.stow();
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        SmartDashboard.putData("launcher/shooter", shooter);
+        SmartDashboard.putData("launcher/feeder", feeder);
+        SmartDashboard.putData("launcher/hood", hood);
+        SmartDashboard.putData("launcher/turret", turret);
     }
 
     /** Set the launcher direction to the given robot pitch and yaw */
