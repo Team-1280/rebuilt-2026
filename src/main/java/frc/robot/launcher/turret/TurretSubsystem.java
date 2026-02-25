@@ -80,7 +80,8 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public Angle getYaw() {
-        return encoder.getPosition().getValue().div(TurretConst.ENCODER_TO_MECHANISM_RATIO);
+        // Note: this call already uses the remote CANcoder and accounts for the mechanism ratio
+        return motor.getPosition().getValue();
     }
 
     public void stow() {

@@ -32,17 +32,6 @@ public class TrajectorySolver {
     private TrajectorySolver() {} // not an instantiable class
 
     /**
-     * Number of iterations to use in the pitch bisection algorithm optimizer.
-     *
-     * <p>Each iteration cuts the maximum possible pitch error from the optimal, in half. However,
-     * it requires an extra trajectory calculation.
-     *
-     * <p>The maximum possible error can be logged in the bisection algorithm as the difference
-     * between the final low pitch and high pitch.
-     */
-    private static final int ITERATIONS = 8; // TODO: tune based on CPU usage
-
-    /**
      * Solve for the optimal trajectory, for the given parameters and constraints, that would get a
      * fuel launched at this time to hit the target in 3D space.
      *
@@ -205,8 +194,9 @@ public class TrajectorySolver {
                 }
             }
 
-            if (i >= ITERATIONS || lowPitch >= highPitch) {
-                // Stop after enough iterations or if there is nothing left to approximate
+            if (highPitch - lowPitch <= TrajectoryConfig.OPTIMIZER_PITCH_TOLERANCE
+                    || i >= TrajectoryConfig.OPTIMIZER_MAX_ITERATIONS) {
+                // Stop after reaching enough precision, or at the upper cap on iterations
                 break;
             }
             // Set up next iteration
