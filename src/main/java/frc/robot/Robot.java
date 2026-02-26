@@ -4,9 +4,7 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -93,21 +91,22 @@ public class Robot extends LoggedRobot implements Sendable {
 
     private void initBindings() {
         // Drive bindings
-        double speed = MetersPerSecond.of(1.60).in(MetersPerSecond);
-        double angularSpeed = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
         final SwerveRequest.FieldCentric driveRequest =
                 new SwerveRequest.FieldCentric()
-                        .withDeadband(speed * 0.1)
-                        .withRotationalDeadband(angularSpeed * 0.1)
+                        .withDeadband(DriveConfig.SPEED_DEADBAND)
+                        .withRotationalDeadband(DriveConfig.ANGULAR_SPEED_DEADBAND)
                         .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
                         () ->
                                 driveRequest
-                                        .withVelocityX(-controller.getLeftY() * speed)
-                                        .withVelocityY(-controller.getLeftX() * speed)
+                                        .withVelocityX(
+                                                DriveConfig.MAX_SPEED.times(-controller.getLeftY()))
+                                        .withVelocityY(
+                                                DriveConfig.MAX_SPEED.times(-controller.getLeftX()))
                                         .withRotationalRate(
-                                                -controller.getRightX() * angularSpeed)));
+                                                DriveConfig.MAX_ANGULAR_SPEED.times(
+                                                        -controller.getRightX()))));
 
         controller
                 .rightStick()
