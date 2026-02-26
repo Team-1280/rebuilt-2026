@@ -62,7 +62,6 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     private void initLogger() {
-        Logger.recordMetadata("Heatseeker", "Haru Urara"); // Set a metadata value
         Logger.recordMetadata("gitSHA", BuildConstants.GIT_SHA);
         if (isReal()) {
             Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
