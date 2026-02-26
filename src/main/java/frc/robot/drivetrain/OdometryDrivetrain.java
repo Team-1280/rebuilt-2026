@@ -42,6 +42,8 @@ import org.littletonrobotics.junction.Logger;
  */
 public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
 
+    // TODO: move constants and config to different files
+
     /** Odometry thread frequency, must match CAN update rate. */
     private static final double ODOMETRY_UPDATE_FREQUENCY = CommandSwerveIO.ODOMETRY_FREQ;
 
@@ -111,10 +113,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
 
     private static final double DEFAULT_FIELD_X_COMPASS_DEG = 90.0;
 
-    // -------------------------------------------------------------------------
-    // Evidence monoid
-    // -------------------------------------------------------------------------
-
     /**
      * Commutative monoid for categorical trust fusion.
      *
@@ -142,10 +140,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
             return new Evidence(1.0);
         }
     }
-
-    // -------------------------------------------------------------------------
-    // State
-    // -------------------------------------------------------------------------
 
     /** Pose from the previous loop iteration, used to derive odometry omega. */
     private Pose2d lastPose = new Pose2d();
@@ -191,10 +185,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     private final SwerveRequest.FieldCentricFacingAngle m_qiblaRequest =
             new SwerveRequest.FieldCentricFacingAngle();
 
-    // -------------------------------------------------------------------------
-    // Construction
-    // -------------------------------------------------------------------------
-
     /** Constructs the drivetrain with odometry trust logic. */
     public OdometryDrivetrain() {
         super(
@@ -214,10 +204,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         m_qiblaRequest.HeadingController.setPID(5.0, 0.0, 0.1);
         m_qiblaRequest.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
     }
-
-    // -------------------------------------------------------------------------
-    // Public API
-    // -------------------------------------------------------------------------
 
     private static Rotation2d computeQibla(
             double venueLat, double venueLon, double fieldXCompassDeg) {
@@ -343,10 +329,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         Logger.recordOutput("Vision/Accepted/NumTargets", numTargets);
         Logger.recordOutput("Vision/Accepted/Ambiguity", ambiguity);
     }
-
-    // -------------------------------------------------------------------------
-    // Periodic
-    // -------------------------------------------------------------------------
 
     @Override
     public void periodic() {
