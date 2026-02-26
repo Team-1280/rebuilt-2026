@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 // Note: yaw of 0 is facing forward
@@ -49,23 +50,31 @@ public class TurretSubsystem extends SubsystemBase {
      * @param guessYaw a guess of the current turret yaw, used to calibrate the encoder
      */
     private void calibrateYaw(Angle guessYaw) {
+        // Check if the guessed yaw is obviously outside of the valid turret yaw range and invalid
+        if (guessYaw.minus(TurretConst.MIN_ANGLE).in(Rotations) < -0.25
+                || guessYaw.minus(TurretConst.MAX_ANGLE).in(Rotations) > 0.25) {
+            DriverStation.reportWarning(
+                    "Turret calibration failed due to invalid out-of-bounds guess yaw", false);
+            return;
+        }
         // Variable values are in encoder rotations
         // Get the encoder position in rotations
         double encoderPosition = encoder.getPosition().getValueAsDouble();
-        // Use only the phase of position since the encoder is off by a whole number of rotations
-        double encoderPhase = MathUtil.inputModulus(encoderPosition, -0.5, 0.5);
-        // Clamp the guess to the turret's physical limits, to avoid erroneous guesses
-        double clampedGuessYaw =
-                MathUtil.clamp(
-                        guessYaw.in(Rotations),
-                        TurretConst.MIN_ANGLE.in(Rotations),
-                        TurretConst.MAX_ANGLE.in(Rotations));
         // Convert the guess yaw to encoder rotations
-        double guessPosition = clampedGuessYaw * TurretConst.ENCODER_TO_MECHANISM_RATIO;
+        double guessPosition = guessYaw.in(Rotations) * TurretConst.ENCODER_TO_MECHANISM_RATIO;
         // Find the closest whole number of rotations, relative to the encoder phase
-        double roundedGuessOffset = Math.round(guessPosition - encoderPhase);
+        double roundedGuessOffset = Math.round(guessPosition - encoderPosition);
+        // Clamp the guess offset to make sure the calibrated guess position is in the turret bounds
+        double minOffset =
+                TurretConst.MIN_ANGLE.in(Rotations) * TurretConst.ENCODER_TO_MECHANISM_RATIO
+                        - guessPosition;
+        double maxOffset =
+                TurretConst.MAX_ANGLE.in(Rotations) * TurretConst.ENCODER_TO_MECHANISM_RATIO
+                        - guessPosition;
+        double clampedGuessOffset =
+                MathUtil.clamp(roundedGuessOffset, Math.ceil(minOffset), Math.floor(maxOffset));
         // Convert back to absolute, to get the coterminal encoder position closest to the guess
-        double calibratedEncoderPosition = roundedGuessOffset + encoderPhase;
+        double calibratedEncoderPosition = clampedGuessOffset + encoderPosition;
         encoder.setPosition(calibratedEncoderPosition);
     }
 
