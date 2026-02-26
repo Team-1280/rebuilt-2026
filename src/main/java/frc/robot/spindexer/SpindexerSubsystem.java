@@ -12,24 +12,24 @@ public class SpindexerSubsystem extends SubsystemBase {
         motor.getConfigurator().apply(SpindexerConfig.motorConfig);
     }
 
-    private void moveSpeed(double speed) {
+    private void moveMotorSpeed(double speed) {
         motor.set(speed);
     }
 
-    private double getSpeed() {
+    private double getMotorSpeed() {
         return motor.get();
     }
 
     public void start() {
-        moveSpeed(SpindexerConfig.MOTOR_SPEED);
+        moveMotorSpeed(SpindexerConfig.MOTOR_SPEED);
     }
 
     public void stop() {
-        moveSpeed(0.0);
+        moveMotorSpeed(0.0);
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("speed (frac)", this::getSpeed, this::moveSpeed);
+        builder.addDoubleProperty("motor speed (frac)", this::getMotorSpeed, this::moveMotorSpeed);
     }
 }
