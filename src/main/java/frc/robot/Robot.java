@@ -4,10 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -38,12 +34,6 @@ public class Robot extends LoggedRobot implements Sendable {
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
-
-    /** Maximum linear drive speed in m/s. */
-    private final double maxSpeed = MetersPerSecond.of(1.60).in(MetersPerSecond);
-
-    /** Maximum angular drive speed in rad/s. */
-    private final double maxAngularSpeed = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
 
     private final Field2d field = new Field2d();
 
@@ -92,17 +82,20 @@ public class Robot extends LoggedRobot implements Sendable {
     private void initBindings() {
         final SwerveRequest.FieldCentric driveRequest =
                 new SwerveRequest.FieldCentric()
-                        .withDeadband(maxSpeed * 0.1)
-                        .withRotationalDeadband(maxAngularSpeed * 0.1)
+                        .withDeadband(DriveConfig.SPEED_DEADBAND)
+                        .withRotationalDeadband(DriveConfig.ANGULAR_SPEED_DEADBAND)
                         .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
                         () ->
                                 driveRequest
-                                        .withVelocityX(-controller.getLeftY() * maxSpeed)
-                                        .withVelocityY(-controller.getLeftX() * maxSpeed)
+                                        .withVelocityX(
+                                                DriveConfig.MAX_SPEED.times(-controller.getLeftY()))
+                                        .withVelocityY(
+                                                DriveConfig.MAX_SPEED.times(-controller.getLeftX()))
                                         .withRotationalRate(
-                                                -controller.getRightX() * maxAngularSpeed)));
+                                                DriveConfig.MAX_ANGULAR_SPEED.times(
+                                                        -controller.getRightX()))));
 
         controller
                 .rightStick()
