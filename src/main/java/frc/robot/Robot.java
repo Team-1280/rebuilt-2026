@@ -80,6 +80,7 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     private void initBindings() {
+        // swerve drivetrain
         final SwerveRequest.FieldCentric driveRequest =
                 new SwerveRequest.FieldCentric()
                         .withDeadband(DriveConfig.SPEED_DEADBAND)
@@ -97,6 +98,7 @@ public class Robot extends LoggedRobot implements Sendable {
                                                 DriveConfig.MAX_ANGULAR_SPEED.times(
                                                         -controller.getRightX()))));
 
+        // reset heading
         controller
                 .rightStick()
                 .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
