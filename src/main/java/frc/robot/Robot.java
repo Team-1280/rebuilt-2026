@@ -14,7 +14,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.Sendable;
@@ -132,15 +131,7 @@ public class Robot extends LoggedRobot implements Sendable {
     public void teleopInit() {}
 
     @Override
-    public void teleopPeriodic() {
-        // Inform the trust pipeline what the driver is commanding so it can detect
-        // if the robot is being pushed against its intended direction (defense).
-        drivetrain.setCommandedSpeeds(
-                new ChassisSpeeds(
-                        -controller.getLeftY() * maxSpeed,
-                        -controller.getLeftX() * maxSpeed,
-                        -controller.getRightX() * maxAngularSpeed));
-    }
+    public void teleopPeriodic() {}
 
     @Override
     public void disabledInit() {}
@@ -162,7 +153,6 @@ public class Robot extends LoggedRobot implements Sendable {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addStringProperty("robot pose", () -> drivetrain.getState().Pose.toString(), null);
         builder.addStringProperty(
                 "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
     }
