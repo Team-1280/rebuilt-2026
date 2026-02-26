@@ -2,7 +2,6 @@ package frc.robot.drivetrain;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-// TODO: Studica vendor deps not properly imported in WPILib yet -- add vendordep when available
 import com.studica.frc.AHRS;
 
 import edu.wpi.first.math.MathUtil;
