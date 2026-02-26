@@ -72,7 +72,7 @@ public class TunerConstants {
 
     // The remote sensor feedback type to use for the steer motors;
     // When not Pro-licensed, Fused*/Sync* automatically fall back to Remote*
-    private static final SteerFeedbackType kSteerFeedbackType = SteerFeedbackType.RemoteCANcoder;
+    private static final SteerFeedbackType kSteerFeedbackType = SteerFeedbackType.FusedCANcoder;
 
     // The stator current at which the wheels start to slip;
     // This needs to be tuned to your individual robot
@@ -97,11 +97,11 @@ public class TunerConstants {
 
     // CAN bus that the devices are located on;
     // All swerve devices must share the same CAN bus
-    public static final CANBus kCANBus = new CANBus("", "./logs/example.hoot");
+    public static final CANBus kCANBus = new CANBus("drivetrain", "./logs/example.hoot");
 
     // Theoretical free speed (m/s) at 12 V applied output;
     // This needs to be tuned to your individual robot
-    public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(6);
+    public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.40);
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot
@@ -111,8 +111,8 @@ public class TunerConstants {
     private static final double kSteerGearRatio = 21.428571428571427;
     private static final Distance kWheelRadius = Inches.of(1.925);
 
-    private static final boolean kInvertLeftSide = false;
-    private static final boolean kInvertRightSide = true;
+    private static final boolean kInvertLeftSide = true;
+    private static final boolean kInvertRightSide = false;
 
     private static final int kPigeonId = 26;
 
@@ -158,48 +158,48 @@ public class TunerConstants {
                             .withDriveFrictionVoltage(kDriveFrictionVoltage);
 
     // Front Left
-    private static final int kFrontLeftDriveMotorId = 1;
-    private static final int kFrontLeftSteerMotorId = 2;
+    private static final int kFrontLeftDriveMotorId = 3;
+    private static final int kFrontLeftSteerMotorId = 4;
     private static final int kFrontLeftEncoderId = 53;
-    private static final Angle kFrontLeftEncoderOffset = Rotations.of(-0.054931640625);
+    private static final Angle kFrontLeftEncoderOffset = Rotations.of(0.26611328125 - 0.000488);
     private static final boolean kFrontLeftSteerMotorInverted = true;
     private static final boolean kFrontLeftEncoderInverted = false;
 
-    private static final Distance kFrontLeftXPos = Inches.of(13.5);
-    private static final Distance kFrontLeftYPos = Inches.of(13.5);
+    private static final Distance kFrontLeftXPos = Inches.of(11.5);
+    private static final Distance kFrontLeftYPos = Inches.of(11.5);
 
     // Front Right
-    private static final int kFrontRightDriveMotorId = 3;
-    private static final int kFrontRightSteerMotorId = 4;
+    private static final int kFrontRightDriveMotorId = 5;
+    private static final int kFrontRightSteerMotorId = 6;
     private static final int kFrontRightEncoderId = 50;
-    private static final Angle kFrontRightEncoderOffset = Rotations.of(-0.197998046875);
+    private static final Angle kFrontRightEncoderOffset = Rotations.of(-0.39013671875 + 0.001221);
     private static final boolean kFrontRightSteerMotorInverted = true;
     private static final boolean kFrontRightEncoderInverted = false;
 
-    private static final Distance kFrontRightXPos = Inches.of(13.5);
-    private static final Distance kFrontRightYPos = Inches.of(-13.5);
+    private static final Distance kFrontRightXPos = Inches.of(11.5);
+    private static final Distance kFrontRightYPos = Inches.of(-11.5);
 
     // Back Left
-    private static final int kBackLeftDriveMotorId = 7;
-    private static final int kBackLeftSteerMotorId = 8;
+    private static final int kBackLeftDriveMotorId = 1;
+    private static final int kBackLeftSteerMotorId = 2;
     private static final int kBackLeftEncoderId = 52;
-    private static final Angle kBackLeftEncoderOffset = Rotations.of(0.22998046875);
+    private static final Angle kBackLeftEncoderOffset = Rotations.of(-0.14208984375 - 0.000977);
     private static final boolean kBackLeftSteerMotorInverted = true;
     private static final boolean kBackLeftEncoderInverted = false;
 
-    private static final Distance kBackLeftXPos = Inches.of(-13.5);
-    private static final Distance kBackLeftYPos = Inches.of(13.5);
+    private static final Distance kBackLeftXPos = Inches.of(-11.5);
+    private static final Distance kBackLeftYPos = Inches.of(11.5);
 
     // Back Right
-    private static final int kBackRightDriveMotorId = 5;
-    private static final int kBackRightSteerMotorId = 6;
+    private static final int kBackRightDriveMotorId = 7;
+    private static final int kBackRightSteerMotorId = 8;
     private static final int kBackRightEncoderId = 51;
-    private static final Angle kBackRightEncoderOffset = Rotations.of(0.189208984375);
+    private static final Angle kBackRightEncoderOffset = Rotations.of(0.22607421875 - 0.003418);
     private static final boolean kBackRightSteerMotorInverted = true;
     private static final boolean kBackRightEncoderInverted = false;
 
-    private static final Distance kBackRightXPos = Inches.of(-13.5);
-    private static final Distance kBackRightYPos = Inches.of(-13.5);
+    private static final Distance kBackRightXPos = Inches.of(-11.5);
+    private static final Distance kBackRightYPos = Inches.of(-11.5);
 
     public static final SwerveModuleConstants<
                     TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
@@ -319,9 +319,9 @@ public class TunerConstants {
          * @param odometryUpdateFrequency The frequency to run the odometry loop. If unspecified or
          *     set to 0 Hz, this is 250 Hz on CAN FD, and 100 Hz on CAN 2.0.
          * @param odometryStandardDeviation The standard deviation for odometry calculation in the
-         *     form [x, y, theta], with units in meters and radians
+         *     form [x, y, theta]áµ€, with units in meters and radians
          * @param visionStandardDeviation The standard deviation for vision calculation in the form
-         *     [x, y, theta], with units in meters and radians
+         *     [x, y, theta]áµ€, with units in meters and radians
          * @param modules Constants for each specific module
          */
         public TunerSwerveDrivetrain(

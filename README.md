@@ -1,8 +1,5 @@
 # REBUILT 2026
 
-##
-execute `gradlew spotlessApply` to fix formatting
-
 ## Contributing, Conforming and Terms
 
 Visit [Contributing.md](./CONTRIBUTING.md)
@@ -15,9 +12,9 @@ This document contains all specifications and requirements for the program.
 ## Controls
 
 ### Drive
-Left Joystick: Move (field-oriented)
-Right Joystick X: Rotate
-Right Joystick Button: Reset robot heading to 0
+- Left Joystick: Move (field-oriented)
+- Right Joystick X: Rotate
+- Right Joystick Button: Reset robot heading to 0
 
 ## Trajectory Calculations and Math
 See [trajectory.pdf](./trajectory/trajectory.pdf).
@@ -26,8 +23,7 @@ See [trajectory.pdf](./trajectory/trajectory.pdf).
 The prewritten code must be available public, on a public forum post such as Chief Delphi,
 before kickoff. From R303 of (2026) Game Manual.
 
-
-## Xbox Controller Mappings
+## Xbox Controller Keyboard Mappings
 What each control is in SmartDashboard, in Keyboard Settings.
 
 Set Keyboard 0 controls to these when you need each specific control.
@@ -77,6 +73,12 @@ These only go by angles; avoid pressing more than one button at once.
 - https://hal7df.github.io/pauls-tutorials/wpi/ch2/user-input.html
 - https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
 - https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html#joystick-and-controller-coordinate-system
+
+## Gradle Commands
+Formatting:
+```
+./gradlew spotlessApply
+```
 
 ## Generated, Templated, and Imported Code
 - `TunerConstants.java` is entirely auto-generated

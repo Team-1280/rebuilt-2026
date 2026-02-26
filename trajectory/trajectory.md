@@ -170,7 +170,7 @@ Let:
 $$
 \begin{gather*}
     \hat{i}\coloneqq(\text{unit forward vector for }\boldsymbol{R}(0,0,0)\,)=\langle1,0,0\rangle \\
-    \boldsymbol{R}\hat{i}=(\text{unit vector for }\boldsymbol{R})
+    \boldsymbol{R}\hat{i}=(\text{unit forward vector for }\boldsymbol{R})
 \end{gather*}
 $$
 
@@ -1115,7 +1115,7 @@ Set the low $\theta$ to the elevation angle of the target if that is greater tha
 Otherwise, if the minimum possible $\theta$ is greater than the elevation angle, use that for the low $\theta$ instead. \
 If $\theta$ is being minimized, calculate the trajectory; if it is valid, use that as the final $\theta$, but if it fails an upper constraint, then there is no valid solution for $\theta$.
 
-Set the guess $\theta$ to the $\theta$ that maximizes $u$, which is the average of the elevation angle and 90 degrees.
+Set the guess $\theta$ to the $\theta$ that minimizes $u$, which is the average of the elevation angle and 90 degrees.
 
 Then, for a set amount of iterations or until it is determined there is no solution, repeat the following steps:
 
