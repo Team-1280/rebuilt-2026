@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -79,6 +80,8 @@ public class LauncherAssembly implements Sendable {
     public void aimDirection(Translation3d direction) {
         if (direction.getX() == 0.0 && direction.getY() == 0.0) {
             // Gimbal lock: can't determine yaw
+            DriverStation.reportWarning(
+                    "LauncherAssembly cannot aim direction " + direction + " (gimbal lock)", true);
             return;
         }
         double pitchRad = Math.asin(direction.getZ() / direction.getNorm());
