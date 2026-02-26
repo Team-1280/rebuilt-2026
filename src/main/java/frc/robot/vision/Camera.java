@@ -10,6 +10,7 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class Camera {
@@ -44,30 +45,30 @@ public class Camera {
      *
      * @return The latest vision measurements, including distance, ambiguity, and target count
      */
-    public ArrayList<VisionMeasurement> update() {
+    public List<VisionMeasurement> update() {
         ArrayList<VisionMeasurement> measurements = new ArrayList<>();
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
             if (!shouldUseResult(result)) {
                 continue;
             }
-            Optional<EstimatedRobotPose> estimate =
+            Optional<EstimatedRobotPose> optionalEstimate =
                     poseEstimator.estimateAverageBestTargetsPose(result);
-            if (estimate.isEmpty()) {
+            if (optionalEstimate.isEmpty()) {
                 continue;
             }
-            EstimatedRobotPose est = estimate.get();
-            double dist =
-                    est.targetsUsed.stream()
+            EstimatedRobotPose estimate = optionalEstimate.get();
+            double averageDistance =
+                    estimate.targetsUsed.stream()
                             .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
                             .average()
-                            .orElse(Double.MAX_VALUE);
-            int numTargets = est.targetsUsed.size();
+                            .getAsDouble(); // note: targetsUsed is never empty here
             double ambiguity = result.getBestTarget().getPoseAmbiguity();
+            int numTargets = estimate.targetsUsed.size();
             measurements.add(
                     new VisionMeasurement(
-                            est.estimatedPose.toPose2d(),
-                            est.timestampSeconds,
-                            dist,
+                            estimate.estimatedPose.toPose2d(),
+                            estimate.timestampSeconds,
+                            averageDistance,
                             ambiguity,
                             numTargets));
         }

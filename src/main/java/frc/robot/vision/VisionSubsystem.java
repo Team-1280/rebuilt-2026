@@ -42,13 +42,13 @@ public class VisionSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         for (Camera camera : cameras) {
-            for (Camera.VisionMeasurement m : camera.update()) {
+            for (Camera.VisionMeasurement measurement : camera.update()) {
                 addVisionMeasurement.accept(
-                        m.pose(),
-                        m.timestampSeconds(),
-                        m.distanceMeters(),
-                        m.ambiguity(),
-                        m.numTargets());
+                        measurement.pose(),
+                        measurement.timestampSeconds(),
+                        measurement.distanceMeters(),
+                        measurement.ambiguity(),
+                        measurement.numTargets());
             }
         }
     }
