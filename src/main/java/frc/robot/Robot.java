@@ -36,11 +36,11 @@ public class Robot extends LoggedRobot implements Sendable {
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
     private final Field2d field = new Field2d();
-
-    StructPublisher<Pose2d> posePublisher =
-            NetworkTableInstance.getDefault().getStructTopic("Robot Pose", Pose2d.struct).publish();
-
-    StructPublisher<Pose3d> pose3dPublisher =
+    private final StructPublisher<Pose2d> posePublisher =
+            NetworkTableInstance.getDefault()
+                    .getStructTopic("Robot Pose2d", Pose2d.struct)
+                    .publish();
+    private final StructPublisher<Pose3d> pose3dPublisher =
             NetworkTableInstance.getDefault()
                     .getStructTopic("Robot Pose3d", Pose3d.struct)
                     .publish();
@@ -75,7 +75,7 @@ public class Robot extends LoggedRobot implements Sendable {
         SmartDashboard.putData("Robot", this);
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
-        pose3dPublisher.set(new Pose3d());
+        pose3dPublisher.set(Pose3d.kZero);
         SmartDashboard.putData("Vision", vision);
     }
 
