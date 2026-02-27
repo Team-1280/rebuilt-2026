@@ -101,6 +101,9 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     /** Maximum target distance for trusted vision measurements, in meters. */
     private static final double TRUST_VISION_RANGE_MAX = 3.5;
 
+    /** Maximum tilt, in radians, for the robot to still be considered flat on the ground. */
+    private static final double TILT_THRESHOLD = Units.degreesToRadians(4.0); // TODO
+
     /** The Kaaba, Al-Masjid al-Haram, Mecca, Saudi Arabia. */
     private static final double MECCA_LAT_RAD = Math.toRadians(21.3891);
 
@@ -156,9 +159,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
      * <p>1.0 = fully trustworthy, 0.0 = completely untrustworthy.
      */
     private double cachedOdometryTrust = 1.0;
-
-    /** Cached Pose3d with NavX2 tilt, updated each periodic loop. */
-    private Pose3d cachedPose3d = new Pose3d();
 
     /** Whether slip was detected in the most recent update cycle. */
     private boolean slipDetected = false;
@@ -266,13 +266,42 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
     }
 
     /**
+     * Returns whether the robot is considered to be tilted, according to NavX2 roll and pitch and
+     * the tilt threshold constant.
+     */
+    public boolean isTilted() {
+        double roll = Units.degreesToRadians(navX2.getRoll());
+        double pitch = Units.degreesToRadians(navX2.getPitch());
+        double tilt = Math.acos(Math.cos(roll) * Math.cos(pitch)); // Combined roll and pitch
+        return tilt > TILT_THRESHOLD;
+    }
+
+    /** Returns the latest 2D pose. */
+    public Pose2d getPose2d() {
+        return getState().Pose;
+    }
+
+    /**
      * Returns the latest 3D pose with NavX2 tilt (roll/pitch) applied.
+     *
+     * <p>If the robot is not tilted, then this is equivalent to the 2D pose in 3D.
      *
      * <p>X/Y match the 2D odometry pose; Z is 0; rotation includes measured roll and pitch from the
      * NavX2 for 3D visualization in AdvantageScope.
      */
     public Pose3d getPose3d() {
-        return cachedPose3d;
+        Pose2d pose2d = getPose2d();
+        if (!isTilted()) {
+            // Return a flat robot pose if not tilted
+            return new Pose3d(pose2d);
+        }
+        double roll = Units.degreesToRadians(navX2.getRoll());
+        double pitch = Units.degreesToRadians(navX2.getPitch());
+        return new Pose3d(
+                pose2d.getX(),
+                pose2d.getY(),
+                0.0,
+                new Rotation3d(roll, pitch, pose2d.getRotation().getRadians()));
     }
 
     /**
@@ -428,19 +457,10 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
         }
         cachedOdometryTrust = wheelEvidence.weight();
 
-        // ----- 9. Pose3d with NavX2 tilt -----
-        double roll = Units.degreesToRadians(navX2.getRoll());
-        double pitch = Units.degreesToRadians(navX2.getPitch());
-        cachedPose3d =
-                new Pose3d(
-                        currentPose.getX(),
-                        currentPose.getY(),
-                        0.0,
-                        new Rotation3d(roll, pitch, currentPose.getRotation().getRadians()));
-
         // ----- Telemetry -----
         Logger.recordOutput("Odometry/Pose", currentPose);
-        Logger.recordOutput("Odometry/Pose3d", cachedPose3d);
+        Logger.recordOutput("Odometry/Pose3d", getPose3d());
+        Logger.recordOutput("Odometry/Tilted", isTilted());
         Logger.recordOutput("Odometry/Trust/Composite", cachedOdometryTrust);
         Logger.recordOutput("Odometry/Trust/Jerk", jerkEvidence.weight());
         Logger.recordOutput("Odometry/Trust/Bump", bumpEvidence.weight());
