@@ -111,8 +111,8 @@ public class Robot extends LoggedRobot implements Sendable {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-        field.setRobotPose(drivetrain.getState().Pose);
-        posePublisher.set(drivetrain.getState().Pose);
+        field.setRobotPose(drivetrain.getPose2d());
+        posePublisher.set(drivetrain.getPose2d());
         pose3dPublisher.set(drivetrain.getPose3d());
     }
 
@@ -155,7 +155,7 @@ public class Robot extends LoggedRobot implements Sendable {
         builder.addStringProperty(
                 "zoning/zone",
                 () -> {
-                    Pose2d pose = drivetrain.getState().Pose;
+                    Pose2d pose = drivetrain.getPose2d();
                     if (FieldZoning.isInRedAllianceZone(pose)) return "Red";
                     if (FieldZoning.isInBlueAllianceZone(pose)) return "Blue";
                     return "Neutral";
@@ -163,21 +163,21 @@ public class Robot extends LoggedRobot implements Sendable {
                 null);
         builder.addBooleanProperty(
                 "zoning/team alliance zone",
-                () -> FieldZoning.isInTeamAllianceZone(drivetrain.getState().Pose),
+                () -> FieldZoning.isInTeamAllianceZone(drivetrain.getPose2d()),
                 null);
         builder.addBooleanProperty(
                 "zoning/red alliance zone",
-                () -> FieldZoning.isInRedAllianceZone(drivetrain.getState().Pose),
+                () -> FieldZoning.isInRedAllianceZone(drivetrain.getPose2d()),
                 null);
         builder.addBooleanProperty(
                 "zoning/blue alliance zone",
-                () -> FieldZoning.isInBlueAllianceZone(drivetrain.getState().Pose),
+                () -> FieldZoning.isInBlueAllianceZone(drivetrain.getPose2d()),
                 null);
         builder.addBooleanProperty(
                 "zoning/neutral zone",
-                () -> FieldZoning.isInNeutralZone(drivetrain.getState().Pose),
+                () -> FieldZoning.isInNeutralZone(drivetrain.getPose2d()),
                 null);
         builder.addBooleanProperty(
-                "zoning/on bump", () -> FieldZoning.isOnBump(drivetrain.getState().Pose), null);
+                "zoning/on bump", () -> FieldZoning.isOnBump(drivetrain.getPose2d()), null);
     }
 }

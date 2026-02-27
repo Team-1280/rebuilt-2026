@@ -194,7 +194,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
                 TunerConstants.FrontRight,
                 TunerConstants.BackLeft,
                 TunerConstants.BackRight);
-        lastPose = getState().Pose;
+        lastPose = getPose2d();
 
         driveMotors = new TalonFX[4];
         for (int i = 0; i < 4; i++) {
@@ -371,7 +371,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
             return;
         }
 
-        Pose2d currentPose = getState().Pose;
+        Pose2d currentPose = getPose2d();
 
         double G1 =
                 Units.degreesToRadians(
