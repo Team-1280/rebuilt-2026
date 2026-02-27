@@ -23,6 +23,6 @@ public final class ShooterConfig {
         motorConfig.CurrentLimits.StatorCurrentLimit = MOTOR_CURRENT_LIMIT.in(Amps);
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         motorConfig.MotorOutput.Inverted =
-                InvertedValue.CounterClockwise_Positive; // right is leader, positive is out
+                InvertedValue.Clockwise_Positive; // right (from launcher's perspective) is leader, positive is out
     }
 }
