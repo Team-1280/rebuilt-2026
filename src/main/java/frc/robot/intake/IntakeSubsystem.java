@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.MathUtil;
@@ -38,6 +39,7 @@ public class IntakeSubsystem extends SubsystemBase {
         moveAngle(IntakeConst.MAX_ANGLE);
     }
 
+    /** Move the intake angle to the given angle. */
     private void moveAngle(Angle angle) {
         targetAngle =
                 Rotations.of(
@@ -45,7 +47,21 @@ public class IntakeSubsystem extends SubsystemBase {
                                 angle.in(Rotations),
                                 IntakeConst.MIN_ANGLE.in(Rotations),
                                 IntakeConst.MAX_ANGLE.in(Rotations)));
+        moveAngle();
+    }
+
+    /** Move the intake angle to the current target angle. */
+    private void moveAngle() {
         deployMotor.setControl(new MotionMagicVoltage(targetAngle));
+    }
+
+    /** Brake the intake motor to lock the current angle in place. */
+    private void lockAngle() {
+        deployMotor.setControl(new StaticBrake());
+    }
+
+    private Angle getAngleError() {
+        return getAngle().minus(targetAngle);
     }
 
     private void moveRollerSpeed(double speed) {
@@ -70,14 +86,29 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     @Override
+    public void periodic() {
+        double errorMagnitude = Math.abs(getAngleError().in(Degrees));
+        if (errorMagnitude <= IntakeConfig.ANGLE_LOCK_TOLERANCE.in(Degrees)) {
+            // Lock the angle when the intake is close to the target angle
+            lockAngle();
+        } else if (errorMagnitude >= IntakeConfig.ANGLE_UNLOCK_TOLERANCE.in(Degrees)) {
+            // Move and correct the intake when the intake is far from the target angle
+            moveAngle();
+        }
+    }
+
+    @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("angle (deg)", () -> getAngle().in(Degrees), null);
         builder.addDoubleProperty(
                 "target angle (deg)",
                 () -> targetAngle.in(Degrees),
                 (intakeAngle) -> moveAngle(Degrees.of(intakeAngle)));
-        builder.addDoubleProperty(
-                "angle error (deg)", () -> getAngle().minus(targetAngle).in(Degrees), null);
+        builder.addDoubleProperty("angle error (deg)", () -> getAngleError().in(Degrees), null);
+        builder.addBooleanProperty(
+                "angle locked (braking)",
+                () -> deployMotor.get() == 0.0, // assumes intake never brakes
+                null);
 
         builder.addDoubleProperty(
                 "roller speed (frac)", this::getRollerSpeed, this::moveRollerSpeed);

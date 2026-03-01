@@ -1,15 +1,23 @@
 package frc.robot.intake;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 
 public final class IntakeConfig {
     public static final double ROLLER_SPEED = 0.0; // TODO
+
+    /** Maximum error magnitude at which the deploy motor brakes to lock the intake in place. */
+    public static final Angle ANGLE_LOCK_TOLERANCE = Degrees.of(2.0); // TODO: tune
+
+    /** Minimum error magnitude at which the deploy motor stops braking and applies correction. */
+    public static final Angle ANGLE_UNLOCK_TOLERANCE = Degrees.of(4.0); // TODO: tune
 
     public static final TalonFXConfiguration deployMotorConfig = new TalonFXConfiguration(); // TODO
     public static final Current DEPLOY_MOTOR_CURRENT_LIMIT = Amps.of(80); // TODO
