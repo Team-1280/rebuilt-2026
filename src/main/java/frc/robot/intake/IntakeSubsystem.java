@@ -60,8 +60,9 @@ public class IntakeSubsystem extends SubsystemBase {
         deployMotor.setControl(new StaticBrake());
     }
 
+    /** Get the difference between the target angle and the true angle. */
     private Angle getAngleError() {
-        return getAngle().minus(targetAngle);
+        return targetAngle.minus(getAngle());
     }
 
     private void moveRollerSpeed(double speed) {
@@ -89,10 +90,10 @@ public class IntakeSubsystem extends SubsystemBase {
     public void periodic() {
         double errorMagnitude = Math.abs(getAngleError().in(Degrees));
         if (errorMagnitude <= IntakeConfig.ANGLE_LOCK_TOLERANCE.in(Degrees)) {
-            // Lock the angle when the intake is close to the target angle
+            // Continuously lock the angle when the intake is close to the target angle
             lockAngle();
         } else if (errorMagnitude >= IntakeConfig.ANGLE_UNLOCK_TOLERANCE.in(Degrees)) {
-            // Move and correct the intake when the intake is far from the target angle
+            // Continuously move and correct the intake when the intake is far from the target angle
             moveAngle();
         }
     }
