@@ -9,7 +9,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Current;
 
 public final class SpindexerConfig {
-    public static final double MOTOR_SPEED = 0.0; // TODO
+    public static final double MOTOR_SPEED = 0.5; // TODO
 
     public static final Current MOTOR_CURRENT_LIMIT = Amps.of(80); // TODO
 
@@ -19,6 +19,6 @@ public final class SpindexerConfig {
         motorConfig.CurrentLimits.StatorCurrentLimit = MOTOR_CURRENT_LIMIT.in(Amps);
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motorConfig.MotorOutput.Inverted =
-                InvertedValue.CounterClockwise_Positive; // TODO: positive is shooting
+                InvertedValue.Clockwise_Positive; // positive is shooting
     }
 }
