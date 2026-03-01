@@ -71,13 +71,13 @@ public class IntakeSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("intake angle (deg)", () -> getAngle().in(Degrees), null);
+        builder.addDoubleProperty("angle (deg)", () -> getAngle().in(Degrees), null);
         builder.addDoubleProperty(
-                "intake target angle (deg)",
+                "target angle (deg)",
                 () -> targetAngle.in(Degrees),
                 (intakeAngle) -> moveAngle(Degrees.of(intakeAngle)));
         builder.addDoubleProperty(
-                "intake angle error (deg)", () -> getAngle().minus(targetAngle).in(Degrees), null);
+                "angle error (deg)", () -> getAngle().minus(targetAngle).in(Degrees), null);
 
         builder.addDoubleProperty(
                 "roller speed (frac)", this::getRollerSpeed, this::moveRollerSpeed);
