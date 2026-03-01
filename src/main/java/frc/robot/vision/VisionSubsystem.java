@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import org.photonvision.EstimatedRobotPose;
 
-import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class VisionSubsystem extends SubsystemBase {
@@ -30,11 +29,13 @@ public class VisionSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // Update each camera, and add their measurements if available
+
+        // TODO: possible feature: use estimatedPose.targetsUsed properties (ambiguity, area, skew,
+        // etc.) to weigh measurements
         for (Camera camera : cameras) {
-            Optional<EstimatedRobotPose> estimatedPose = camera.update();
-            if (estimatedPose.isPresent()) {
-                Pose2d pose = estimatedPose.get().estimatedPose.toPose2d();
-                double timestamp = estimatedPose.get().timestampSeconds;
+            for (EstimatedRobotPose estimatedPose : camera.update()) {
+                Pose2d pose = estimatedPose.estimatedPose.toPose2d();
+                double timestamp = estimatedPose.timestampSeconds;
                 addVisionMeasurement.accept(pose, timestamp);
             }
         }

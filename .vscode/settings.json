@@ -20,7 +20,7 @@
       "workingDirectory": "${workspaceFolder}/build/jni/release",
       "vmargs": [ "-Djava.library.path=${workspaceFolder}/build/jni/release" ],
       "env": {
-        "LD_LIBRARY_PATH": "${workspaceFolder}/build/jni/release" ,
+        "LD_LIBRARY_PATH": "${workspaceFolder}/build/jni/release",
         "DYLD_LIBRARY_PATH": "${workspaceFolder}/build/jni/release"
       }
     },
@@ -60,12 +60,20 @@
   "java.dependency.enableDependencyCheckup": false,
 
   "[java]": {
-    "editor.defaultFormatter": "josevseb.google-java-format-for-vs-code"
+    "editor.defaultFormatter": "josevseb.google-java-format-for-vs-code",
+
+    // Set indentation to 4 explicitly for Java, since a formatter is enforced
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false
   },
   "java.format.settings.google.extra": "--aosp", // For 4 space indentation
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit", // For auto-importing on save
+  },
 
   "redhat.telemetry.enabled": false,
 
-  "wpilib.skipSelectSimulateExtension": true
+  "wpilib.skipSelectSimulateExtension": true,
+  "java.compile.nullAnalysis.mode": "disabled"
 }
