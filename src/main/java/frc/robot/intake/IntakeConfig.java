@@ -19,6 +19,8 @@ public final class IntakeConfig {
         deployMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         deployMotorConfig.MotorOutput.Inverted =
                 InvertedValue.CounterClockwise_Positive; // TODO up positive
+        deployMotorConfig.Feedback.SensorToMechanismRatio =
+                IntakeConst.DEPLOY_ROTOR_TO_MECHANISM_RATIO;
     }
 
     public static final TalonFXConfiguration rollerMotorConfig = new TalonFXConfiguration(); // TODO
