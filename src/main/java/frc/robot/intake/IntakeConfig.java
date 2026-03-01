@@ -31,7 +31,7 @@ public final class IntakeConfig {
         deployMotorConfig.CurrentLimits.StatorCurrentLimit = DEPLOY_MOTOR_CURRENT_LIMIT.in(Amps);
         deployMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         deployMotorConfig.MotorOutput.Inverted =
-                InvertedValue.CounterClockwise_Positive; // TODO up positive
+                InvertedValue.Clockwise_Positive; // up positive
         deployMotorConfig.Feedback.SensorToMechanismRatio =
                 IntakeConst.DEPLOY_ROTOR_TO_MECHANISM_RATIO;
     }
@@ -43,6 +43,6 @@ public final class IntakeConfig {
         rollerMotorConfig.CurrentLimits.StatorCurrentLimit = ROLLER_MOTOR_CURRENT_LIMIT.in(Amps);
         rollerMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         rollerMotorConfig.MotorOutput.Inverted =
-                InvertedValue.CounterClockwise_Positive; // TODO intake positive
+                InvertedValue.Clockwise_Positive; // intake positive
     }
 }
