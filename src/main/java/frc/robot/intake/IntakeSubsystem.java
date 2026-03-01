@@ -15,7 +15,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private static final TalonFX deployMotor = new TalonFX(IntakeConst.DEPLOY_MOTOR_ID);
     private static final TalonFX rollerMotor = new TalonFX(IntakeConst.ROLLER_MOTOR_ID);
 
-    private Angle targetIntakeAngle;
+    private Angle targetAngle;
 
     public IntakeSubsystem() {
         deployMotor.getConfigurator().apply(IntakeConfig.deployMotorConfig);
@@ -23,29 +23,29 @@ public class IntakeSubsystem extends SubsystemBase {
 
         // Hardstop startup angle
         deployMotor.setPosition(IntakeConst.MAX_ANGLE);
-        targetIntakeAngle = IntakeConst.MAX_ANGLE;
+        targetAngle = IntakeConst.MAX_ANGLE;
     }
 
-    public Angle getIntakeAngle() {
+    public Angle getAngle() {
         return deployMotor.getPosition().getValue();
     }
 
     public void intakeDown() {
-        moveIntake(IntakeConst.MIN_ANGLE);
+        moveAngle(IntakeConst.MIN_ANGLE);
     }
 
     public void intakeUp() {
-        moveIntake(IntakeConst.MAX_ANGLE);
+        moveAngle(IntakeConst.MAX_ANGLE);
     }
 
-    private void moveIntake(Angle angle) {
-        targetIntakeAngle =
+    private void moveAngle(Angle angle) {
+        targetAngle =
                 Rotations.of(
                         MathUtil.clamp(
                                 angle.in(Rotations),
                                 IntakeConst.MIN_ANGLE.in(Rotations),
                                 IntakeConst.MAX_ANGLE.in(Rotations)));
-        deployMotor.setControl(new MotionMagicVoltage(targetIntakeAngle));
+        deployMotor.setControl(new MotionMagicVoltage(targetAngle));
     }
 
     private void moveRollerSpeed(double speed) {
@@ -66,20 +66,18 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void stow() {
         rollersOff();
-        moveIntake(IntakeConst.MAX_ANGLE);
+        moveAngle(IntakeConst.MAX_ANGLE);
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("intake angle (deg)", () -> getIntakeAngle().in(Degrees), null);
+        builder.addDoubleProperty("intake angle (deg)", () -> getAngle().in(Degrees), null);
         builder.addDoubleProperty(
                 "intake target angle (deg)",
-                () -> targetIntakeAngle.in(Degrees),
-                (intakeAngle) -> moveIntake(Degrees.of(intakeAngle)));
+                () -> targetAngle.in(Degrees),
+                (intakeAngle) -> moveAngle(Degrees.of(intakeAngle)));
         builder.addDoubleProperty(
-                "intake angle error (deg)",
-                () -> getIntakeAngle().minus(targetIntakeAngle).in(Degrees),
-                null);
+                "intake angle error (deg)", () -> getAngle().minus(targetAngle).in(Degrees), null);
 
         builder.addDoubleProperty(
                 "roller speed (frac)", this::getRollerSpeed, this::moveRollerSpeed);
