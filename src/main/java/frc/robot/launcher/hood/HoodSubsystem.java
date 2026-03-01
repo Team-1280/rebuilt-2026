@@ -50,6 +50,6 @@ public class HoodSubsystem extends SubsystemBase {
                 () -> targetPitch.in(Degrees),
                 (pitch) -> movePitch(Degrees.of(pitch)));
         builder.addDoubleProperty(
-                "pitch error (deg)", () -> getPitch().minus(targetPitch).in(Degrees), null);
+                "pitch error (deg)", () -> targetPitch.minus(getPitch()).in(Degrees), null);
     }
 }

@@ -55,7 +55,7 @@ public class ShooterSubsystem extends SubsystemBase {
                         moveAngularVelocity(RotationsPerSecond.of(angularVelocity)));
         builder.addDoubleProperty(
                 "angular velocity error (RPS)",
-                () -> getAngularVelocity().minus(targetAngularVelocity).in(RotationsPerSecond),
+                () -> targetAngularVelocity.minus(getAngularVelocity()).in(RotationsPerSecond),
                 null);
     }
 }

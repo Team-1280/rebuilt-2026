@@ -131,6 +131,6 @@ public class TurretSubsystem extends SubsystemBase {
                 () -> targetYaw.in(Degrees),
                 (yaw) -> moveRawYaw(Degrees.of(yaw)));
         builder.addDoubleProperty(
-                "yaw error (deg)", () -> getYaw().minus(targetYaw).in(Degrees), null);
+                "yaw error (deg)", () -> targetYaw.minus(getYaw()).in(Degrees), null);
     }
 }
