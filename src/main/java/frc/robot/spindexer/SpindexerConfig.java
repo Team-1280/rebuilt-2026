@@ -11,7 +11,7 @@ import edu.wpi.first.units.measure.Current;
 public final class SpindexerConfig {
     public static final double MOTOR_SPEED = 0.5; // TODO
 
-    public static final Current MOTOR_CURRENT_LIMIT = Amps.of(80); // TODO
+    public static final Current MOTOR_CURRENT_LIMIT = Amps.of(40.0);
 
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
