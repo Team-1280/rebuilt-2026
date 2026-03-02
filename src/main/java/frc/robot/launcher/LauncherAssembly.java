@@ -11,8 +11,6 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 
 import frc.robot.launcher.feeder.FeederSubsystem;
 import frc.robot.launcher.hood.HoodConst;
@@ -26,38 +24,35 @@ import frc.robot.trajectory.TrajectoryConstraints;
 import frc.robot.trajectory.TrajectoryParameters;
 import frc.robot.trajectory.TrajectorySolver;
 
-import java.util.Optional;
-import java.util.function.Supplier;
-
-/** Class containing and managing all launcher subsystems */
+/** Class containing and managing all launcher subsystems. */
 public class LauncherAssembly implements Sendable {
     public final ShooterSubsystem shooter = new ShooterSubsystem();
     public final FeederSubsystem feeder = new FeederSubsystem();
     public final HoodSubsystem hood = new HoodSubsystem();
     public final TurretSubsystem turret = new TurretSubsystem();
 
-    private boolean launchingEnabled = true;
+    private boolean shootingEnabled = true;
 
-    /** Allow fuel to be launched */
-    public void enableLaunching() {
-        launchingEnabled = true;
+    /** Allow fuel to be shot. */
+    public void enableShooting() {
+        shootingEnabled = true;
     }
 
-    /** Stop and don't allow fuel to be launched */
-    public void disableLaunching() {
-        stopLaunching();
-        launchingEnabled = false;
+    /** Stop shooting and don't allow fuel to be shot. */
+    public void disableShooting() {
+        stopShooting();
+        shootingEnabled = false;
     }
 
-    /** Stop launching fuel */
-    private void stopLaunching() {
+    /** Stop shooting fuel. */
+    private void stopShooting() {
         shooter.stop();
         feeder.stop();
     }
 
-    /** Stop flywheels and stow mechanisms */
+    /** Stop flywheels and stow mechanisms. */
     public void stow() {
-        stopLaunching();
+        stopShooting();
         hood.stow();
         turret.stow();
     }
@@ -70,13 +65,13 @@ public class LauncherAssembly implements Sendable {
         SmartDashboard.putData("launcher/turret", turret);
     }
 
-    /** Set the launcher direction to the given robot pitch and yaw */
+    /** Set the launcher direction to the given robot pitch and yaw. */
     public void aimDirection(Angle pitch, Angle yaw) {
         hood.movePitch(pitch);
         turret.moveYaw(yaw);
     }
 
-    /** Set the launcher direction to the given 3D vector */
+    /** Set the launcher direction to the given 3D vector. */
     public void aimDirection(Translation3d direction) {
         if (direction.getX() == 0.0 && direction.getY() == 0.0) {
             // Gimbal lock: can't determine yaw
@@ -89,22 +84,46 @@ public class LauncherAssembly implements Sendable {
         aimDirection(Radians.of(pitchRad), Radians.of(yawRad));
     }
 
-    /** Set the launcher to aim and, if possible, launch, with the given trajectory */
-    private void setTrajectory(Trajectory trajectory) {
+    /** Aim the launcher pitch and yaw to the given trajectory's. */
+    private void aimTrajectory(Trajectory trajectory) {
         aimDirection(
                 Radians.of(trajectory.getLauncherPitch()), Radians.of(trajectory.getLauncherYaw()));
-        if (launchingEnabled) {
-            if (trajectory.isValid()) {
-                feeder.start();
-            } else {
-                feeder.stop();
-            }
-            shooter.moveAngularVelocity(RadiansPerSecond.of(trajectory.getFlywheelSpeed()));
-        }
     }
 
-    /** Set the launcher to aim and, if possible, launch, at the given target */
-    private void setTarget(Pose3d robotPose, Translation2d robotVelocity, LaunchTarget target) {
+    /**
+     * Move shooter flywheel at trajectory's launch speed and start or stop feeding.
+     *
+     * <p>If shooting is disabled, does nothing.
+     *
+     * <p>Return a boolean of whether the launcher is feeding and shooting.
+     */
+    private boolean shootTrajectory(Trajectory trajectory) {
+        if (!shootingEnabled) {
+            return false;
+        }
+        boolean shoot = trajectory.isValid();
+        if (shoot) {
+            feeder.start();
+        } else {
+            feeder.stop();
+        }
+        shooter.moveAngularVelocity(RadiansPerSecond.of(trajectory.getFlywheelSpeed()));
+        return shoot;
+    }
+
+    /**
+     * Set the launcher to aim and, if possible, shoot, with the given trajectory.
+     *
+     * <p>Return a boolean of whether the launcher is feeding and shooting.
+     */
+    private boolean launchTrajectory(Trajectory trajectory) {
+        aimTrajectory(trajectory);
+        return shootTrajectory(trajectory);
+    }
+
+    /** Calculate the trajectory for the given target and parameters. Trajectory may be invalid. */
+    private Trajectory calculateTargetTrajectory(
+            LaunchTarget target, Pose3d robotPose, Translation2d robotVelocity) {
         TrajectoryParameters parameters =
                 new TrajectoryParameters(
                         robotPose,
@@ -117,34 +136,19 @@ public class LauncherAssembly implements Sendable {
                         .withMaxLauncherPitch(HoodConst.MAX_PITCH.in(Radians))
                         .withMaxFlywheelSpeed(
                                 ShooterConfig.MAX_ANGULAR_VELOCITY.in(RadiansPerSecond));
-        Trajectory trajectory =
-                target.ignoresVertical()
-                        ? TrajectorySolver.solveIgnoringVertical(parameters, constraints)
-                        : TrajectorySolver.solve(parameters, constraints);
-        setTrajectory(trajectory);
+        return target.ignoresVertical()
+                ? TrajectorySolver.solveIgnoringVertical(parameters, constraints)
+                : TrajectorySolver.solve(parameters, constraints);
     }
 
     /**
-     * Construct a command that sets the launcher subsystems to constantly launch at a provided
-     * (optional) target, until interrupted. (By default, the launcher stows once this command
-     * ends.)
+     * Set the launcher to aim and, if possible, shoot, at the given target, for this instant.
+     *
+     * <p>Return a boolean of whether the launcher is feeding and shooting.
      */
-    public Command runAutomaticLaunching(
-            Supplier<Pose3d> robotPoseSupplier,
-            Supplier<Translation2d> robotVelocitySupplier,
-            Supplier<Optional<LaunchTarget>> targetSupplier) {
-        Runnable run =
-                () -> {
-                    Optional<LaunchTarget> target = targetSupplier.get();
-                    if (target.isPresent()) {
-                        setTarget(
-                                robotPoseSupplier.get(), robotVelocitySupplier.get(), target.get());
-                    } else {
-                        // If no target, then stow
-                        stow();
-                    }
-                };
-        Runnable end = this::stow;
-        return Commands.runEnd(run, end, shooter, feeder, hood, turret);
+    public boolean launchTargetTrajectory(
+            LaunchTarget target, Pose3d robotPose, Translation2d robotVelocity) {
+        Trajectory trajectory = calculateTargetTrajectory(target, robotPose, robotVelocity);
+        return launchTrajectory(trajectory);
     }
 }
