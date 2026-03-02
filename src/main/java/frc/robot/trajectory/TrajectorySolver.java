@@ -5,8 +5,6 @@ import static frc.robot.trajectory.TrajectoryConst.GRAVITY;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 
-import frc.robot.util.PolynomialSolver;
-
 import java.util.Arrays;
 import java.util.stream.DoubleStream;
 
