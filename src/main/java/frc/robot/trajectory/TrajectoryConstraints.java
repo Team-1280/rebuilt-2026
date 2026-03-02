@@ -6,10 +6,11 @@ import java.util.ArrayList;
 
 /** Physical and optimization constraints for filtering and optimizing trajectories */
 public class TrajectoryConstraints {
-    /** Whether the code should try to minimize or maximize the pitch of the trajectory */
+    /** Whether the code should try to minimize or maximize the launch pitch, or minimize speed */
     public static enum SoftConstraint {
         MINIMIZE_PITCH,
-        MAXIMIZE_PITCH
+        MAXIMIZE_PITCH,
+        MINIMIZE_SPEED, // note: use maximize pitch as a fallback for this in some situations
     }
 
     /**
@@ -34,7 +35,7 @@ public class TrajectoryConstraints {
     /**
      * Create a set of constraints.
      *
-     * @param softConstraint which direction pitch should be optimized towards
+     * @param softConstraint where pitch should be optimized towards
      * @param minLauncherPitch the minimum allowed pitch of the launcher relative to the robot
      * @param maxLauncherPitch the maximum allowed pitch of the launcher relative to the robot
      * @param maxFlywheelSpeed the maximum allowed flywheel speed, which launch speed depends on
@@ -246,12 +247,12 @@ public class TrajectoryConstraints {
         return speed;
     }
 
-    /** Get whether the pitch should try to be maximized or minimized. */
+    /** Get where the pitch should try to be optimized towards. */
     public SoftConstraint getSoftConstraint() {
         return softConstraint;
     }
 
-    /** Set whether the pitch should try to be maximized or minimized. */
+    /** Set where the pitch should try to be optimized towards. */
     public TrajectoryConstraints withSoftConstraint(SoftConstraint softConstraint) {
         this.softConstraint = softConstraint;
         return this;

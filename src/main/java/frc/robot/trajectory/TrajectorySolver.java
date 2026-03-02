@@ -5,7 +5,6 @@ import static frc.robot.trajectory.TrajectoryConst.GRAVITY;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 
-import frc.robot.trajectory.TrajectoryConstraints.SoftConstraint;
 import frc.robot.util.PolynomialSolver;
 
 import java.util.Arrays;
@@ -57,46 +56,17 @@ public class TrajectorySolver {
      */
     public static Trajectory solve(
             TrajectoryParameters parameters, TrajectoryConstraints constraints) {
-        SoftConstraint softConstraint = constraints.getSoftConstraint();
-
         // The initial upper bound for pitch is the launcher's maximum achievable pitch
         double highPitch = constraints.calculateMaxPitch(parameters);
-        if (softConstraint == SoftConstraint.MAXIMIZE_PITCH && highPitch < Math.PI / 2) {
-            // See if this highest trajectory is usable or optimal, when maximizing pitch
-            // (At a pitch straight upwards, the trajectory is always invalid, so skip it)
-            Trajectory highestTrajectory = calculateFromPitch(parameters, highPitch);
-            if (!constraints.checkLower(highestTrajectory)) {
-                // a valid trajectory must impossibly be higher than the highest trajectory
-                highestTrajectory.invalidate();
-                return highestTrajectory; // closest trajectory
-            } else if (constraints.checkUpper(highestTrajectory)) {
-                // this highest trajectory, valid or invalid, is optimal
-                return highestTrajectory;
-            }
-            // If upper constraints aren't satisfied, continue and search lower
-        }
-
         // The initial lower bound for pitch is typically the elevation angle to the target
         double lowPitch = constraints.calculateMinPitch(parameters);
-        if (softConstraint == SoftConstraint.MINIMIZE_PITCH
-                && lowPitch > parameters.getElevationAngle()) {
-            // See if this lowest trajectory is usable or optimal, when minimizing pitch
-            // (At elevation angle pitch, the trajectory is always invalid, so skip it)
-            Trajectory lowestTrajectory = calculateFromPitch(parameters, lowPitch);
-            if (!constraints.checkUpper(lowestTrajectory)) {
-                // a valid trajectory must impossibly be lower than the lowest trajectory
-                lowestTrajectory.invalidate();
-                return lowestTrajectory; // closest trajectory
-            } else if (constraints.checkLower(lowestTrajectory)) {
-                // this lowest trajectory, valid or invalid, is optimal
-                return lowestTrajectory;
-            }
-            // If lower constraints aren't satisfied, continue and search higher
-        }
-
-        // First, guess with the pitch that minimizes speed
-        double guessPitch = parameters.getMinimalSpeedPitch();
-
+        // Decide the pitch to optimize towards
+        double targetPitch =
+                switch (constraints.getSoftConstraint()) {
+                    case MAXIMIZE_PITCH -> highPitch;
+                    case MINIMIZE_PITCH -> lowPitch;
+                    case MINIMIZE_SPEED -> parameters.getElevationAngle();
+                };
         // Use a pitch approximation algorithm to find a trajectory very close to the optimal
         return computeOptimalPitchTrajectory(
                 TrajectorySolver::calculateFromPitch,
@@ -104,7 +74,7 @@ public class TrajectorySolver {
                 constraints,
                 lowPitch,
                 highPitch,
-                guessPitch);
+                targetPitch);
     }
 
     /**
@@ -115,7 +85,8 @@ public class TrajectorySolver {
      * volume. For example, passing the fuel to an alliance zone.
      *
      * <p>Note that since the vertical displacement is ignored, it should be checked that the
-     * trajectory's height is still viable and, for example, doesn't exit the field.
+     * trajectory's height is still viable and, for example, doesn't exit the field. Constraint
+     * obstacles can be used for this.
      *
      * @param parameters the parameters of the trajectory
      * @param constraints the constraints of the trajectory
@@ -125,15 +96,15 @@ public class TrajectorySolver {
             TrajectoryParameters parameters, TrajectoryConstraints constraints) {
         double lowPitch = constraints.calculateMinPitch(parameters);
         double highPitch = constraints.calculateMaxPitch(parameters);
-        // First, guess either low or high pitch since it may already be optimal
-        double guessPitch =
-                constraints.getSoftConstraint() == SoftConstraint.MINIMIZE_PITCH
-                        ? lowPitch
-                        : highPitch;
-
+        // Note: minimizing speed here means making the launch angle as horizontal as possible
+        double targetPitch =
+                switch (constraints.getSoftConstraint()) {
+                    case MAXIMIZE_PITCH -> highPitch;
+                    case MINIMIZE_PITCH, MINIMIZE_SPEED -> lowPitch;
+                };
         return computeOptimalPitchTrajectory(
                 (params, pitch) -> {
-                    // Use maximum speed
+                    // Use maximum speed (even for minimize speed constraint)
                     double speed = constraints.calculateApproximateMaxSpeed(pitch);
                     return calculateFromPitchIgnoringVertical(params, pitch, speed);
                 },
@@ -141,11 +112,13 @@ public class TrajectorySolver {
                 constraints,
                 lowPitch,
                 highPitch,
-                guessPitch);
+                targetPitch);
     }
 
     /**
-     * Approximate the optimal trajectory by using a bisection algorithm with pitch as the variable.
+     * Approximate a pitch that is closest to the target pitch while being valid.
+     *
+     * <p>If the target pitch is valid, return that. Otherwise, use a bisection algorithm.
      *
      * @param calculateTrajectory a function that takes in the parameters and a pitch, and returns a
      *     calculated Trajectory from it, valid or invalid
@@ -153,7 +126,7 @@ public class TrajectorySolver {
      * @param constraints the constraints placed on the trajectories
      * @param lowPitch the initial lower bound of the pitch (field-relative)
      * @param highPitch the initial upper bound of the pitch (field-relative)
-     * @param guessPitch the initial guess for the pitch (field-relative)
+     * @param targetPitch the pitch to optimize towards, between lowPitch and highPitch, inclusive
      * @return the most optimal trajectory found, which may be invalid if none valid were found
      */
     public static Trajectory computeOptimalPitchTrajectory(
@@ -162,17 +135,66 @@ public class TrajectorySolver {
             TrajectoryConstraints constraints,
             double lowPitch,
             double highPitch,
-            double guessPitch) {
-        // Clamp the guess pitch to avoid problems with erroneous guesses
-        guessPitch = MathUtil.clamp(guessPitch, lowPitch, highPitch);
-        SoftConstraint softConstraint = constraints.getSoftConstraint();
-        Trajectory trajectory = calculateTrajectory.apply(parameters, guessPitch);
-        Trajectory bestTrajectory = null; // keep track of the best pitch's trajectory so far
+            double targetPitch) {
+        Trajectory trajectory = calculateFromPitch(parameters, targetPitch);
+        boolean maximizePitch;
+        if (constraints.checkUpper(trajectory)) {
+            if (constraints.checkLower(trajectory)) {
+                // target trajectory is valid, so use it
+                return trajectory;
+            } else {
+                // target trajectory is too low, so start higher and minimize
+                lowPitch = targetPitch;
+                maximizePitch = false;
+            }
+        } else {
+            if (constraints.checkLower(trajectory)) {
+                // target is too high, so start lower and maximize
+                highPitch = targetPitch;
+                maximizePitch = true;
+            } else {
+                // no trajectory is valid, so optimize for the bound of the soft constraint
+                maximizePitch =
+                        switch (constraints.getSoftConstraint()) {
+                            case MAXIMIZE_PITCH, MINIMIZE_SPEED -> true;
+                            case MINIMIZE_PITCH -> false;
+                        };
+            }
+        }
+        return computeOptimalPitchTrajectory(
+                calculateTrajectory, parameters, constraints, lowPitch, highPitch, maximizePitch);
+    }
 
-        // bisection algorithm
-        for (int i = 0; ; i++) { // Note: the stop condition is in the middle of the loop
+    /**
+     * Approximate the optimal trajectory by using a bisection algorithm with pitch as the variable.
+     *
+     * @param calculateTrajectory a function that takes in the parameters and a pitch, and returns a
+     *     calculated Trajectory from it, valid or invalid
+     * @param parameters the known trajectory parameters
+     * @param constraints the constraints placed on the trajectories (soft constraint ignored)
+     * @param lowPitch the initial lower bound of the pitch (field-relative)
+     * @param highPitch the initial upper bound of the pitch (field-relative)
+     * @param maximizePitch whether to maximize pitch or minimize pitch
+     * @return the most optimal trajectory found, which may be invalid if none valid were found
+     */
+    public static Trajectory computeOptimalPitchTrajectory(
+            BiFunction<TrajectoryParameters, Double, Trajectory> calculateTrajectory,
+            TrajectoryParameters parameters,
+            TrajectoryConstraints constraints,
+            double lowPitch,
+            double highPitch,
+            boolean maximizePitch) {
+        Trajectory bestTrajectory = null; // keep track of the best pitch's trajectory so far
+        Trajectory trajectory = null; // declare outside of loop so we can access final trajectory
+        // bisection algorithm, run until maximum error is small or the iteration cap was reached
+        for (int i = 0;
+                highPitch - lowPitch > TrajectoryConfig.OPTIMIZER_PITCH_TOLERANCE
+                        && i < TrajectoryConfig.OPTIMIZER_MAX_ITERATIONS;
+                i++) {
             // Iterate to search for better trajectories between lowPitch and highPitch
-            if (softConstraint == SoftConstraint.MAXIMIZE_PITCH) {
+            double guessPitch = (lowPitch + highPitch) / 2; // Guess in the possible range's center
+            trajectory = calculateTrajectory.apply(parameters, guessPitch);
+            if (maximizePitch) {
                 // Maximize pitch to the upper bound from upper constraints
                 if (constraints.checkUpper(trajectory)) {
                     // Upper constraints satisfied, record trajectory and continue upwards
@@ -193,23 +215,20 @@ public class TrajectorySolver {
                     lowPitch = guessPitch;
                 }
             }
-
-            if (highPitch - lowPitch <= TrajectoryConfig.OPTIMIZER_PITCH_TOLERANCE
-                    || i >= TrajectoryConfig.OPTIMIZER_MAX_ITERATIONS) {
-                // Stop after reaching enough precision, or at the upper cap on iterations
-                break;
-            }
-            // Set up next iteration
-            guessPitch = (lowPitch + highPitch) / 2; // Guess in the middle of the possible range
-            trajectory = calculateTrajectory.apply(parameters, guessPitch);
         }
 
         if (bestTrajectory == null) {
-            // The algorithm did not reach a valid trajectory; use the final, closest one
-            bestTrajectory = trajectory;
+            if (trajectory != null) {
+                // The algorithm did not reach a valid trajectory; use the final, closest one
+                bestTrajectory = trajectory;
+            } else {
+                // The algorithm ran 0 iterations because lowPitch and highPitch were already close
+                bestTrajectory =
+                        calculateTrajectory.apply(parameters, maximizePitch ? highPitch : lowPitch);
+            }
         }
         if (!constraints.checkAll(bestTrajectory)) {
-            // Invalidate the trajectory if it does not satisfy all constraints
+            // Invalidate the trajectory when it does not satisfy all constraints
             bestTrajectory.invalidate();
         }
         return bestTrajectory;
