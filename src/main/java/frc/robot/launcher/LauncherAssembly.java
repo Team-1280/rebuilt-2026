@@ -11,6 +11,7 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 
 import frc.robot.launcher.feeder.FeederSubsystem;
 import frc.robot.launcher.hood.HoodConst;
@@ -30,6 +31,9 @@ public class LauncherAssembly implements Sendable {
     public final FeederSubsystem feeder = new FeederSubsystem();
     public final HoodSubsystem hood = new HoodSubsystem();
     public final TurretSubsystem turret = new TurretSubsystem();
+
+    /** An array of all launcher subsystems, useful for command subsystem requirements. */
+    public final Subsystem[] subsystems = {shooter, feeder, hood, turret};
 
     private boolean shootingEnabled = true;
 
