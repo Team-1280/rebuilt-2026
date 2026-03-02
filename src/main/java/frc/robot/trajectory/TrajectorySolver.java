@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.util.PolynomialSolver;
 
 import java.util.Arrays;
-import java.util.function.BiFunction;
 import java.util.stream.DoubleStream;
 
 /**
@@ -29,6 +28,12 @@ import java.util.stream.DoubleStream;
  */
 public class TrajectorySolver {
     private TrajectorySolver() {} // not an instantiable class
+
+    /** A function that calculates an exact trajectory from parameters and a pitch. */
+    @FunctionalInterface
+    public static interface TrajectoryCalculator {
+        Trajectory calculate(TrajectoryParameters parameters, double pitch);
+    }
 
     /**
      * Solve for the optimal trajectory, for the given parameters and constraints, that would get a
@@ -130,7 +135,7 @@ public class TrajectorySolver {
      * @return the most optimal trajectory found, which may be invalid if none valid were found
      */
     public static Trajectory computeOptimalPitchTrajectory(
-            BiFunction<TrajectoryParameters, Double, Trajectory> calculateTrajectory,
+            TrajectoryCalculator calculateTrajectory,
             TrajectoryParameters parameters,
             TrajectoryConstraints constraints,
             double lowPitch,
@@ -178,7 +183,7 @@ public class TrajectorySolver {
      * @return the most optimal trajectory found, which may be invalid if none valid were found
      */
     public static Trajectory computeOptimalPitchTrajectory(
-            BiFunction<TrajectoryParameters, Double, Trajectory> calculateTrajectory,
+            TrajectoryCalculator calculateTrajectory,
             TrajectoryParameters parameters,
             TrajectoryConstraints constraints,
             double lowPitch,
@@ -193,7 +198,7 @@ public class TrajectorySolver {
                 i++) {
             // Iterate to search for better trajectories between lowPitch and highPitch
             double guessPitch = (lowPitch + highPitch) / 2; // Guess in the possible range's center
-            trajectory = calculateTrajectory.apply(parameters, guessPitch);
+            trajectory = calculateTrajectory.calculate(parameters, guessPitch);
             if (maximizePitch) {
                 // Maximize pitch to the upper bound from upper constraints
                 if (constraints.checkUpper(trajectory)) {
@@ -224,7 +229,8 @@ public class TrajectorySolver {
             } else {
                 // The algorithm ran 0 iterations because lowPitch and highPitch were already close
                 bestTrajectory =
-                        calculateTrajectory.apply(parameters, maximizePitch ? highPitch : lowPitch);
+                        calculateTrajectory.calculate(
+                                parameters, maximizePitch ? highPitch : lowPitch);
             }
         }
         if (!constraints.checkAll(bestTrajectory)) {
