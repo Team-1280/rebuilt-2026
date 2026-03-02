@@ -18,7 +18,6 @@ public final class SpindexerConfig {
     static {
         motorConfig.CurrentLimits.StatorCurrentLimit = MOTOR_CURRENT_LIMIT.in(Amps);
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motorConfig.MotorOutput.Inverted =
-                InvertedValue.Clockwise_Positive; // positive is shooting
+        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // positive is shooting
     }
 }
