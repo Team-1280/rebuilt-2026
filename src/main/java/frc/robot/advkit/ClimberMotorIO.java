@@ -17,15 +17,11 @@ public interface ClimberMotorIO {
         public boolean stalled = false;
     }
 
-    public default void updateInputs(ClimberMotorIOInputs inputs) {
-    }
+    public default void updateInputs(ClimberMotorIOInputs inputs) {}
 
-    public default void setOpenLoop(double output) {
-    }
+    public default void setOpenLoop(double output) {}
 
-    public default void setTargetPosition(double positionRad) {
-    }
+    public default void setTargetPosition(double positionRad) {}
 
-    public default void stop() {
-    }
+    public default void stop() {}
 }
