@@ -17,7 +17,7 @@ public final class HoodConfig {
         motorConfig.CurrentLimits.StatorCurrentLimit = MOTOR_CURRENT_LIMIT.in(Amps);
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motorConfig.MotorOutput.Inverted =
-                InvertedValue.CounterClockwise_Positive; // TODO - Positive is shooting
+                InvertedValue.CounterClockwise_Positive; // positive is launch pitch upwards, hood *downwards*
         motorConfig.Feedback.SensorToMechanismRatio = HoodConst.ROTOR_TO_MECHANISM_RATIO;
         motorConfig.Slot0.GravityArmPositionOffset = 0.0; // TODO: find
     }
