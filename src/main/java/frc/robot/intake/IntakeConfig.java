@@ -25,10 +25,12 @@ public final class IntakeConfig {
     public static final Voltage ANGLE_ERROR_SIGN_FEEDFORWARD = Volts.of(0.0); // TODO: tune
 
     public static final TalonFXConfiguration deployMotorConfig = new TalonFXConfiguration(); // TODO
-    public static final Current DEPLOY_MOTOR_CURRENT_LIMIT = Amps.of(80); // TODO
+    public static final Current DEPLOY_STATOR_LIMIT = Amps.of(80); // TODO
+    public static final Current DEPLOY_SUPPLY_LIMIT = Amps.of(60); // TODO
 
     static {
-        deployMotorConfig.CurrentLimits.StatorCurrentLimit = DEPLOY_MOTOR_CURRENT_LIMIT.in(Amps);
+        deployMotorConfig.CurrentLimits.StatorCurrentLimit = DEPLOY_STATOR_LIMIT.in(Amps);
+        deployMotorConfig.CurrentLimits.SupplyCurrentLimit = DEPLOY_SUPPLY_LIMIT.in(Amps);
         deployMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         deployMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // up positive
         deployMotorConfig.Feedback.SensorToMechanismRatio =
@@ -36,10 +38,12 @@ public final class IntakeConfig {
     }
 
     public static final TalonFXConfiguration rollerMotorConfig = new TalonFXConfiguration(); // TODO
-    public static final Current ROLLER_MOTOR_CURRENT_LIMIT = Amps.of(80); // TODO
+    public static final Current ROLLER_STATOR_LIMIT = Amps.of(60); // TODO
+    public static final Current ROLLER_SUPPLY_LIMIT = Amps.of(30); // TODO
 
     static {
-        rollerMotorConfig.CurrentLimits.StatorCurrentLimit = ROLLER_MOTOR_CURRENT_LIMIT.in(Amps);
+        rollerMotorConfig.CurrentLimits.StatorCurrentLimit = ROLLER_STATOR_LIMIT.in(Amps);
+        rollerMotorConfig.CurrentLimits.SupplyCurrentLimit = ROLLER_SUPPLY_LIMIT.in(Amps);
         rollerMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         rollerMotorConfig.MotorOutput.Inverted =
                 InvertedValue.Clockwise_Positive; // intake positive
