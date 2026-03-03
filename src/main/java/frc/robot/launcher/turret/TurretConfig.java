@@ -20,17 +20,15 @@ public final class TurretConfig {
     public static final Angle DEADZONE_MIN_ANGLE = Degrees.of(0); // TODO
     public static final Angle DEADZONE_MAX_ANGLE = Degrees.of(0); // TODO
 
-    public static final Current STATOR_LIMIT = Amps.of(30);
-    public static final Current SUPPLY_LIMIT = Amps.of(15);
-    public static final boolean LIMIT_ENABLE = true;
+    // TODO
+    public static final Current STATOR_LIMIT = Amps.of(60);
+    public static final Current SUPPLY_LIMIT = Amps.of(30);
 
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
     static {
         motorConfig.CurrentLimits.StatorCurrentLimit = STATOR_LIMIT.in(Amps);
         motorConfig.CurrentLimits.SupplyCurrentLimit = SUPPLY_LIMIT.in(Amps);
-        motorConfig.CurrentLimits.StatorCurrentLimitEnable = LIMIT_ENABLE;
-        motorConfig.CurrentLimits.SupplyCurrentLimitEnable = LIMIT_ENABLE;
 
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motorConfig.MotorOutput.Inverted =
