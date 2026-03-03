@@ -20,7 +20,6 @@ public final class FeederConfig {
         motorConfig.CurrentLimits.StatorCurrentLimit = MOTOR_CURRENT_LIMIT.in(Amps);
         // Brakes to stop feeding fuel when desired
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motorConfig.MotorOutput.Inverted =
-                InvertedValue.CounterClockwise_Positive; // TODO: feed is positive
+        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // feeding is positive
     }
 }
