@@ -20,15 +20,20 @@ public final class TurretConfig {
     public static final Angle DEADZONE_MIN_ANGLE = Degrees.of(0); // TODO
     public static final Angle DEADZONE_MAX_ANGLE = Degrees.of(0); // TODO
 
-    public static final Current MOTOR_CURRENT_LIMIT = Amps.of(80); // TODO
+    public static final Current STATOR_LIMIT = Amps.of(30);
+    public static final Current SUPPLY_LIMIT = Amps.of(15);
+    public static final boolean LIMIT_ENABLE = true;
 
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
     static {
-        motorConfig.CurrentLimits.StatorCurrentLimit = MOTOR_CURRENT_LIMIT.in(Amps);
+        motorConfig.CurrentLimits.StatorCurrentLimit = STATOR_LIMIT.in(Amps);
+        motorConfig.CurrentLimits.SupplyCurrentLimit = SUPPLY_LIMIT.in(Amps);
+        motorConfig.CurrentLimits.StatorCurrentLimitEnable = LIMIT_ENABLE;
+        motorConfig.CurrentLimits.SupplyCurrentLimitEnable = LIMIT_ENABLE;
+
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motorConfig.MotorOutput.Inverted =
-                InvertedValue.CounterClockwise_Positive; // TODO: ccw is positive
+        motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive; // TODO: ccw is positive
 
         motorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         motorConfig.Feedback.FeedbackRemoteSensorID = TurretConst.ENCODER_ID;
@@ -39,7 +44,7 @@ public final class TurretConfig {
 
     static {
         encoderConfig.MagnetSensor.MagnetOffset = 0.0; // TODO
-        encoderConfig.MagnetSensor.SensorDirection =
-                SensorDirectionValue.CounterClockwise_Positive; // TODO: ccw is positive
+        encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive; // TODO: ccw is
+                                                                                                     // positive
     }
 }

@@ -13,14 +13,19 @@ import edu.wpi.first.units.measure.Current;
 public final class ShooterConfig {
     public static final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(0.0); // TODO
 
-    // NOTE: these configurations are shared for both motors; identical other than orientation
-    // TODO: add correct current limit
-    public static final Current MOTOR_CURRENT_LIMIT = Amps.of(80);
+    // NOTE: these configurations are shared for both motors; identical other than
+    // orientation
+    public static final Current STATOR_LIMIT = Amps.of(20);
+    public static final Current SUPPLY_LIMIT = Amps.of(15);
+    public static final boolean LIMIT_ENABLE = true;
 
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
     static {
-        motorConfig.CurrentLimits.StatorCurrentLimit = MOTOR_CURRENT_LIMIT.in(Amps);
+        motorConfig.CurrentLimits.StatorCurrentLimit = STATOR_LIMIT.in(Amps);
+        motorConfig.CurrentLimits.SupplyCurrentLimit = SUPPLY_LIMIT.in(Amps);
+        motorConfig.CurrentLimits.StatorCurrentLimitEnable = LIMIT_ENABLE;
+        motorConfig.CurrentLimits.SupplyCurrentLimitEnable = LIMIT_ENABLE;
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         // right (from launcher's perspective) is leader, positive is out
         motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
