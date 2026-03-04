@@ -63,10 +63,10 @@ public class LauncherAssembly implements Sendable {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        SmartDashboard.putData("launcher/shooter", shooter);
-        SmartDashboard.putData("launcher/feeder", feeder);
-        SmartDashboard.putData("launcher/hood", hood);
-        SmartDashboard.putData("launcher/turret", turret);
+        SmartDashboard.putData("Launcher/shooter", shooter);
+        SmartDashboard.putData("Launcher/feeder", feeder);
+        SmartDashboard.putData("Launcher/hood", hood);
+        SmartDashboard.putData("Launcher/turret", turret);
     }
 
     /** Set the launcher direction to the given robot pitch and yaw. */
