@@ -26,12 +26,13 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public void movePitch(Angle pitch) {
-        double clampedPitch =
-                MathUtil.clamp(
-                        pitch.in(Rotations),
-                        HoodConst.MIN_PITCH.in(Rotations),
-                        HoodConst.MAX_PITCH.in(Rotations));
-        motor.setControl(new MotionMagicVoltage(clampedPitch));
+        targetPitch =
+                Rotations.of(
+                        MathUtil.clamp(
+                                pitch.in(Rotations),
+                                HoodConst.MIN_PITCH.in(Rotations),
+                                HoodConst.MAX_PITCH.in(Rotations)));
+        motor.setControl(new MotionMagicVoltage(targetPitch));
     }
 
     public Angle getPitch() {
