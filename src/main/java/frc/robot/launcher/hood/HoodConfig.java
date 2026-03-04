@@ -15,9 +15,8 @@ import edu.wpi.first.units.measure.Current;
 public final class HoodConfig {
     public static final Angle SAFETY_ANGLE_LIMIT = Degrees.of(-45.0);
 
-    // TODO; note that hood is very powerful and so supply draw is mostly negligible
-    public static final Current STATOR_LIMIT = Amps.of(40);
-    public static final Current SUPPLY_LIMIT = Amps.of(20);
+    public static final Current STATOR_LIMIT = Amps.of(10);
+    public static final Current SUPPLY_LIMIT = Amps.of(2);
 
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
