@@ -13,5 +13,5 @@ public final class HoodConst {
     /** The maximum launcher pitch; note that there is a physical hardstop here. */
     public static final Angle MAX_PITCH = Degrees.of(73.606);
 
-    public static final double ROTOR_TO_MECHANISM_RATIO = 18.0;
+    public static final double ROTOR_TO_MECHANISM_RATIO = 24.0;
 }
