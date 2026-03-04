@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -27,6 +28,14 @@ public final class HoodConfig {
         // positive is launch pitch upwards, hood *downwards*
         motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         motorConfig.Feedback.SensorToMechanismRatio = HoodConst.ROTOR_TO_MECHANISM_RATIO;
-        motorConfig.Slot0.GravityArmPositionOffset = 0.0; // TODO: find
+
+        motorConfig.Slot0.kP = 50.0;
+        motorConfig.Slot0.kV = 2.5;
+        motorConfig.Slot0.kA = 0.20;
+        motorConfig.Slot0.kG = -0.30;
+        motorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+        motorConfig.Slot0.GravityArmPositionOffset = -0.25;
+        motorConfig.MotionMagic.MotionMagicCruiseVelocity = 1.0;
+        motorConfig.MotionMagic.MotionMagicAcceleration = 2.0;
     }
 }
