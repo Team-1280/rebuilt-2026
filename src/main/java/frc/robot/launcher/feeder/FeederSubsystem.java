@@ -1,34 +1,27 @@
 package frc.robot.launcher.feeder;
 
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class FeederSubsystem extends SubsystemBase {
     private final TalonFX motor = new TalonFX(FeederConst.MOTOR_ID);
 
-    private AngularVelocity targetAngularVelocity = RotationsPerSecond.of(0.0);
-
     public FeederSubsystem() {
         motor.getConfigurator().apply(FeederConfig.motorConfig);
     }
 
-    public AngularVelocity getAngularVelocity() {
-        return motor.getVelocity().getValue();
+    public double getMotorSpeed() {
+        return motor.get();
     }
 
-    public void moveAngularVelocity(AngularVelocity angularVelocity) {
-        targetAngularVelocity = angularVelocity;
-        motor.setControl(new MotionMagicVelocityVoltage(targetAngularVelocity));
+    public void moveMotorSpeed(double speed) {
+        motor.set(speed);
     }
 
     public void start() {
-        moveAngularVelocity(FeederConfig.ANGULAR_VELOCITY);
+        moveMotorSpeed(FeederConfig.MOTOR_SPEED);
     }
 
     public void stop() {
@@ -37,16 +30,6 @@ public class FeederSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty(
-                "angular velocity (RPS)", () -> getAngularVelocity().in(RotationsPerSecond), null);
-        builder.addDoubleProperty(
-                "target angular velocity (RPS)",
-                () -> targetAngularVelocity.in(RotationsPerSecond),
-                (double angularVelocity) ->
-                        moveAngularVelocity(RotationsPerSecond.of(angularVelocity)));
-        builder.addDoubleProperty(
-                "angular velocity error (RPS)",
-                () -> targetAngularVelocity.minus(getAngularVelocity()).in(RotationsPerSecond),
-                null);
+        builder.addDoubleProperty("motor speed (frac)", this::getMotorSpeed, this::moveMotorSpeed);
     }
 }
