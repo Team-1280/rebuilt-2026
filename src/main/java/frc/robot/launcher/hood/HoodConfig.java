@@ -22,8 +22,8 @@ public final class HoodConfig {
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
     static {
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
                 SAFETY_ANGLE_LIMIT.in(Rotations);
 
         motorConfig.CurrentLimits.StatorCurrentLimit = STATOR_LIMIT.in(Amps);
