@@ -2,6 +2,7 @@ package frc.robot.launcher.hood;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -12,7 +13,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 
 public final class HoodConfig {
-    public static final Angle SAFETY_ANGLE_LIMIT = Degrees.of(-15.0);
+    public static final Angle SAFETY_ANGLE_LIMIT = Degrees.of(-45.0);
 
     // TODO; note that hood is very powerful and so supply draw is mostly negligible
     public static final Current STATOR_LIMIT = Amps.of(40);
@@ -21,6 +22,10 @@ public final class HoodConfig {
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
     static {
+        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+                SAFETY_ANGLE_LIMIT.in(Rotations);
+
         motorConfig.CurrentLimits.StatorCurrentLimit = STATOR_LIMIT.in(Amps);
         motorConfig.CurrentLimits.SupplyCurrentLimit = SUPPLY_LIMIT.in(Amps);
 

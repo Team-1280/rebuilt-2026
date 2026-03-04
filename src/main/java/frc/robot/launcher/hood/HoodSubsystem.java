@@ -4,13 +4,11 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 // Note that pitch refers to fuel launch pitch relative to robot
@@ -42,18 +40,6 @@ public class HoodSubsystem extends SubsystemBase {
 
     public void stow() {
         movePitch(HoodConst.MAX_PITCH);
-    }
-
-    @Override
-    public void periodic() {
-        if (getPitch().in(Degrees) < HoodConfig.SAFETY_ANGLE_LIMIT.in(Degrees)) {
-            motor.setControl(new StaticBrake());
-            DriverStation.reportWarning(
-                    "hood motor at "
-                            + getPitch().in(Degrees)
-                            + " degrees disabled by safety angle limit",
-                    false);
-        }
     }
 
     @Override
