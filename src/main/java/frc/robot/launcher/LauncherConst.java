@@ -11,8 +11,8 @@ public final class LauncherConst {
     public static final Transform3d ROBOT_TO_LAUNCHER_TRANSFORM =
             new Transform3d(
                     new Translation3d( // bottom left quadrant of robot
-                            Inches.of(-4.273), // turret center x
-                            Inches.of(4.273), // turret center y
-                            Inches.of(-1)), // TODO: launcher translation Z
+                            Inches.of(-2.6967), // turret center x
+                            Inches.of(4.50), // turret center y
+                            Inches.of(0.0)), // TODO: launcher translation Z
                     Rotation3d.kZero);
 }
