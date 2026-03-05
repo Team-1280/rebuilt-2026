@@ -45,6 +45,16 @@ public final class TurretConfig {
         motorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         motorConfig.Feedback.FeedbackRemoteSensorID = TurretConst.ENCODER_ID;
         motorConfig.Feedback.SensorToMechanismRatio = TurretConst.ENCODER_TO_MECHANISM_RATIO;
+
+        // TODO: tune turret gains
+        motorConfig.Slot0.kP = 0.0;
+        motorConfig.Slot0.kD = 0.0;
+        motorConfig.Slot0.kS = 0.0;
+        motorConfig.Slot0.kV = 0.0;
+        motorConfig.Slot0.kA = 0.0;
+        motorConfig.MotionMagic.MotionMagicCruiseVelocity = 0.0;
+        motorConfig.MotionMagic.MotionMagicAcceleration = 0.0;
+        motorConfig.MotionMagic.MotionMagicJerk = 0.0; // note: 0.0 is no limit
     }
 
     public static final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();

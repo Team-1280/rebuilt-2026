@@ -27,5 +27,13 @@ public final class ShooterConfig {
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         // right (from launcher's perspective) is leader, positive is out
         motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+        // TODO: shooter gains
+        motorConfig.Slot0.kP = 0.0;
+        motorConfig.Slot0.kS = 0.0;
+        motorConfig.Slot0.kV = 0.0;
+        motorConfig.Slot0.kA = 0.0;
+        motorConfig.MotionMagic.MotionMagicAcceleration = 0.0;
+        motorConfig.MotionMagic.MotionMagicJerk = 0.0;
     }
 }
