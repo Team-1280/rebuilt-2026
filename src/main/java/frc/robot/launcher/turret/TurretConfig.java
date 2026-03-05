@@ -2,6 +2,7 @@ package frc.robot.launcher.turret;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -27,6 +28,13 @@ public final class TurretConfig {
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
     static {
+        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+                TurretConst.MAX_ANGLE.in(Rotations);
+        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
+                TurretConst.MIN_ANGLE.in(Rotations);
+
         motorConfig.CurrentLimits.StatorCurrentLimit = STATOR_LIMIT.in(Amps);
         motorConfig.CurrentLimits.SupplyCurrentLimit = SUPPLY_LIMIT.in(Amps);
 
