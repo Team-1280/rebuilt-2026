@@ -40,7 +40,7 @@ public final class TurretConfig {
 
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motorConfig.MotorOutput.Inverted =
-                InvertedValue.CounterClockwise_Positive; // TODO: ccw is positive
+                InvertedValue.CounterClockwise_Positive; // ccw yaw is positive
 
         motorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         motorConfig.Feedback.FeedbackRemoteSensorID = TurretConst.ENCODER_ID;

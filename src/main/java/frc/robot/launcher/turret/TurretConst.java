@@ -5,7 +5,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import edu.wpi.first.units.measure.Angle;
 
 public final class TurretConst {
-    public static final int MOTOR_ID = -1; // TODO
+    public static final int MOTOR_ID = 16;
     public static final int ENCODER_ID = -1; // TODO
 
     // TODO: these are tentative, conservative estimates
