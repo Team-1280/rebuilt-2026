@@ -39,8 +39,7 @@ public final class TurretConfig {
         motorConfig.CurrentLimits.SupplyCurrentLimit = SUPPLY_LIMIT.in(Amps);
 
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motorConfig.MotorOutput.Inverted =
-                InvertedValue.CounterClockwise_Positive; // ccw yaw is positive
+        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // ccw yaw is positive
 
         motorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         motorConfig.Feedback.FeedbackRemoteSensorID = TurretConst.ENCODER_ID;
@@ -62,7 +61,6 @@ public final class TurretConfig {
     static {
         encoderConfig.MagnetSensor.MagnetOffset = 0.0; // TODO
         encoderConfig.MagnetSensor.SensorDirection =
-                SensorDirectionValue.CounterClockwise_Positive; // TODO: ccw is
-        // positive
+                SensorDirectionValue.CounterClockwise_Positive; // ccw yaw is positive
     }
 }
