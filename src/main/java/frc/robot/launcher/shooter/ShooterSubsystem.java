@@ -11,11 +11,14 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.robot.launcher.LauncherConst;
 
 public class ShooterSubsystem extends SubsystemBase {
-    private final TalonFX rightLeaderMotor = new TalonFX(ShooterConst.RIGHT_LEADER_MOTOR_ID, LauncherConst.CAN_BUS);
-    private final TalonFX leftFollowerMotor = new TalonFX(ShooterConst.LEFT_FOLLOWER_MOTOR_ID, LauncherConst.CAN_BUS);
+    private final TalonFX rightLeaderMotor =
+            new TalonFX(ShooterConst.RIGHT_LEADER_MOTOR_ID, LauncherConst.CAN_BUS);
+    private final TalonFX leftFollowerMotor =
+            new TalonFX(ShooterConst.LEFT_FOLLOWER_MOTOR_ID, LauncherConst.CAN_BUS);
 
     private AngularVelocity targetAngularVelocity = RotationsPerSecond.of(0.0);
 
