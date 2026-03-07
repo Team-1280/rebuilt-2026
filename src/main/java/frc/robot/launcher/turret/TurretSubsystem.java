@@ -12,11 +12,12 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.launcher.LauncherConst;
 
 // Note: yaw of 0 is facing forward
 public class TurretSubsystem extends SubsystemBase {
-    private final TalonFX motor = new TalonFX(TurretConst.MOTOR_ID);
-    private final CANcoder encoder = new CANcoder(TurretConst.ENCODER_ID);
+    private final TalonFX motor = new TalonFX(TurretConst.MOTOR_ID, LauncherConst.CAN_BUS);
+    private final CANcoder encoder = new CANcoder(TurretConst.ENCODER_ID, LauncherConst.CAN_BUS);
 
     /** Continuous desired turret yaw, raw. */
     private Angle targetYaw;
