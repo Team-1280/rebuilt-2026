@@ -9,7 +9,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 public final class LauncherConst {
-    public static final CANBus CAN_BUS = new CANBus("canivore");
+    public static final CANBus CAN_BUS = new CANBus("launcher");
 
     /** The transform from the robot origin to the launcher exit point, including rotation. */
     public static final Transform3d ROBOT_TO_LAUNCHER_TRANSFORM =

@@ -11,11 +11,9 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import frc.robot.launcher.LauncherConst;
-
 // Note that pitch refers to fuel launch pitch relative to robot
 public class HoodSubsystem extends SubsystemBase {
-    private static final TalonFX motor = new TalonFX(HoodConst.MOTOR_ID, LauncherConst.CAN_BUS);
+    private static final TalonFX motor = new TalonFX(HoodConst.MOTOR_ID, HoodConst.CAN_BUS);
 
     private static Angle targetPitch;
 
