@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+import frc.robot.aesthetic.Candle;
 import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
@@ -35,6 +36,8 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot implements Sendable {
+
+    private final Candle candle = new Candle();
 
     private final Pigeon2 pigeon = new Pigeon2(26); // Also in TunerConstants.kPigeonId
 
@@ -109,7 +112,9 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     @Override
-    public void robotInit() {}
+    public void robotInit() {
+        candle.animateCandle(Candle.Effect.CHROMA);
+    }
 
     @Override
     public void robotPeriodic() {
