@@ -1,6 +1,5 @@
-package frc.robot.aesthetic;
+package frc.robot.aesthetic.candle;
 
-import com.ctre.phoenix6.configs.CANdleConfiguration;
 import com.ctre.phoenix6.controls.ColorFlowAnimation;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.LarsonAnimation;
@@ -10,12 +9,11 @@ import com.ctre.phoenix6.controls.SolidColor;
 import com.ctre.phoenix6.controls.TwinkleAnimation;
 import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.signals.RGBWColor;
-import com.ctre.phoenix6.signals.StripTypeValue;
 
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class Candle {
-    public enum Effect {
+    public static enum Effect {
         LARSON,
         FLOW,
         CHROMA,
@@ -24,17 +22,14 @@ public class Candle {
         EW,
     }
 
-    private static final CANdle candle = new CANdle(LightsConst.ID);
+    private static final CANdle candle = new CANdle(CandleConst.ID);
 
-    static {
-        CANdleConfiguration config = new CANdleConfiguration();
-        config.LED.StripType = StripTypeValue.RGB;
-        config.LED.BrightnessScalar = LightsConst.BRIGHTNESS;
-        candle.getConfigurator().apply(config);
+    public Candle() {
+        candle.getConfigurator().apply(CandleConfig.config);
     }
 
     public ControlRequest getEffectAnimation(Effect effect) {
-        int end = LightsConst.LED_COUNT - 1;
+        int end = CandleConst.LED_COUNT - 1;
         return switch (effect) {
             case LARSON -> new LarsonAnimation(0, end).withColor(new RGBWColor(255, 255, 255));
             case FLOW -> new ColorFlowAnimation(0, end).withColor(new RGBWColor(255, 255, 255));
@@ -52,13 +47,11 @@ public class Candle {
     }
 
     public void staticColor(int red, int green, int blue) {
-        candle.setControl(
-                new SolidColor(0, LightsConst.LED_COUNT - 1)
-                        .withColor(new RGBWColor(red, green, blue)));
+        staticColor(new Color8Bit(red, green, blue));
     }
 
     public void staticColor(Color8Bit color) {
         candle.setControl(
-                new SolidColor(0, LightsConst.LED_COUNT - 1).withColor(new RGBWColor(color)));
+                new SolidColor(0, CandleConst.LED_COUNT - 1).withColor(new RGBWColor(color)));
     }
 }
