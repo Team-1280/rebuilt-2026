@@ -11,7 +11,13 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 
 public final class ShooterConfig {
-    public static final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(90.0);
+    /**
+     * Max angular velocity that the shooter should get to.
+     *
+     * <p>The actual max angular velocity is around 90-95 RPS, but the max launch speed is achieved
+     * around 70-80 RPS.
+     */
+    public static final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(70.0);
 
     public static final Current STATOR_LIMIT = Amps.of(40);
     public static final Current SUPPLY_LIMIT = STATOR_LIMIT;
