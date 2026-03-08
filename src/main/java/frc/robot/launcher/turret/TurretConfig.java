@@ -46,20 +46,20 @@ public final class TurretConfig {
         motorConfig.Feedback.SensorToMechanismRatio = TurretConst.ENCODER_TO_MECHANISM_RATIO;
 
         // TODO: tune turret gains
-        motorConfig.Slot0.kP = 0.0;
-        motorConfig.Slot0.kD = 0.0;
-        motorConfig.Slot0.kS = 0.0;
-        motorConfig.Slot0.kV = 0.0;
-        motorConfig.Slot0.kA = 0.0;
-        motorConfig.MotionMagic.MotionMagicCruiseVelocity = 0.0;
-        motorConfig.MotionMagic.MotionMagicAcceleration = 0.0;
+        // Control unit: mechanism rotations
+        motorConfig.Slot0.kP = 100.0;
+        motorConfig.Slot0.kS = 0.22;
+        motorConfig.Slot0.kV = 3.1;
+        motorConfig.Slot0.kA = 0.15;
+        motorConfig.MotionMagic.MotionMagicCruiseVelocity = 1.0;
+        motorConfig.MotionMagic.MotionMagicAcceleration = 6.0;
         motorConfig.MotionMagic.MotionMagicJerk = 0.0; // note: 0.0 is no limit
     }
 
     public static final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
 
     static {
-        encoderConfig.MagnetSensor.MagnetOffset = 0.0; // TODO
+        encoderConfig.MagnetSensor.MagnetOffset = -0.144;
         encoderConfig.MagnetSensor.SensorDirection =
                 SensorDirectionValue.CounterClockwise_Positive; // ccw yaw is positive
     }
