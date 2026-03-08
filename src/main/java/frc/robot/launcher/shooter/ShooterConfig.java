@@ -11,11 +11,10 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 
 public final class ShooterConfig {
-    public static final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(0.0); // TODO
+    public static final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(90.0);
 
-    // TODO
-    public static final Current STATOR_LIMIT = Amps.of(60);
-    public static final Current SUPPLY_LIMIT = Amps.of(30);
+    public static final Current STATOR_LIMIT = Amps.of(40);
+    public static final Current SUPPLY_LIMIT = STATOR_LIMIT;
 
     // NOTE: these configurations are shared for both motors; identical other than orientation
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
@@ -32,7 +31,6 @@ public final class ShooterConfig {
         motorConfig.Slot0.kP = 0.2;
         motorConfig.Slot0.kS = 0.31;
         motorConfig.Slot0.kV = 0.116;
-        motorConfig.MotionMagic.MotionMagicAcceleration = 125.0;
-        motorConfig.MotionMagic.MotionMagicJerk = 0.0;
+        motorConfig.MotionMagic.MotionMagicAcceleration = 100.0;
     }
 }
