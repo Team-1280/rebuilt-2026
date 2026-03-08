@@ -9,11 +9,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Current;
 
 public final class FeederConfig {
-    public static final double MOTOR_SPEED = 0.2; // TODO
+    public static final double MOTOR_SPEED = 0.3; // TODO
 
-    // TODO
-    public static final Current STATOR_LIMIT = Amps.of(80);
-    public static final Current SUPPLY_LIMIT = Amps.of(40);
+    public static final Current STATOR_LIMIT = Amps.of(25);
+    public static final Current SUPPLY_LIMIT = Amps.of(15);
 
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
