@@ -33,6 +33,7 @@ public final class HoodConfig {
         motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         motorConfig.Feedback.SensorToMechanismRatio = HoodConst.ROTOR_TO_MECHANISM_RATIO;
 
+        // Control unit: launcher pitch rotations
         motorConfig.Slot0.kP = 50.0;
         motorConfig.Slot0.kV = 2.5;
         motorConfig.Slot0.kA = 0.20;
