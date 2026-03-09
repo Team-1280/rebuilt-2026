@@ -14,26 +14,26 @@ public final class VisionConst {
     public static final double MAX_AMBIGUITY = 0.2;
 
     // Prototype mounts
-    public static final Transform3d FRONT_CAMERA_TRANSFORM =
+    public static final Transform3d BACK_LEFT_CAMERA_TRANSFORM =
             new Transform3d(
                     new Translation3d(
-                            Units.inchesToMeters(10.876112),
-                            Units.inchesToMeters(9.499361),
-                            Units.inchesToMeters(9.310833)),
-                    new Rotation3d(0.0, Math.toRadians(28.125), Math.toRadians(90)));
-    public static final Transform3d BACK_CAMERA_TRANSFORM =
+                            Units.inchesToMeters(-4.747),
+                            Units.inchesToMeters(9.003),
+                            Units.inchesToMeters(9.423)),
+                    new Rotation3d(0.0, Math.toRadians(-(90 - 61.75)), Math.toRadians(180 + 27.2)));
+    public static final Transform3d BACK_RIGHT_CAMERA_TRANSFORM =
             new Transform3d(
                     new Translation3d(
-                            Units.inchesToMeters(-10.876112),
-                            Units.inchesToMeters(9.499361),
-                            Units.inchesToMeters(9.310833)),
-                    new Rotation3d(0.0, 28.125, Math.toRadians(-90)));
+                            Units.inchesToMeters(-9.696891),
+                            Units.inchesToMeters(-10.423049),
+                            Units.inchesToMeters(8.887247)),
+                    new Rotation3d(0.0, -(90 - 61.75), Math.toRadians(180 + 27.2)));
 
-    public static final Transform3d AUX_CAMERA_TRANSFORM =
-            new Transform3d(
-                    new Translation3d(
-                            Units.inchesToMeters(13.25),
-                            Units.inchesToMeters(-2.25),
-                            Units.inchesToMeters(4.75)),
-                    new Rotation3d(0.0, 0.0, Math.toRadians(160)));
+    // public static final Transform3d AUX_CAMERA_TRANSFORM =
+    //         new Transform3d(
+    //                 new Translation3d(
+    //                         Units.inchesToMeters(13.25),
+    //                         Units.inchesToMeters(-2.25),
+    //                         Units.inchesToMeters(4.75)),
+    //                 new Rotation3d(0.0, 0.0, Math.toRadians(160)));
 }
