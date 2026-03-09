@@ -37,6 +37,7 @@ import java.util.function.Supplier;
  * be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
+
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -60,7 +61,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
             new SwerveRequest.SysIdSwerveRotation();
 
-    /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
+    /*
+     * SysId routine for characterizing translation. This is used to find PID gains
+     * for the drive motors.
+     */
     private final SysIdRoutine m_sysIdRoutineTranslation =
             new SysIdRoutine(
                     new SysIdRoutine.Config(
@@ -76,7 +80,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                             null,
                             this));
 
-    /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
+    /*
+     * SysId routine for characterizing steer. This is used to find PID gains for
+     * the steer motors.
+     */
     private final SysIdRoutine m_sysIdRoutineSteer =
             new SysIdRoutine(
                     new SysIdRoutine.Config(
@@ -93,13 +100,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     /*
      * SysId routine for characterizing rotation.
-     * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
-     * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
+     * This is used to find PID gains for the FieldCentricFacingAngle
+     * HeadingController.
+     * See the documentation of SwerveRequest.SysIdSwerveRotation for info on
+     * importing the log to SysId.
      */
     private final SysIdRoutine m_sysIdRoutineRotation =
             new SysIdRoutine(
                     new SysIdRoutine.Config(
-                            /* This is in radians per second^2, but SysId only supports "volts per second" */
+                            /*
+                             * This is in radians per second^2, but SysId only supports "volts per second"
+                             */
                             Volts.of(Math.PI / 6).per(Second),
                             /* This is in radians per second, but SysId only supports "volts" */
                             Volts.of(Math.PI),
@@ -110,7 +121,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                                             "SysIdRotation_State", state.toString())),
                     new SysIdRoutine.Mechanism(
                             output -> {
-                                /* output is actually radians per second, but SysId only supports "volts" */
+                                /*
+                                 * output is actually radians per second, but SysId only supports
+                                 * "volts"
+                                 */
                                 setControl(
                                         m_rotationCharacterization.withRotationalRate(
                                                 output.in(Volts)));
@@ -122,7 +136,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     /* The SysId routine to test */
     private final SysIdRoutine[] m_sysIdRoutines = {
-        m_sysIdRoutineTranslation, m_sysIdRoutineRotation, m_sysIdRoutineSteer
+        m_sysIdRoutineTranslation, m_sysIdRoutineRotation, m_sysIdRoutineSteer,
     };
     private int m_sysIdRoutineToApply = 0;
 
@@ -222,7 +236,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                             new PIDConstants(10, 0, 0)),
                     config,
                     () -> {
-                        // Boolean supplier that controls when the path will be mirrored for the red
+                        // Boolean supplier that controls when the path will be mirrored for the
+                        // red
                         // alliance
                         // This will flip the path being followed to the red side of the field.
                         // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
@@ -282,10 +297,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void periodic() {
         /*
          * Periodically try to apply the operator perspective.
-         * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
-         * This allows us to correct the perspective in case the robot code restarts mid-match.
-         * Otherwise, only check and apply the operator perspective if the DS is disabled.
-         * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
+         * If we haven't applied the operator perspective before, then we should apply
+         * it regardless of DS state.
+         * This allows us to correct the perspective in case the robot code restarts
+         * mid-match.
+         * Otherwise, only check and apply the operator perspective if the DS is
+         * disabled.
+         * This ensures driving behavior doesn't change until an explicit disable event
+         * occurs during testing.
          */
         if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
             DriverStation.getAlliance()

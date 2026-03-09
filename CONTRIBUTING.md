@@ -38,6 +38,7 @@ The two branches should have no *merge conflicts* because they modified differen
 #### Git Commands
 In the *Terminal*, commands can be entered to perform Git operations. \
 The most common operations are also available in the VS Code GUI, in the *Source Control* tab.
+> *see more commands:* type `man git` in the Terminal. 
 
 All Git commands start with `git`, followed by a specific command like `commit`, then optionally some options/flags like `--message` (or equivalently, `-m`), then possibly some arguments for the flags or the entire command. \
 Example: `git switch -c fix-vision` .
@@ -259,13 +260,16 @@ Officers: one of your main responsibilities is to create and possibly assign iss
 
 ### Branches and PRs
 A new branch must be used for each new feature, bug fix, etc. \
-Only very small, one-off changes should be directly committed without its own branch.
+
+Only very small, one-off changes should be directly committed(after testing) without its own branch.
 
 A GitHub pull request must be opened, to merge a branch back into `main` or some other core development branch. \
 (But updating an in-development branch itself such as merging `main` into `feature-1` is fine to do locally.)
 
 Rookie programmer pull requests must not be merged until reviewed by a veteran programmer who merges it themselves. \
 Veteran programmers may choose to merge their own PR without review for insignificant or difficult changes.
+
+When a Veteran Programmer PRs, it is highly encouraged to be reviewed by a peer.  
 
 Avoid committing directly to `main`, especially new features.
 
@@ -285,6 +289,15 @@ The source code is separated into folders/packages by *feature* (e.g. `vision`, 
 
 Constants that are not expected to change over the codebase (e.g. mechanism locations, device IDs) should be placed in a `___Const` class in the relevant package. \
 Configuration, which are tunable values and settings (e.g. motor configuration, PID values, tolerances), should be placed in a `___Config` class in the relevant package.
+
+### AI
+Do not use AI to generate large amounts of code, especially when the task is too difficult for your skills.
+
+If using autocomplete or code generation, please review the code very carefully and make sure it works.
+
+Rookies: do not generate code snippets using AI.
+
+It is okay to use AI for research or guidance purposes.
 
 ## Workflow
 Recommended step-by-step workflow or development process for programmers:
