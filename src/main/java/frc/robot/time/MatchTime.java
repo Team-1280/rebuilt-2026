@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.time.TimeConst.Period;
 import frc.robot.time.TimeConst.Timeframe;
 
+import java.util.Optional;
+
 /**
  * Class with utilities for getting the match time.
  *
@@ -23,12 +25,23 @@ public class MatchTime implements Sendable {
     /** The current match period. */
     private static Period period = Period.NONE;
 
+    /** An override for whether the robot is in a match. */
+    private static Optional<Boolean> isMatchOverride = Optional.empty();
+
     static {
         RobotModeTriggers.autonomous()
                 .onTrue(Commands.runOnce(() -> MatchTime.startPeriod(Period.AUTO)));
         RobotModeTriggers.teleop()
                 .onTrue(Commands.runOnce(() -> MatchTime.startPeriod(Period.TELEOP)));
         RobotModeTriggers.test().onTrue(Commands.runOnce(() -> MatchTime.startPeriod(Period.NONE)));
+    }
+
+    /** Get whether the robot is in a match and should do match periods. */
+    public static boolean isMatch() {
+        if (isMatchOverride.isPresent()) {
+            return isMatchOverride.get();
+        }
+        return DriverStation.getMatchType() != MatchType.None;
     }
 
     /** Get the absolute time, used to disambiguously track time. */
@@ -38,13 +51,13 @@ public class MatchTime implements Sendable {
 
     /** Start the current match period. If the driver station is not in a game match, this fails. */
     private static void startPeriod(Period period) {
-        if (DriverStation.getMatchType() == MatchType.None) {
+        if (isMatch()) {
+            periodStartTime = getTime();
+            MatchTime.period = period;
+        } else {
             // Match periods do not apply for non-matches
             MatchTime.period = Period.NONE;
-            return;
         }
-        periodStartTime = getTime();
-        MatchTime.period = period;
     }
 
     /** Get the current match period. */
@@ -83,5 +96,11 @@ public class MatchTime implements Sendable {
         builder.addDoubleProperty("MATCH TIME", MatchTime::getMatchTime, MatchTime::setMatchTime);
         builder.addStringProperty("match period", () -> getPeriod().toString(), null);
         builder.addStringProperty("timeframe", () -> getTimeframe().toString(), null);
+        builder.addBooleanProperty(
+                "is match",
+                MatchTime::isMatch,
+                (isMatch) -> {
+                    isMatchOverride = Optional.of(isMatch);
+                });
     }
 }
