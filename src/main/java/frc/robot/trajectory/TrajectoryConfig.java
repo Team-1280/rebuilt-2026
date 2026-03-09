@@ -4,12 +4,12 @@ package frc.robot.trajectory;
 public final class TrajectoryConfig {
     // Model coefficients:
     // Via logistic equation:
-    // y = L/(1+Ae^(-rx)))
-    // x = ln(Ay/(L-y))/k
+    // y = L/(1+e^-(rx+a)))
+    // x = (ln(L/y-1)+a)/-r
     // TODO: add pitch into equation
-    public static final double MODEL_COEFFICIENT_L = 11.6662;
-    public static final double MODEL_COEFFICIENT_A = 7.89295;
+    public static final double MODEL_COEFFICIENT_L = 11.64503;
     public static final double MODEL_COEFFICIENT_R = 0.0121957;
+    public static final double MODEL_COEFFICIENT_A = -2.06597;
 
     /** Multiplication factor to compensate for error or bias */
     public static final double SPEED_MULTIPLIER = 1.00; // TODO: tune SPEED_MULTIPLIER
