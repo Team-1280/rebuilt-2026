@@ -4,8 +4,10 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
@@ -30,6 +32,17 @@ public final class IntakeConfig {
         deployMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // up positive
         deployMotorConfig.Feedback.SensorToMechanismRatio =
                 IntakeConst.DEPLOY_ROTOR_TO_MECHANISM_RATIO;
+
+        // Control unit: mechanism rotations
+        deployMotorConfig.Slot0.kP = 0.0;
+        deployMotorConfig.Slot0.kD = 0.0;
+        deployMotorConfig.Slot0.kS = 0.0;
+        deployMotorConfig.Slot0.kV = 0.0;
+        deployMotorConfig.Slot0.kA = 0.0;
+        deployMotorConfig.Slot0.kG = 0.0;
+        deployMotorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+        deployMotorConfig.Slot0.StaticFeedforwardSign =
+                StaticFeedforwardSignValue.UseClosedLoopSign;
     }
 
     public static final TalonFXConfiguration rollerMotorConfig = new TalonFXConfiguration(); // TODO
