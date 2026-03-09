@@ -9,7 +9,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -53,10 +52,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     /** Move the intake angle to the current target angle. */
     private void moveAngle() {
-        Voltage feedforward =
-                IntakeConfig.ANGLE_ERROR_SIGN_FEEDFORWARD.times(
-                        Math.signum(getAngleError().in(Degrees)));
-        deployMotor.setControl(new MotionMagicVoltage(targetAngle).withFeedForward(feedforward));
+        deployMotor.setControl(new MotionMagicVoltage(targetAngle));
     }
 
     /** Brake the intake motor to lock the current angle in place. */
