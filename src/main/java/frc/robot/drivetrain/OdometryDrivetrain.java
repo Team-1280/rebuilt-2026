@@ -177,7 +177,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
     private ChassisSpeeds commandedSpeeds = new ChassisSpeeds();
 
     /** Third gyroscope --NavX2 connected via MXP (SPI), used for inertial cross-checking. */
-    private final AHRS navX2 = new AHRS(AHRS.NavXComType.kMXP_UART);
+    private final AHRS navX2 = new AHRS(AHRS.NavXComType.kMXP_SPI);
 
     /** TalonFX references for the 4 drive motors (modules 0-3: FL, FR, BL, BR). */
     private final TalonFX[] driveMotors;
