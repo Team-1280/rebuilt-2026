@@ -68,7 +68,7 @@ public class TrajectorySolver {
                 switch (constraints.getSoftConstraint()) {
                     case MAXIMIZE_PITCH -> highPitch;
                     case MINIMIZE_PITCH -> lowPitch;
-                    case MINIMIZE_SPEED -> parameters.getElevationAngle();
+                    case MINIMIZE_SPEED -> parameters.getMinimalSpeedPitch();
                 };
         // Use a pitch approximation algorithm to find a trajectory very close to the optimal
         return computeOptimalPitchTrajectory(
