@@ -59,7 +59,7 @@ public final class TurretConfig {
     public static final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
 
     static {
-        encoderConfig.MagnetSensor.MagnetOffset = -0.144;
+        encoderConfig.MagnetSensor.MagnetOffset = -0.2410;
         encoderConfig.MagnetSensor.SensorDirection =
                 SensorDirectionValue.CounterClockwise_Positive; // ccw yaw is positive
     }
