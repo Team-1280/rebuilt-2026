@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -19,6 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+import frc.robot.aesthetic.candle.Candle;
 import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
@@ -31,8 +33,12 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot implements Sendable {
 
+    private final Candle candle = new Candle();
+
+    private final Pigeon2 pigeon = new Pigeon2(26); // Also in TunerConstants.kPigeonId
     private final OdometryDrivetrain drivetrain = new OdometryDrivetrain();
-    private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
+    private final VisionSubsystem vision =
+            new VisionSubsystem(drivetrain::addVisionMeasurement); // TODO: slip ratio supplier
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
@@ -106,7 +112,9 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     @Override
-    public void robotInit() {}
+    public void robotInit() {
+        candle.animateCandle(Candle.Effect.CHROMA);
+    }
 
     @Override
     public void robotPeriodic() {
