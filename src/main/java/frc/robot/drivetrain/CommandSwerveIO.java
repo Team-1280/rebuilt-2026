@@ -228,8 +228,8 @@ public class CommandSwerveIO extends SubsystemBase {
         // Dashboard and AdvantageKit gyro connection status
         SmartDashboard.putBoolean("Gyro/Pigeon2Connected", gyroInputs.connected);
         SmartDashboard.putBoolean("Gyro/NavX2Connected", gyroInputs.gyro3Connected);
-        Logger.recordOutput("Drive/Gyro/Pigeon2Connected", gyroInputs.connected);
-        Logger.recordOutput("Drive/Gyro/NavX2Connected", gyroInputs.gyro3Connected);
+        Logger.recordOutput("Drivebase/Gyro/Pigeon2Connected", gyroInputs.connected);
+        Logger.recordOutput("Drivebase/Gyro/NavX2Connected", gyroInputs.gyro3Connected);
     }
 
     /**
