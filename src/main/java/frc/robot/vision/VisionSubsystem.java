@@ -27,8 +27,8 @@ public class VisionSubsystem extends SubsystemBase {
 
     /** All vision cameras */
     private final Camera[] cameras = {
-        new Camera("backleft", VisionConst.BACK_LEFT_CAMERA_TRANSFORM),
-        new Camera("backright", VisionConst.BACK_RIGHT_CAMERA_TRANSFORM)
+        new Camera("Back Left", VisionConst.BACK_LEFT_CAMERA_TRANSFORM),
+        new Camera("Back Rright", VisionConst.BACK_RIGHT_CAMERA_TRANSFORM)
     };
 
     /**
