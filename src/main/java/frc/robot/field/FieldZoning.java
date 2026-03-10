@@ -4,12 +4,21 @@ import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
-public final class FieldZoning { // in meters
+public final class FieldZoning implements Sendable { // in meters
+    private final Supplier<Pose2d> robotPoseSupplier;
+
+    /** Private constructor for creating a sendable. */
+    private FieldZoning(Supplier<Pose2d> robotPoseSupplier) {
+        this.robotPoseSupplier = robotPoseSupplier;
+    }
 
     // rectangle rotation helpers
     /*
@@ -94,5 +103,38 @@ public final class FieldZoning { // in meters
                         pose, FieldConst.RED_BUMP_CENTER_X, FieldConst.LEFT_BUMP_CENTER_Y)
                 || isCollidingWithBump(
                         pose, FieldConst.RED_BUMP_CENTER_X, FieldConst.RIGHT_BUMP_CENTER_Y);
+    }
+
+    public static Sendable getSendable(Supplier<Pose2d> robotPoseSupplier) {
+        return new FieldZoning(robotPoseSupplier);
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addStringProperty(
+                "zone",
+                () -> {
+                    Pose2d pose = robotPoseSupplier.get();
+                    if (FieldZoning.isInRedAllianceZone(pose)) return "Red";
+                    if (FieldZoning.isInBlueAllianceZone(pose)) return "Blue";
+                    return "Neutral";
+                },
+                null);
+        builder.addBooleanProperty(
+                "team alliance zone",
+                () -> FieldZoning.isInTeamAllianceZone(robotPoseSupplier.get()),
+                null);
+        builder.addBooleanProperty(
+                "red alliance zone",
+                () -> FieldZoning.isInRedAllianceZone(robotPoseSupplier.get()),
+                null);
+        builder.addBooleanProperty(
+                "blue alliance zone",
+                () -> FieldZoning.isInBlueAllianceZone(robotPoseSupplier.get()),
+                null);
+        builder.addBooleanProperty(
+                "neutral zone", () -> FieldZoning.isInNeutralZone(robotPoseSupplier.get()), null);
+        builder.addBooleanProperty(
+                "on bump", () -> FieldZoning.isOnBump(robotPoseSupplier.get()), null);
     }
 }
