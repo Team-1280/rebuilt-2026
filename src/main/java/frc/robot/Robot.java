@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+import frc.robot.aesthetic.candle.Candle;
 import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
@@ -30,6 +31,8 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot implements Sendable {
+
+    private final Candle candle = new Candle();
 
     private final OdometryDrivetrain drivetrain = new OdometryDrivetrain();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
@@ -106,7 +109,9 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     @Override
-    public void robotInit() {}
+    public void robotInit() {
+        candle.animateCandle(Candle.Effect.CHROMA);
+    }
 
     @Override
     public void robotPeriodic() {
