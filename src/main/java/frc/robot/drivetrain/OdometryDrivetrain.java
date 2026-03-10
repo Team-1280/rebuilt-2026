@@ -16,6 +16,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 
 import frc.robot.vision.VisionConst;
@@ -41,7 +43,7 @@ import org.littletonrobotics.junction.Logger;
  *   <li>Drive motor CAN fault (all motors report -1 A supply current)
  * </ul>
  */
-public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
+public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements Sendable {
 
     // TODO: move constants and config to different files
 
@@ -513,5 +515,14 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
                 MathUtil.interpolate(worst.get(0, 0), best.get(0, 0), alpha),
                 MathUtil.interpolate(worst.get(1, 0), best.get(1, 0), alpha),
                 MathUtil.interpolate(worst.get(2, 0), best.get(2, 0), alpha));
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addStringProperty("2D pose", () -> getPose2d().toString(), null);
+        builder.addStringProperty("3D pose", () -> getPose3d().toString(), null);
+        builder.addStringProperty("field velocity", () -> getFieldVelocity().toString(), null);
+        builder.addStringProperty("chassis speeds", () -> getState().Speeds.toString(), null);
+        builder.addBooleanProperty("is tilted", this::isTilted, null);
     }
 }

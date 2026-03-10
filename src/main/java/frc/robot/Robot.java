@@ -88,6 +88,7 @@ public class Robot extends LoggedRobot implements Sendable {
         SmartDashboard.putData("Field Zoning", FieldZoning.getSendable(drivetrain::getPose2d));
         SmartDashboard.putData("Match Time", MatchTime.getSendable());
         SmartDashboard.putData("Hub Status", HubStatus.getSendable());
+        SmartDashboard.putData("Drivetrain", drivetrain);
         SmartDashboard.putData("Vision", vision);
     }
 
@@ -160,10 +161,5 @@ public class Robot extends LoggedRobot implements Sendable {
     public void simulationPeriodic() {}
 
     @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addStringProperty(
-                "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
-        builder.addStringProperty(
-                "robot field velocity", () -> drivetrain.getFieldVelocity().toString(), null);
-    }
+    public void initSendable(SendableBuilder builder) {}
 }
