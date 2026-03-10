@@ -163,5 +163,7 @@ public class Robot extends LoggedRobot implements Sendable {
     public void initSendable(SendableBuilder builder) {
         builder.addStringProperty(
                 "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
+        builder.addStringProperty(
+                "robot field velocity", () -> drivetrain.getFieldVelocity().toString(), null);
     }
 }

@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -302,6 +303,14 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain {
                 pose2d.getY(),
                 0.0,
                 new Rotation3d(roll, pitch, pose2d.getRotation().getRadians()));
+    }
+
+    /** Get the robot velocity on the 2D field (field coordinate system) as a Translation2d. */
+    public Translation2d getFieldVelocity() {
+        ChassisSpeeds chassisSpeeds = getState().Speeds;
+        Rotation2d robotRotation = getPose2d().getRotation();
+        return new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond)
+                .rotateBy(robotRotation.unaryMinus());
     }
 
     /**
