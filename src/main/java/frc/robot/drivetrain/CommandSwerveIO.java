@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -108,7 +109,9 @@ public class CommandSwerveIO extends SubsystemBase {
             new SwerveDrivePoseEstimator(
                     kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
     private final Alert gyroDisconnectedAlert =
-            new Alert("gyro is disconnected, falling back to raw kinematics", AlertType.kError);
+            new Alert("Pigeon2 gyro disconnected, falling back to raw kinematics", AlertType.kError);
+    private final Alert gyro3DisconnectedAlert =
+            new Alert("NavX2 (gyro3) disconnected", AlertType.kWarning);
 
     public CommandSwerveIO(
             GyroIO gyroIO,
@@ -217,8 +220,15 @@ public class CommandSwerveIO extends SubsystemBase {
             poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
         }
 
-        // Update gyro alert
+        // Update gyro alerts
         gyroDisconnectedAlert.set(!gyroInputs.connected && currentMode != Mode.SIM);
+        gyro3DisconnectedAlert.set(!gyroInputs.gyro3Connected && currentMode != Mode.SIM);
+
+        // Dashboard and AdvantageKit gyro connection status
+        SmartDashboard.putBoolean("Gyro/Pigeon2Connected", gyroInputs.connected);
+        SmartDashboard.putBoolean("Gyro/NavX2Connected", gyroInputs.gyro3Connected);
+        Logger.recordOutput("Drive/Gyro/Pigeon2Connected", gyroInputs.connected);
+        Logger.recordOutput("Drive/Gyro/NavX2Connected", gyroInputs.gyro3Connected);
     }
 
     /**
