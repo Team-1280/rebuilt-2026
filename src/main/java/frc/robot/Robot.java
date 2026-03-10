@@ -27,6 +27,8 @@ import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
+import frc.robot.time.HubStatus;
+import frc.robot.time.MatchTime;
 import frc.robot.vision.VisionSubsystem;
 
 import org.littletonrobotics.junction.LoggedRobot;
@@ -82,6 +84,8 @@ public class Robot extends LoggedRobot implements Sendable {
         SmartDashboard.putData("Robot", this);
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
+        SmartDashboard.putData("Match Time", MatchTime.getSendable());
+        SmartDashboard.putData("Hub Status", HubStatus.getSendable());
         SmartDashboard.putData("Vision", vision);
     }
 
