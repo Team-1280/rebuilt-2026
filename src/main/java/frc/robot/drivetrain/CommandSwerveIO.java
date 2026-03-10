@@ -109,7 +109,8 @@ public class CommandSwerveIO extends SubsystemBase {
             new SwerveDrivePoseEstimator(
                     kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
     private final Alert gyroDisconnectedAlert =
-            new Alert("Pigeon2 gyro disconnected, falling back to raw kinematics", AlertType.kError);
+            new Alert(
+                    "Pigeon2 gyro disconnected, falling back to raw kinematics", AlertType.kError);
     private final Alert gyro3DisconnectedAlert =
             new Alert("NavX2 (gyro3) disconnected", AlertType.kWarning);
 
