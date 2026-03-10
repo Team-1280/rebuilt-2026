@@ -6,18 +6,26 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import frc.robot.field.FieldConst;
 import frc.robot.field.FieldZoning;
+import frc.robot.time.HubStatus;
+import frc.robot.time.TimeConst;
 import frc.robot.trajectory.TrajectoryConstraints;
 import frc.robot.trajectory.TrajectoryConstraints.Obstacle;
 import frc.robot.trajectory.TrajectoryConstraints.SoftConstraint;
 
 import java.util.Optional;
 
-public class TargetSelector {
+public class TargetSelector implements Sendable {
+    private static boolean ignoreHubStatus = false;
+
+    private TargetSelector() {}
+
     public static Optional<LaunchTarget> selectTarget(Pose3d robotPose) {
         Optional<Alliance> optionalAlliance = DriverStation.getAlliance();
         if (optionalAlliance.isEmpty()) {
@@ -48,10 +56,26 @@ public class TargetSelector {
                             FieldConst.HUB_HEIGHT
                                     .plus(TargetConfig.HUB_OBSTACLE_HEIGHT_LEEWAY)
                                     .in(Meters));
-            // TODO: add hub activation time constraints
             constraints =
                     new TrajectoryConstraints(TargetConfig.HUB_SOFT_CONSTRAINT)
                             .withLowerObstacle(hubFunnelObstacle);
+            if (!ignoreHubStatus) {
+                HubStatus hubStatus = HubStatus.getTeamHubStatus();
+                if (hubStatus.activated()) {
+                    double maxTime =
+                            hubStatus.timeToDeactivation()
+                                    + TimeConst.HUB_SCORING_DEACTIVATION_DELAY
+                                    + TargetConfig.FUEL_SCORING_LATENCY
+                                    + TargetConfig.HUB_STATUS_TIME_BUFFER;
+                    constraints = constraints.withMaxTime(maxTime);
+                } else {
+                    double minTime =
+                            hubStatus.timeToActivation()
+                                    + TargetConfig.FUEL_SCORING_LATENCY
+                                    - TargetConfig.HUB_STATUS_TIME_BUFFER;
+                    constraints = constraints.withMinTime(minTime);
+                }
+            }
         } else {
             // Launch at a zone. Do team mirroring and field width mirroring
             ignoresVertical = true;
@@ -81,5 +105,19 @@ public class TargetSelector {
         }
         constraints = constraints.withMaxHeight(TargetConfig.MAX_HEIGHT.in(Meters));
         return Optional.of(new LaunchTarget(translation, ignoresVertical, constraints));
+    }
+
+    public static Sendable getSendable() {
+        return new TargetSelector();
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addBooleanProperty(
+                "ignore hub status",
+                () -> ignoreHubStatus,
+                (ignore) -> {
+                    ignoreHubStatus = ignore;
+                });
     }
 }

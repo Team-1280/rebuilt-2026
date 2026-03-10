@@ -10,6 +10,15 @@ import frc.robot.trajectory.TrajectoryConstraints.SoftConstraint;
 public class TargetConfig {
     // TODO: tune all
 
+    /**
+     * How long it takes for the fuel to be assessed as scored by the hub after the fuel reaches the
+     * end of the calculated trajectory.
+     */
+    public static final double FUEL_SCORING_LATENCY = 1.0;
+
+    /** Extra time placed on both sides of the calculated time window of hub activation. */
+    public static final double HUB_STATUS_TIME_BUFFER = 2.0;
+
     public static final Distance MAX_HEIGHT = Meters.of(Double.POSITIVE_INFINITY);
 
     // Hub target

@@ -27,6 +27,7 @@ import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
+import frc.robot.target.TargetSelector;
 import frc.robot.time.HubStatus;
 import frc.robot.time.MatchTime;
 import frc.robot.vision.VisionSubsystem;
@@ -86,6 +87,7 @@ public class Robot extends LoggedRobot implements Sendable {
         posePublisher.set(Pose2d.kZero);
         SmartDashboard.putData("Match Time", MatchTime.getSendable());
         SmartDashboard.putData("Hub Status", HubStatus.getSendable());
+        SmartDashboard.putData("Target Selector", TargetSelector.getSendable());
         SmartDashboard.putData("Vision", vision);
     }
 
