@@ -15,7 +15,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 public final class IntakeConfig {
-    public static final double ROLLER_SPEED = 0.0; // TODO
+    public static final double ROLLER_SPEED = 0.5; // TODO
 
     /** Maximum error magnitude at which the deploy motor brakes to lock the intake in place. */
     public static final Angle ANGLE_LOCK_TOLERANCE = Degrees.of(2.0); // TODO: tune
@@ -24,7 +24,7 @@ public final class IntakeConfig {
     public static final Angle ANGLE_UNLOCK_TOLERANCE = Degrees.of(4.0); // TODO: tune
 
     /** Feedforward that is applied with the sign of the angle error to help correct small error. */
-    public static final Voltage ANGLE_ERROR_SIGN_FEEDFORWARD = Volts.of(0.0); // TODO: tune
+    public static final Voltage ANGLE_ERROR_SIGN_FEEDFORWARD = Volts.of(0.2);
 
     public static final TalonFXConfiguration deployMotorConfig = new TalonFXConfiguration(); // TODO
     public static final Current DEPLOY_STATOR_LIMIT = Amps.of(80); // TODO
@@ -39,15 +39,19 @@ public final class IntakeConfig {
                 IntakeConst.DEPLOY_ROTOR_TO_MECHANISM_RATIO;
 
         // Control unit: mechanism rotations
-        deployMotorConfig.Slot0.kP = 0.0;
+        deployMotorConfig.Slot0.kP = 50.0;
         deployMotorConfig.Slot0.kD = 0.0;
-        deployMotorConfig.Slot0.kS = 0.0;
-        deployMotorConfig.Slot0.kV = 0.0;
+        deployMotorConfig.Slot0.kS = 0.05;
+        deployMotorConfig.Slot0.kV = 10.0;
         deployMotorConfig.Slot0.kA = 0.0;
-        deployMotorConfig.Slot0.kG = 0.0;
+        deployMotorConfig.Slot0.kG = 0.4;
         deployMotorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+        deployMotorConfig.Slot0.GravityArmPositionOffset = 0.037;
         deployMotorConfig.Slot0.StaticFeedforwardSign =
                 StaticFeedforwardSignValue.UseClosedLoopSign;
+        deployMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 1.0;
+        deployMotorConfig.MotionMagic.MotionMagicAcceleration = 4.0;
+        deployMotorConfig.MotionMagic.MotionMagicJerk = 20.0;
     }
 
     public static final TalonFXConfiguration rollerMotorConfig = new TalonFXConfiguration(); // TODO
