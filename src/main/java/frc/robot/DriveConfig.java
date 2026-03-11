@@ -39,25 +39,25 @@ public final class DriveConfig implements Sendable {
                     enableDriving = enable;
                 });
         builder.addDoubleProperty(
-                "max speed (m/s)",
+                "max speed (m per s)",
                 () -> maxSpeed.in(MetersPerSecond),
                 (speed) -> {
                     maxSpeed = MetersPerSecond.of(speed);
                 });
         builder.addDoubleProperty(
-                "max angular speed (rot/s)",
+                "max angular speed (rot per s)",
                 () -> maxAngularSpeed.in(RotationsPerSecond),
                 (angularSpeed) -> {
                     maxAngularSpeed = RotationsPerSecond.of(angularSpeed);
                 });
         builder.addDoubleProperty(
-                "speed deadband (m/s)",
+                "speed deadband (m per s)",
                 () -> speedDeadband.in(MetersPerSecond),
                 (deadband) -> {
                     speedDeadband = MetersPerSecond.of(deadband);
                 });
         builder.addDoubleProperty(
-                "angular speed deadband (rot/s)",
+                "angular speed deadband (rot per s)",
                 () -> angularSpeedDeadband.in(RotationsPerSecond),
                 (deadband) -> {
                     angularSpeedDeadband = RotationsPerSecond.of(deadband);
