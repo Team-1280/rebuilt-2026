@@ -82,6 +82,7 @@ public class Robot extends LoggedRobot implements Sendable {
 
     private void initDashboard() {
         SmartDashboard.putData("Robot", this);
+        SmartDashboard.putData("Drive Config", DriveConfig.getSendable());
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
         pose3dPublisher.set(Pose3d.kZero);
@@ -93,23 +94,27 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     private void initBindings() {
-        // swerve drivetrain
+        // swerve drive
         final SwerveRequest.FieldCentric driveRequest =
                 new SwerveRequest.FieldCentric()
-                        .withDeadband(DriveConfig.SPEED_DEADBAND)
-                        .withRotationalDeadband(DriveConfig.ANGULAR_SPEED_DEADBAND)
+                        .withDeadband(DriveConfig.speedDeadband)
+                        .withRotationalDeadband(DriveConfig.angularSpeedDeadband)
                         .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
                         () ->
-                                driveRequest
-                                        .withVelocityX(
-                                                DriveConfig.MAX_SPEED.times(-controller.getLeftY()))
-                                        .withVelocityY(
-                                                DriveConfig.MAX_SPEED.times(-controller.getLeftX()))
-                                        .withRotationalRate(
-                                                DriveConfig.MAX_ANGULAR_SPEED.times(
-                                                        -controller.getRightX()))));
+                                !DriveConfig.enableDriving
+                                        ? null
+                                        : driveRequest
+                                                .withVelocityX(
+                                                        DriveConfig.maxSpeed.times(
+                                                                -controller.getLeftY()))
+                                                .withVelocityY(
+                                                        DriveConfig.maxSpeed.times(
+                                                                -controller.getLeftX()))
+                                                .withRotationalRate(
+                                                        DriveConfig.maxAngularSpeed.times(
+                                                                -controller.getRightX()))));
 
         // reset heading
         controller
