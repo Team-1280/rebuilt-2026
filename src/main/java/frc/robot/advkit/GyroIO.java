@@ -99,8 +99,8 @@ public interface GyroIO {
         private final Queue<Double> yawTimestampQueue;
         private final StatusSignal<AngularVelocity> yawVelocity = pigeon.getAngularVelocityZWorld();
 
-        // Gyro 3: NavX2 connected via MXP (SPI)
-        private final AHRS navX2 = new AHRS(AHRS.NavXComType.kMXP_SPI);
+        // Gyro 3: NavX2 connected via USB
+        private final AHRS navX2 = new AHRS(AHRS.NavXComType.kUSB1);
 
         public GyroIOPigeon2() {
             if (TunerConstants.DrivetrainConstants.Pigeon2Configs != null) {

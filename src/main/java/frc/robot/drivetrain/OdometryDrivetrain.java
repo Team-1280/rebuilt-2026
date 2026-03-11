@@ -98,6 +98,13 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
     /** Supply current value reported by TalonFX when CAN is lost or motor is disconnected. */
     private static final double SUPPLY_CURRENT_FAULT_VALUE = -1.0;
 
+    /**
+     * Gaussian sigma for stator current slip evidence, in amperes.
+     *
+     * <p>At 80 A (configured slip current), evidence = exp(-80/40) ≈ 0.14.
+     */
+    private static final double STATOR_SLIP_SIGMA = 40.0;
+
     /** Minimum target distance for trusted vision measurements, in meters. */
     private static final double TRUST_VISION_RANGE_MIN = 0.25;
 
@@ -105,7 +112,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
     private static final double TRUST_VISION_RANGE_MAX = 3.5;
 
     /** Maximum tilt, in radians, for the robot to still be considered flat on the ground. */
-    private static final double TILT_THRESHOLD = Units.degreesToRadians(4.0); // TODO
+    private static final double TILT_THRESHOLD = Math.PI / 6;
 
     /** The Kaaba, Al-Masjid al-Haram, Mecca, Saudi Arabia. */
     private static final double MECCA_LAT_RAD = Math.toRadians(21.3891);
@@ -156,6 +163,15 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
     /** Consensus omega from the previous loop iteration, used to compute angular jerk. */
     private double lastOmegaInertial = 0.0;
 
+    /** Pitch rate from the previous loop iteration, used to compute pitch jerk. */
+    private double lastPitchRateRadPerSec = 0.0;
+
+    /** Roll rate from the previous loop iteration, used to compute roll jerk. */
+    private double lastRollRateRadPerSec = 0.0;
+
+    /** Cached tilt state, computed once per loop in periodic(). */
+    private boolean cachedIsTilted = false;
+
     /**
      * Cached composite trust value for encoder-based odometry.
      *
@@ -176,8 +192,8 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
      */
     private ChassisSpeeds commandedSpeeds = new ChassisSpeeds();
 
-    /** Third gyroscope --NavX2 connected via MXP (SPI), used for inertial cross-checking. */
-    private final AHRS navX2 = new AHRS(AHRS.NavXComType.kMXP_SPI);
+    /** Third gyroscope --NavX2 connected via USB, used for inertial cross-checking. */
+    private final AHRS navX2 = new AHRS(AHRS.NavXComType.kUSB1);
 
     /** TalonFX references for the 4 drive motors (modules 0-3: FL, FR, BL, BR). */
     private final TalonFX[] driveMotors;
@@ -206,6 +222,9 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
 
         m_qiblaRequest.HeadingController.setPID(5.0, 0.0, 0.1);
         m_qiblaRequest.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
+
+        getPigeon2().getAngularVelocityXWorld().setUpdateFrequency(50.0);
+        getPigeon2().getAngularVelocityYWorld().setUpdateFrequency(50.0);
     }
 
     private static Rotation2d computeQibla(
@@ -273,10 +292,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
      * the tilt threshold constant.
      */
     public boolean isTilted() {
-        double roll = Units.degreesToRadians(navX2.getRoll());
-        double pitch = Units.degreesToRadians(navX2.getPitch());
-        double tilt = Math.acos(Math.cos(roll) * Math.cos(pitch)); // Combined roll and pitch
-        return tilt > TILT_THRESHOLD;
+        return cachedIsTilted;
     }
 
     /** Returns the latest 2D pose. */
@@ -294,12 +310,12 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
      */
     public Pose3d getPose3d() {
         Pose2d pose2d = getPose2d();
-        if (!isTilted()) {
+        if (!cachedIsTilted) {
             // Return a flat robot pose if not tilted
             return new Pose3d(pose2d);
         }
-        double roll = Units.degreesToRadians(navX2.getRoll());
-        double pitch = Units.degreesToRadians(navX2.getPitch());
+        double roll = Units.degreesToRadians(getPigeon2().getRoll().getValueAsDouble());
+        double pitch = Units.degreesToRadians(getPigeon2().getPitch().getValueAsDouble());
         return new Pose3d(
                 pose2d.getX(),
                 pose2d.getY(),
@@ -387,7 +403,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
         double G1 =
                 Units.degreesToRadians(
                         getPigeon2().getAngularVelocityZWorld().getValueAsDouble()); // pigeon2
-        double G2 = Units.degreesToRadians(navX2.getRate()); // navx2mxp
+        double G2 = -Units.degreesToRadians(navX2.getRate()); // navx2usb (negated: upside-down Z-axis)
         double G3 = getState().Speeds.omegaRadiansPerSecond; // kinematics
 
         Evidence e12 = Evidence.of(G1 - G2, GYRO_AGREEMENT_SIGMA); // Pigeon2 vs NavX2
@@ -406,14 +422,32 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
         // trust
         double gyroConsensusTrust = e12.and(e13).and(e23).weight();
 
-        double angularJerk = (omegaInertial - lastOmegaInertial) / dt;
-        Evidence jerkEvidence = Evidence.of(angularJerk, JERK_SIGMA);
+        double yawJerk = (omegaInertial - lastOmegaInertial) / dt;
         lastOmegaInertial = omegaInertial;
 
-        // getWorldLinearAccelX/Y return values in g; convert to m/s^2
+        double pitchRateRadPerSec =
+                Units.degreesToRadians(getPigeon2().getAngularVelocityYWorld().getValueAsDouble());
+        double rollRateRadPerSec =
+                Units.degreesToRadians(getPigeon2().getAngularVelocityXWorld().getValueAsDouble());
+        double pitchJerk = (pitchRateRadPerSec - lastPitchRateRadPerSec) / dt;
+        double rollJerk = (rollRateRadPerSec - lastRollRateRadPerSec) / dt;
+        lastPitchRateRadPerSec = pitchRateRadPerSec;
+        lastRollRateRadPerSec = rollRateRadPerSec;
+
+        double totalAngularJerk = Math.hypot(Math.hypot(yawJerk, pitchJerk), rollJerk);
+        Evidence bumpJerkEvidence = Evidence.of(totalAngularJerk, JERK_SIGMA);
+
+        // getWorldLinearAccel* return values in g; convert to m/s^2; Z captures vertical bounce
         double bumpAccel =
-                Math.hypot(navX2.getWorldLinearAccelX(), navX2.getWorldLinearAccelY()) * 9.8;
+                Math.hypot(
+                        Math.hypot(navX2.getWorldLinearAccelX(), navX2.getWorldLinearAccelY()),
+                        navX2.getWorldLinearAccelZ()) * 9.8;
         Evidence bumpEvidence = Evidence.of(bumpAccel, BUMP_ACCEL_SIGMA);
+
+        double pigeonRollRad = Units.degreesToRadians(getPigeon2().getRoll().getValueAsDouble());
+        double pigeonPitchRad = Units.degreesToRadians(getPigeon2().getPitch().getValueAsDouble());
+        double tiltRad = Math.acos(MathUtil.clamp(Math.cos(pigeonRollRad) * Math.cos(pigeonPitchRad), -1.0, 1.0));
+        cachedIsTilted = tiltRad > TILT_THRESHOLD;
 
         double cmdLinear =
                 Math.hypot(commandedSpeeds.vxMetersPerSecond, commandedSpeeds.vyMetersPerSecond);
@@ -458,10 +492,20 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
             slipDetected = true;
         }
 
+        double maxStatorCurrent = 0.0;
+        for (TalonFX motor : driveMotors) {
+            double statorA = motor.getStatorCurrent().getValueAsDouble();
+            if (statorA > maxStatorCurrent) {
+                maxStatorCurrent = statorA;
+            }
+        }
+        Evidence statorEvidence = Evidence.of(maxStatorCurrent, STATOR_SLIP_SIGMA);
+
         Evidence wheelEvidence =
                 Evidence.of(slipError, SLIP_DETECTION_THRESHOLD)
-                        .and(jerkEvidence)
+                        .and(bumpJerkEvidence)
                         .and(bumpEvidence)
+                        .and(statorEvidence)
                         .and(new Evidence(inputCorrelationTrust));
         if (driveCurrentFault) {
             wheelEvidence = new Evidence(0.0);
@@ -471,10 +515,11 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
         // ----- Telemetry -----
         Logger.recordOutput("Odometry/Pose", currentPose);
         Logger.recordOutput("Odometry/Pose3d", getPose3d());
-        Logger.recordOutput("Odometry/Tilted", isTilted());
+        Logger.recordOutput("Odometry/Tilted", cachedIsTilted);
         Logger.recordOutput("Odometry/Trust/Composite", cachedOdometryTrust);
-        Logger.recordOutput("Odometry/Trust/Jerk", jerkEvidence.weight());
+        Logger.recordOutput("Odometry/Trust/Jerk", bumpJerkEvidence.weight());
         Logger.recordOutput("Odometry/Trust/Bump", bumpEvidence.weight());
+        Logger.recordOutput("Odometry/Trust/Stator", statorEvidence.weight());
         Logger.recordOutput("Odometry/Trust/InputCorrelation", inputCorrelationTrust);
         Logger.recordOutput("Odometry/SlipDetected", slipDetected);
         Logger.recordOutput("Odometry/DriveCurrentFault", driveCurrentFault);
@@ -488,8 +533,13 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
         Logger.recordOutput("Odometry/Omega/Kinematics", G3);
         Logger.recordOutput("Odometry/Omega/Odometry", omegaOdometry);
         Logger.recordOutput("Odometry/Omega/Disagreement", slipError);
-        Logger.recordOutput("Odometry/Jerk/Angular", angularJerk);
+        Logger.recordOutput("Odometry/Jerk/PitchRate", pitchRateRadPerSec);
+        Logger.recordOutput("Odometry/Jerk/RollRate", rollRateRadPerSec);
+        Logger.recordOutput("Odometry/Jerk/Total3D", totalAngularJerk);
         Logger.recordOutput("Odometry/Jerk/LinearBump", bumpAccel);
+        Logger.recordOutput("Odometry/Stator/MaxCurrent", maxStatorCurrent);
+        Logger.recordOutput("Odometry/Tilted/PigeonPitch", pigeonPitchRad);
+        Logger.recordOutput("Odometry/Tilted/PigeonRoll", pigeonRollRad);
 
         lastPose = currentPose;
     }
