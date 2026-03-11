@@ -18,4 +18,7 @@ public final class DriveConfig {
 
     /** Minimum registerable angular drive speed. */
     public static final AngularVelocity ANGULAR_SPEED_DEADBAND = MAX_ANGULAR_SPEED.times(0.1);
+
+    /** Enable or disable driving. */
+    public static boolean enableDriving = true;
 }

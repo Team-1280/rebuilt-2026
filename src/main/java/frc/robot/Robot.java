@@ -99,14 +99,18 @@ public class Robot extends LoggedRobot implements Sendable {
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
                         () ->
-                                driveRequest
-                                        .withVelocityX(
-                                                DriveConfig.MAX_SPEED.times(-controller.getLeftY()))
-                                        .withVelocityY(
-                                                DriveConfig.MAX_SPEED.times(-controller.getLeftX()))
-                                        .withRotationalRate(
-                                                DriveConfig.MAX_ANGULAR_SPEED.times(
-                                                        -controller.getRightX()))));
+                                !DriveConfig.enableDriving
+                                        ? null
+                                        : driveRequest
+                                                .withVelocityX(
+                                                        DriveConfig.MAX_SPEED.times(
+                                                                -controller.getLeftY()))
+                                                .withVelocityY(
+                                                        DriveConfig.MAX_SPEED.times(
+                                                                -controller.getLeftX()))
+                                                .withRotationalRate(
+                                                        DriveConfig.MAX_ANGULAR_SPEED.times(
+                                                                -controller.getRightX()))));
 
         controller
                 .rightStick()
