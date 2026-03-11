@@ -3,13 +3,13 @@ package frc.robot.trajectory;
 /** Configurable or tunable constants for trajectory calculations */
 public final class TrajectoryConfig {
     // Model coefficients:
-    // Via logistic equation:
-    // y = L/(1+e^-(rx+a)))
-    // x = (ln(L/y-1)+a)/-r
-    // TODO: add pitch into equation
-    public static final double MODEL_COEFFICIENT_L = 11.64503;
-    public static final double MODEL_COEFFICIENT_R = 0.0121957;
-    public static final double MODEL_COEFFICIENT_A = -2.06597;
+    public static final double MODEL_C1 = 18.18081;
+    public static final double MODEL_C2 = 9.66252;
+    public static final double MODEL_C3 = 1.21679;
+    public static final double MODEL_C4 = 0.00849423;
+    public static final double MODEL_C5 = -2.4087;
+
+    // R^2 = 0.9902, RMSE = 0.209543
 
     /** Multiplication factor to compensate for error or bias */
     public static final double SPEED_MULTIPLIER = 1.00; // TODO: tune SPEED_MULTIPLIER
