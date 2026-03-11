@@ -80,6 +80,7 @@ public class Robot extends LoggedRobot implements Sendable {
 
     private void initDashboard() {
         SmartDashboard.putData("Robot", this);
+        SmartDashboard.putData("Drive Config", DriveConfig.getSendable());
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
         SmartDashboard.putData(
@@ -93,8 +94,8 @@ public class Robot extends LoggedRobot implements Sendable {
         // Drive bindings
         final SwerveRequest.FieldCentric driveRequest =
                 new SwerveRequest.FieldCentric()
-                        .withDeadband(DriveConfig.SPEED_DEADBAND)
-                        .withRotationalDeadband(DriveConfig.ANGULAR_SPEED_DEADBAND)
+                        .withDeadband(DriveConfig.speedDeadband)
+                        .withRotationalDeadband(DriveConfig.angularSpeedDeadband)
                         .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
@@ -103,13 +104,13 @@ public class Robot extends LoggedRobot implements Sendable {
                                         ? null
                                         : driveRequest
                                                 .withVelocityX(
-                                                        DriveConfig.MAX_SPEED.times(
+                                                        DriveConfig.maxSpeed.times(
                                                                 -controller.getLeftY()))
                                                 .withVelocityY(
-                                                        DriveConfig.MAX_SPEED.times(
+                                                        DriveConfig.maxSpeed.times(
                                                                 -controller.getLeftX()))
                                                 .withRotationalRate(
-                                                        DriveConfig.MAX_ANGULAR_SPEED.times(
+                                                        DriveConfig.maxAngularSpeed.times(
                                                                 -controller.getRightX()))));
 
         controller
