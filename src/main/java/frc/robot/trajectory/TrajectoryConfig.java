@@ -21,7 +21,7 @@ public final class TrajectoryConfig {
      * The amount of max possible error in pitch, from the optimal pitch, that the optimizer
      * algorithm accepts. This determines how precise and how expensive the optimizer is.
      */
-    public static final double OPTIMIZER_PITCH_TOLERANCE = 0.1; // TODO: tune
+    public static final double OPTIMIZER_PITCH_TOLERANCE = Math.toRadians(0.1); // TODO: tune
 
     /** An auxiliary upper cap on the number iterations in the pitch optimize algorithm. */
     public static final int OPTIMIZER_MAX_ITERATIONS = 12;
