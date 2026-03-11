@@ -23,7 +23,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
-import frc.robot.aesthetic.candle.Candle;
+import frc.robot.aesthetic.candle.CandleEffect;
+import frc.robot.aesthetic.candle.CandleSubsystem;
 import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
@@ -37,8 +38,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot implements Sendable {
 
-    private final Candle candle = new Candle();
-
     private final Pigeon2 pigeon = new Pigeon2(26); // Also in TunerConstants.kPigeonId
 
     private final CommandSwerveDrivetrain drivetrain =
@@ -46,6 +45,7 @@ public class Robot extends LoggedRobot implements Sendable {
                     () -> pigeon.getAngularVelocityZDevice().getValue().in(RadiansPerSecond),
                     () -> 0.0 // TODO: slip ratio supplier
                     );
+    private final CandleSubsystem candle = new CandleSubsystem();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
@@ -113,7 +113,7 @@ public class Robot extends LoggedRobot implements Sendable {
 
     @Override
     public void robotInit() {
-        candle.animateCandle(Candle.Effect.CHROMA);
+        candle.animateCandle(CandleEffect.CHROMA);
     }
 
     @Override
