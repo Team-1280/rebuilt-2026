@@ -110,10 +110,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 () -> targetAngle.in(Degrees),
                 (intakeAngle) -> moveAngle(Degrees.of(intakeAngle)));
         builder.addDoubleProperty("angle error (deg)", () -> getAngleError().in(Degrees), null);
-        builder.addBooleanProperty(
-                "angle locked (braking)",
-                () -> deployMotor.get() == 0.0, // assumes intake never brakes
-                null);
+        builder.addBooleanProperty("is deploy neutral", () -> deployMotor.get() == 0.0, null);
 
         builder.addDoubleProperty(
                 "roller speed (frac)", this::getRollerSpeed, this::moveRollerSpeed);

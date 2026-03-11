@@ -33,7 +33,7 @@ public final class IntakeConfig {
     static {
         deployMotorConfig.CurrentLimits.StatorCurrentLimit = DEPLOY_STATOR_LIMIT.in(Amps);
         deployMotorConfig.CurrentLimits.SupplyCurrentLimit = DEPLOY_SUPPLY_LIMIT.in(Amps);
-        deployMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        deployMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         deployMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // up positive
         deployMotorConfig.Feedback.SensorToMechanismRatio =
                 IntakeConst.DEPLOY_ROTOR_TO_MECHANISM_RATIO;
