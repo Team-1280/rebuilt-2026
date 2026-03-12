@@ -17,6 +17,6 @@ public final class LauncherConst {
                     new Translation3d( // bottom left quadrant of robot
                             Inches.of(-2.6967), // turret center x
                             Inches.of(4.50), // turret center y
-                            Inches.of(0.0)), // TODO: launcher translation Z
+                            Inches.of(17.9)), // shooter flywheel center z
                     Rotation3d.kZero);
 }
