@@ -18,6 +18,8 @@ public final class TurretConfig {
     /** Stow yaw and the expected startup yaw */
     public static final Angle STOW_YAW = Degrees.of(0);
 
+    public static final Angle YAW_TOLERANCE = Degrees.of(2.0); // TODO: tune
+
     // TODO: tune current limits (currently set to restrictive safe limits)
     public static final Current STATOR_LIMIT = Amps.of(10);
     public static final Current SUPPLY_LIMIT = Amps.of(5);

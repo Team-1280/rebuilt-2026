@@ -114,7 +114,7 @@ public class LauncherAssembly implements Sendable {
         if (!shootingEnabled) {
             return false;
         }
-        boolean shoot = trajectory.isValid();
+        boolean shoot = trajectory.isValid() && turret.withinTolerance();
         if (shoot) {
             feeder.start();
         } else {

@@ -135,6 +135,15 @@ public class TurretSubsystem extends SubsystemBase {
         moveRawYaw(TurretConfig.STOW_YAW);
     }
 
+    /** Get the continuous yaw error from measured to target. */
+    public Angle getYawError() {
+        return targetYaw.minus(getYaw());
+    }
+
+    public boolean withinTolerance() {
+        return Math.abs(getYawError().in(Degrees)) <= TurretConfig.YAW_TOLERANCE.in(Degrees);
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addBooleanProperty(
@@ -153,7 +162,7 @@ public class TurretSubsystem extends SubsystemBase {
                 "target yaw, raw (deg)",
                 () -> targetYaw.in(Degrees),
                 (yaw) -> moveRawYaw(Degrees.of(yaw)));
-        builder.addDoubleProperty(
-                "yaw error (deg)", () -> targetYaw.minus(getYaw()).in(Degrees), null);
+        builder.addDoubleProperty("yaw error (deg)", () -> getYawError().in(Degrees), null);
+        builder.addBooleanProperty("within tolerance", this::withinTolerance, null);
     }
 }
