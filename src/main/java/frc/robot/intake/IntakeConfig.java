@@ -26,9 +26,9 @@ public final class IntakeConfig {
     /** Feedforward that is applied with the sign of the angle error to help correct small error. */
     public static final Voltage ANGLE_ERROR_SIGN_FEEDFORWARD = Volts.of(0.2);
 
-    public static final TalonFXConfiguration deployMotorConfig = new TalonFXConfiguration(); // TODO
-    public static final Current DEPLOY_STATOR_LIMIT = Amps.of(80); // TODO
-    public static final Current DEPLOY_SUPPLY_LIMIT = Amps.of(60); // TODO
+    public static final TalonFXConfiguration deployMotorConfig = new TalonFXConfiguration();
+    public static final Current DEPLOY_STATOR_LIMIT = Amps.of(20);
+    public static final Current DEPLOY_SUPPLY_LIMIT = DEPLOY_STATOR_LIMIT;
 
     static {
         deployMotorConfig.CurrentLimits.StatorCurrentLimit = DEPLOY_STATOR_LIMIT.in(Amps);
