@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -21,6 +22,9 @@ public class TurretSubsystem extends SubsystemBase {
     /** Continuous desired turret yaw, raw. */
     private Angle targetYaw;
 
+    /** Enable or disable turret motor, e.g. for testing. */
+    private boolean enabled = true;
+
     public TurretSubsystem() {
         motor.getConfigurator().apply(TurretConfig.motorConfig);
         encoder.getConfigurator().apply(TurretConfig.encoderConfig);
@@ -28,6 +32,15 @@ public class TurretSubsystem extends SubsystemBase {
         // Conventional or expected startup yaw
         calibrateYaw(TurretConfig.STOW_YAW);
         targetYaw = TurretConfig.STOW_YAW; // Note: this may be inaccurate until the turret is moved
+    }
+
+    public void enable() {
+        enabled = true;
+    }
+
+    public void disable() {
+        motor.setControl(new NeutralOut());
+        enabled = false;
     }
 
     /**
@@ -100,6 +113,9 @@ public class TurretSubsystem extends SubsystemBase {
 
     /** Move the turret to the exact position, ignoring coterminal positions. */
     private void moveRawYaw(Angle yaw) {
+        if (!enabled) {
+            return;
+        }
         targetYaw =
                 Rotations.of(
                         MathUtil.clamp(
@@ -121,6 +137,13 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        builder.addBooleanProperty(
+                "enabled",
+                () -> enabled,
+                (enable) -> {
+                    if (enable) enable();
+                    else disable();
+                });
         // Use this dashboard property setter to calibrate yaw if necessary after startup
         builder.addDoubleProperty(
                 "YAW (deg)",
