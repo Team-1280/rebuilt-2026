@@ -25,6 +25,7 @@ import frc.robot.aesthetic.candle.CandleSubsystem;
 import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
+import frc.robot.spindexer.SpindexerSubsystem;
 import frc.robot.time.HubStatus;
 import frc.robot.time.MatchTime;
 import frc.robot.vision.VisionSubsystem;
@@ -37,10 +38,11 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot implements Sendable {
 
     private final Pigeon2 pigeon = new Pigeon2(26); // Also in TunerConstants.kPigeonId
+
     private final OdometryDrivetrain drivetrain = new OdometryDrivetrain();
     private final CandleSubsystem candle = new CandleSubsystem();
-    private final VisionSubsystem vision =
-            new VisionSubsystem(drivetrain::addVisionMeasurement); // TODO: slip ratio supplier
+    private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
+    private final SpindexerSubsystem spindexer = new SpindexerSubsystem();
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
@@ -91,6 +93,7 @@ public class Robot extends LoggedRobot implements Sendable {
         SmartDashboard.putData("Hub Status", HubStatus.getSendable());
         SmartDashboard.putData("Drivetrain", drivetrain);
         SmartDashboard.putData("Vision", vision);
+        SmartDashboard.putData("Spindexer", spindexer);
     }
 
     private void initBindings() {
