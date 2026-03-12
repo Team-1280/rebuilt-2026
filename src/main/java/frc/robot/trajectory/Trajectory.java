@@ -74,7 +74,7 @@ public class Trajectory {
 
     /** Get the launch speed multiplied by a compensation multiplier to counteract error. */
     public double getCompensatedSpeed() {
-        return speed * TrajectoryConfig.SPEED_MULTIPLIER;
+        return speed * parameters.getSpeedMultiplier();
     }
 
     /** Get the time of flight or duration of the trajectory from launcher to target. */

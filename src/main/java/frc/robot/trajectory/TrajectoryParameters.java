@@ -22,9 +22,37 @@ public class TrajectoryParameters {
     private final double verticalDisplacement;
     private final double horizontalDistance;
     private final double elevationAngle;
+    private final double speedMultiplier;
 
     /**
      * Construct the set of trajectory calculation parameters.
+     *
+     * @param robotPose the pose of the robot in the field coordinate system
+     * @param robotVelocity the horizontal velocity of the robot in the field coordinate system
+     * @param launcherTransform the transform from the robot to the launcher's launcher (fuel exit)
+     * @param targetTranslation the position of the target in the field coordinate system
+     * @param speedMultiplier a multiplier to apply to the calculated launch speed
+     */
+    public TrajectoryParameters(
+            Pose3d robotPose,
+            Translation2d robotVelocity,
+            Transform3d launcherTransform,
+            Translation3d targetTranslation,
+            double speedMultiplier) {
+        launcherPose = robotPose.transformBy(launcherTransform);
+        displacement = targetTranslation.minus(getLauncherTranslation());
+        // TODO: consider accounting for robot angular velocity in the lanucher velocity
+        this.launcherVelocity = robotVelocity;
+
+        horizontalDisplacement = new Translation2d(displacement.getX(), displacement.getY());
+        verticalDisplacement = displacement.getZ();
+        horizontalDistance = horizontalDisplacement.getNorm();
+        elevationAngle = Math.atan2(verticalDisplacement, horizontalDistance);
+        this.speedMultiplier = speedMultiplier;
+    }
+
+    /**
+     * Construct the set of trajectory calculation parameters, with no speed multiplier.
      *
      * @param robotPose the pose of the robot in the field coordinate system
      * @param robotVelocity the horizontal velocity of the robot in the field coordinate system
@@ -36,15 +64,7 @@ public class TrajectoryParameters {
             Translation2d robotVelocity,
             Transform3d launcherTransform,
             Translation3d targetTranslation) {
-        launcherPose = robotPose.transformBy(launcherTransform);
-        displacement = targetTranslation.minus(getLauncherTranslation());
-        // TODO: consider accounting for robot angular velocity in the lanucher velocity
-        this.launcherVelocity = robotVelocity;
-
-        horizontalDisplacement = new Translation2d(displacement.getX(), displacement.getY());
-        verticalDisplacement = displacement.getZ();
-        horizontalDistance = horizontalDisplacement.getNorm();
-        elevationAngle = Math.atan2(verticalDisplacement, horizontalDistance);
+        this(robotPose, robotVelocity, launcherTransform, targetTranslation, 1.0);
     }
 
     /** Get the launcher position (fuel exit point; muzzle) in field coordinates. */
@@ -114,18 +134,30 @@ public class TrajectoryParameters {
                 Math.cos(getLauncherRotation().getX()) * Math.cos(getLauncherRotation().getY()));
     }
 
+    /** Get the multiplier for the launch speed, applied after calculation. */
+    public double getSpeedMultiplier() {
+        return speedMultiplier;
+    }
+
     @Override
     public String toString() {
         Rotation3d launcherRotation = getLauncherRotation();
-        return String.format(
+        // TODO: formatter extension and formatting command conflict for multi-line strings
+        String format1 =
                 "TrajectoryParameters[launcherTranslation=%s, launcherRotation=Rotation3d(%.4f,"
-                        + " %.4f, %.4f), displacement=%s, launcherVelocity=%s, elevationAngle=%.4f]",
+                        + " %.4f, %.4f)";
+        String format2 =
+                ", displacement=%s, launcherVelocity=%s, speedMultiplier=%.4f,"
+                        + " elevationAngle=%.4f]";
+        return String.format(
+                format1 + format2,
                 getLauncherTranslation(),
                 launcherRotation.getX(),
                 launcherRotation.getY(),
                 launcherRotation.getZ(),
                 displacement,
                 launcherVelocity,
+                speedMultiplier,
                 elevationAngle);
     }
 }

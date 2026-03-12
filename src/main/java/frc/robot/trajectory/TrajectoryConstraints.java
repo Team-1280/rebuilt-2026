@@ -229,24 +229,6 @@ public class TrajectoryConstraints {
         System.out.println("lower min speed: " + checkLowerMinSpeed(trajectory));
     }
 
-    /**
-     * Given a field launch pitch, return an approximation for the maximum achievable launch speed
-     * under this set of constraints.
-     */
-    public double calculateApproximateMaxSpeed(double pitch) {
-        // NOTE: the speed is supposed to be estimated from launcher pitch, but we will
-        // instead substitute field pitch since launcher pitch is unknown (as yaw is
-        // also unknown).
-        double compensatedSpeed = LaunchSpeed.estimateSpeed(maxFlywheelSpeed, pitch);
-        // Give room to allow for future compensation using the multiplier, and
-        // apply the maximal speed fraction percentage
-        double speed =
-                compensatedSpeed
-                        / TrajectoryConfig.SPEED_MULTIPLIER
-                        * TrajectoryConfig.MAXIMAL_SPEED_FRACTION;
-        return speed;
-    }
-
     /** Get where the pitch should try to be optimized towards. */
     public SoftConstraint getSoftConstraint() {
         return softConstraint;
