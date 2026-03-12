@@ -4,9 +4,7 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -23,6 +21,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+import frc.robot.aesthetic.candle.CandleEffect;
+import frc.robot.aesthetic.candle.CandleSubsystem;
 import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
@@ -46,6 +46,7 @@ public class Robot extends LoggedRobot implements Sendable {
                     () -> pigeon.getAngularVelocityZDevice().getValue().in(RadiansPerSecond),
                     () -> 0.0 // TODO: slip ratio supplier
                     );
+    private final CandleSubsystem candle = new CandleSubsystem();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
@@ -83,8 +84,11 @@ public class Robot extends LoggedRobot implements Sendable {
 
     private void initDashboard() {
         SmartDashboard.putData("Robot", this);
+        SmartDashboard.putData("Drive Config", DriveConfig.getSendable());
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
+        SmartDashboard.putData(
+                "Field Zoning", FieldZoning.getSendable(() -> drivetrain.getState().Pose));
         SmartDashboard.putData("Match Time", MatchTime.getSendable());
         SmartDashboard.putData("Hub Status", HubStatus.getSendable());
         SmartDashboard.putData("Target Selector", TargetSelector.getSendable());
@@ -93,21 +97,26 @@ public class Robot extends LoggedRobot implements Sendable {
 
     private void initBindings() {
         // Drive bindings
-        double speed = MetersPerSecond.of(1.60).in(MetersPerSecond);
-        double angularSpeed = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
         final SwerveRequest.FieldCentric driveRequest =
                 new SwerveRequest.FieldCentric()
-                        .withDeadband(speed * 0.1)
-                        .withRotationalDeadband(angularSpeed * 0.1)
+                        .withDeadband(DriveConfig.speedDeadband)
+                        .withRotationalDeadband(DriveConfig.angularSpeedDeadband)
                         .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
                         () ->
-                                driveRequest
-                                        .withVelocityX(-controller.getLeftY() * speed)
-                                        .withVelocityY(-controller.getLeftX() * speed)
-                                        .withRotationalRate(
-                                                -controller.getRightX() * angularSpeed)));
+                                !DriveConfig.enableDriving
+                                        ? null
+                                        : driveRequest
+                                                .withVelocityX(
+                                                        DriveConfig.maxSpeed.times(
+                                                                -controller.getLeftY()))
+                                                .withVelocityY(
+                                                        DriveConfig.maxSpeed.times(
+                                                                -controller.getLeftX()))
+                                                .withRotationalRate(
+                                                        DriveConfig.maxAngularSpeed.times(
+                                                                -controller.getRightX()))));
 
         controller
                 .rightStick()
@@ -115,7 +124,9 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     @Override
-    public void robotInit() {}
+    public void robotInit() {
+        candle.animateCandle(CandleEffect.CHROMA);
+    }
 
     @Override
     public void robotPeriodic() {
@@ -159,34 +170,5 @@ public class Robot extends LoggedRobot implements Sendable {
         builder.addStringProperty("robot pose", () -> drivetrain.getState().Pose.toString(), null);
         builder.addStringProperty(
                 "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
-
-        // Field zoning
-        builder.addStringProperty(
-                "zoning/zone",
-                () -> {
-                    Pose2d pose = drivetrain.getState().Pose;
-                    if (FieldZoning.isInRedAllianceZone(pose)) return "Red";
-                    if (FieldZoning.isInBlueAllianceZone(pose)) return "Blue";
-                    return "Neutral";
-                },
-                null);
-        builder.addBooleanProperty(
-                "zoning/team alliance zone",
-                () -> FieldZoning.isInTeamAllianceZone(drivetrain.getState().Pose),
-                null);
-        builder.addBooleanProperty(
-                "zoning/red alliance zone",
-                () -> FieldZoning.isInRedAllianceZone(drivetrain.getState().Pose),
-                null);
-        builder.addBooleanProperty(
-                "zoning/blue alliance zone",
-                () -> FieldZoning.isInBlueAllianceZone(drivetrain.getState().Pose),
-                null);
-        builder.addBooleanProperty(
-                "zoning/neutral zone",
-                () -> FieldZoning.isInNeutralZone(drivetrain.getState().Pose),
-                null);
-        builder.addBooleanProperty(
-                "zoning/on bump", () -> FieldZoning.isOnBump(drivetrain.getState().Pose), null);
     }
 }
