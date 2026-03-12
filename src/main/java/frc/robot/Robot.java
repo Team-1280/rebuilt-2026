@@ -27,7 +27,9 @@ import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
+import frc.robot.intake.IntakeSubsystem;
 import frc.robot.launcher.LauncherAssembly;
+import frc.robot.spindexer.SpindexerSubsystem;
 import frc.robot.target.TargetSelector;
 import frc.robot.time.HubStatus;
 import frc.robot.time.MatchTime;
@@ -50,6 +52,8 @@ public class Robot extends LoggedRobot implements Sendable {
     private final CandleSubsystem candle = new CandleSubsystem();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
     private final LauncherAssembly launcher = new LauncherAssembly();
+    private final SpindexerSubsystem spindexer = new SpindexerSubsystem();
+    private final IntakeSubsystem intake = new IntakeSubsystem();
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
@@ -96,6 +100,8 @@ public class Robot extends LoggedRobot implements Sendable {
         SmartDashboard.putData("Target Selector", TargetSelector.getSendable());
         SmartDashboard.putData("Vision", vision);
         SmartDashboard.putData("Launcher", launcher);
+        SmartDashboard.putData("Spindexer", spindexer);
+        SmartDashboard.putData("Intake", intake);
     }
 
     private void initBindings() {
