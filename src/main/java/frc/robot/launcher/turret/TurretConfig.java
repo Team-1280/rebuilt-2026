@@ -18,9 +18,9 @@ public final class TurretConfig {
     /** Stow yaw and the expected startup yaw */
     public static final Angle STOW_YAW = Degrees.of(0);
 
-    // TODO
-    public static final Current STATOR_LIMIT = Amps.of(60);
-    public static final Current SUPPLY_LIMIT = Amps.of(30);
+    // TODO: tune current limits (currently set to restrictive safe limits)
+    public static final Current STATOR_LIMIT = Amps.of(10);
+    public static final Current SUPPLY_LIMIT = Amps.of(5);
 
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
@@ -48,8 +48,8 @@ public final class TurretConfig {
         motorConfig.Slot0.kS = 0.22;
         motorConfig.Slot0.kV = 3.1;
         motorConfig.Slot0.kA = 0.15;
-        motorConfig.MotionMagic.MotionMagicCruiseVelocity = 1.0;
-        motorConfig.MotionMagic.MotionMagicAcceleration = 6.0;
+        motorConfig.MotionMagic.MotionMagicCruiseVelocity = 0.1; // 1.0; // TODO: tune
+        motorConfig.MotionMagic.MotionMagicAcceleration = 0.6; // 6.0;
         motorConfig.MotionMagic.MotionMagicJerk = 0.0; // note: 0.0 is no limit
     }
 
