@@ -1,5 +1,6 @@
 package frc.robot.target;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.units.measure.Distance;
@@ -22,9 +23,9 @@ public class TargetConfig {
     public static final Distance MAX_HEIGHT = Meters.of(Double.POSITIVE_INFINITY);
 
     // Hub target
-    public static final Distance HUB_TARGET_HEIGHT = FieldConst.HUB_HEIGHT.plus(Meters.of(0.0));
+    public static final Distance HUB_TARGET_HEIGHT = FieldConst.HUB_HEIGHT.plus(Inches.of(-12.0));
     public static final SoftConstraint HUB_SOFT_CONSTRAINT = SoftConstraint.MINIMIZE_SPEED;
-    public static final Distance HUB_OBSTACLE_HEIGHT_LEEWAY = Meters.of(0.1);
+    public static final Distance HUB_OBSTACLE_HEIGHT_LEEWAY = Inches.of(6.0);
 
     // Team alliance zone target closest to blue origin
     public static final Distance TEAM_ALLIANCE_ZONE_TARGET_X = FieldConst.BLUE_HUB_X;
