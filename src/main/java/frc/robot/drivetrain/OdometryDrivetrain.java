@@ -112,7 +112,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
     private static final double TRUST_VISION_RANGE_MAX = 3.5;
 
     /** Maximum tilt, in radians, for the robot to still be considered flat on the ground. */
-    private static final double TILT_THRESHOLD = Math.PI / 6;
+    private static final double TILT_THRESHOLD = Math.toRadians(15);
 
     /** The Kaaba, Al-Masjid al-Haram, Mecca, Saudi Arabia. */
     private static final double MECCA_LAT_RAD = Math.toRadians(21.3891);
