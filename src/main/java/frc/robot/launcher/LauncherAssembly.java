@@ -37,6 +37,9 @@ public class LauncherAssembly implements Sendable {
 
     private boolean shootingEnabled = true;
 
+    /** Launch speed multiplier for trajectory that can be used to correct error. */
+    private double launchSpeedMultiplier = 1.0;
+
     /** Allow fuel to be shot. */
     public void enableShooting() {
         shootingEnabled = true;
@@ -67,6 +70,12 @@ public class LauncherAssembly implements Sendable {
         SmartDashboard.putData("Launcher/feeder", feeder);
         SmartDashboard.putData("Launcher/hood", hood);
         SmartDashboard.putData("Launcher/turret", turret);
+        builder.addDoubleProperty(
+                "launch speed multiplier",
+                () -> launchSpeedMultiplier,
+                (multiplier) -> {
+                    launchSpeedMultiplier = multiplier;
+                });
     }
 
     /** Set the launcher direction to the given robot pitch and yaw. */
@@ -133,7 +142,8 @@ public class LauncherAssembly implements Sendable {
                         robotPose,
                         robotVelocity,
                         LauncherConst.ROBOT_TO_LAUNCHER_TRANSFORM,
-                        target.translation());
+                        target.translation(),
+                        launchSpeedMultiplier);
         TrajectoryConstraints constraints =
                 target.constraints()
                         .withMinLauncherPitch(HoodConst.MIN_PITCH.in(Radians))
