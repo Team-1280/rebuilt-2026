@@ -403,7 +403,8 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
         double G1 =
                 Units.degreesToRadians(
                         getPigeon2().getAngularVelocityZWorld().getValueAsDouble()); // pigeon2
-        double G2 = -Units.degreesToRadians(navX2.getRate()); // navx2usb (negated: upside-down Z-axis)
+        double G2 =
+                -Units.degreesToRadians(navX2.getRate()); // navx2usb (negated: upside-down Z-axis)
         double G3 = getState().Speeds.omegaRadiansPerSecond; // kinematics
 
         Evidence e12 = Evidence.of(G1 - G2, GYRO_AGREEMENT_SIGMA); // Pigeon2 vs NavX2
@@ -440,13 +441,18 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
         // getWorldLinearAccel* return values in g; convert to m/s^2; Z captures vertical bounce
         double bumpAccel =
                 Math.hypot(
-                        Math.hypot(navX2.getWorldLinearAccelX(), navX2.getWorldLinearAccelY()),
-                        navX2.getWorldLinearAccelZ()) * 9.8;
+                                Math.hypot(
+                                        navX2.getWorldLinearAccelX(), navX2.getWorldLinearAccelY()),
+                                navX2.getWorldLinearAccelZ())
+                        * 9.8;
         Evidence bumpEvidence = Evidence.of(bumpAccel, BUMP_ACCEL_SIGMA);
 
         double pigeonRollRad = Units.degreesToRadians(getPigeon2().getRoll().getValueAsDouble());
         double pigeonPitchRad = Units.degreesToRadians(getPigeon2().getPitch().getValueAsDouble());
-        double tiltRad = Math.acos(MathUtil.clamp(Math.cos(pigeonRollRad) * Math.cos(pigeonPitchRad), -1.0, 1.0));
+        double tiltRad =
+                Math.acos(
+                        MathUtil.clamp(
+                                Math.cos(pigeonRollRad) * Math.cos(pigeonPitchRad), -1.0, 1.0));
         cachedIsTilted = tiltRad > TILT_THRESHOLD;
 
         double cmdLinear =
