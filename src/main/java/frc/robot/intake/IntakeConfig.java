@@ -18,10 +18,10 @@ public final class IntakeConfig {
     public static final double ROLLER_SPEED = 0.5;
 
     /** Maximum error magnitude at which the deploy motor brakes to lock the intake in place. */
-    public static final Angle ANGLE_LOCK_TOLERANCE = Degrees.of(2.0); // TODO: tune
+    public static final Angle ANGLE_LOCK_TOLERANCE = Degrees.of(2.0);
 
     /** Minimum error magnitude at which the deploy motor stops braking and applies correction. */
-    public static final Angle ANGLE_UNLOCK_TOLERANCE = Degrees.of(4.0); // TODO: tune
+    public static final Angle ANGLE_UNLOCK_TOLERANCE = Degrees.of(4.0);
 
     /** Feedforward that is applied with the sign of the angle error to help correct small error. */
     public static final Voltage ANGLE_ERROR_SIGN_FEEDFORWARD = Volts.of(0.2);
