@@ -20,7 +20,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
-import frc.robot.aesthetic.candle.Candle;
+import frc.robot.aesthetic.candle.CandleEffect;
+import frc.robot.aesthetic.candle.CandleSubsystem;
 import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
@@ -35,10 +36,9 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot implements Sendable {
 
-    private final Candle candle = new Candle();
-
     private final Pigeon2 pigeon = new Pigeon2(26); // Also in TunerConstants.kPigeonId
     private final OdometryDrivetrain drivetrain = new OdometryDrivetrain();
+    private final CandleSubsystem candle = new CandleSubsystem();
     private final VisionSubsystem vision =
             new VisionSubsystem(drivetrain::addVisionMeasurement); // TODO: slip ratio supplier
 
@@ -124,7 +124,7 @@ public class Robot extends LoggedRobot implements Sendable {
 
     @Override
     public void robotInit() {
-        candle.animateCandle(Candle.Effect.CHROMA);
+        candle.animateCandle(CandleEffect.CHROMA);
     }
 
     @Override
