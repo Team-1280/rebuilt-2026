@@ -106,7 +106,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
     private static final double STATOR_SLIP_SIGMA = 40.0;
 
     /** Minimum target distance for trusted vision measurements, in meters. */
-    private static final double TRUST_VISION_RANGE_MIN = 0.25;
+    private static final double TRUST_VISION_RANGE_MIN = 0.1;
 
     /** Maximum target distance for trusted vision measurements, in meters. */
     private static final double TRUST_VISION_RANGE_MAX = 3.5;
