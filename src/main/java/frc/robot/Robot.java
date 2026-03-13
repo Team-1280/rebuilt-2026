@@ -4,10 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -20,6 +16,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
@@ -34,21 +31,25 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.drivetrain.CommandSwerveDrivetrain;
+import frc.robot.aesthetic.candle.CandleSubsystem;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
+import frc.robot.intake.IntakeSubsystem;
+import frc.robot.spindexer.SpindexerSubsystem;
+import frc.robot.time.HubStatus;
+import frc.robot.time.MatchTime;
 import frc.robot.vision.VisionSubsystem;
 
 public class Robot extends LoggedRobot implements Sendable {
 
     private final Pigeon2 pigeon = new Pigeon2(26); // Also in TunerConstants.kPigeonId
 
-    private final CommandSwerveDrivetrain drivetrain =
-            new OdometryDrivetrain(
-                    () -> pigeon.getAngularVelocityZDevice().getValue().in(RadiansPerSecond),
-                    () -> 0.0 // TODO: slip ratio supplier
-                    );
+    private final OdometryDrivetrain drivetrain = new OdometryDrivetrain();
+    private final CandleSubsystem candle = new CandleSubsystem();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
+    private final SpindexerSubsystem spindexer = new SpindexerSubsystem();
+    private final IntakeSubsystem intake = new IntakeSubsystem();
+    
     private final SendableChooser<Command> autoChooser = AutoBuilder.buildAutoChooser("test");
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
@@ -107,29 +108,43 @@ public class Robot extends LoggedRobot implements Sendable {
     private void initDashboard() {
         SmartDashboard.putData("Auto Chooser", autoChooser);
         SmartDashboard.putData("Robot", this);
+        SmartDashboard.putData("Drive Config", DriveConfig.getSendable());
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
+        pose3dPublisher.set(Pose3d.kZero);
+        SmartDashboard.putData("Field Zoning", FieldZoning.getSendable(drivetrain::getPose2d));
+        SmartDashboard.putData("Match Time", MatchTime.getSendable());
+        SmartDashboard.putData("Hub Status", HubStatus.getSendable());
+        SmartDashboard.putData("Drivetrain", drivetrain);
         SmartDashboard.putData("Vision", vision);
+        SmartDashboard.putData("Spindexer", spindexer);
+        SmartDashboard.putData("Intake", intake);
     }
 
     private void initBindings() {
-        // Drive bindings
-        double speed = MetersPerSecond.of(1.60).in(MetersPerSecond);
-        double angularSpeed = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
+        // swerve drive
         final SwerveRequest.FieldCentric driveRequest =
                 new SwerveRequest.FieldCentric()
-                        .withDeadband(speed * 0.1)
-                        .withRotationalDeadband(angularSpeed * 0.1)
+                        .withDeadband(DriveConfig.speedDeadband)
+                        .withRotationalDeadband(DriveConfig.angularSpeedDeadband)
                         .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
                         () ->
-                                driveRequest
-                                        .withVelocityX(-controller.getLeftY() * speed)
-                                        .withVelocityY(-controller.getLeftX() * speed)
-                                        .withRotationalRate(
-                                                -controller.getRightX() * angularSpeed)));
+                                !DriveConfig.enableDriving
+                                        ? null
+                                        : driveRequest
+                                                .withVelocityX(
+                                                        DriveConfig.maxSpeed.times(
+                                                                -controller.getLeftY()))
+                                                .withVelocityY(
+                                                        DriveConfig.maxSpeed.times(
+                                                                -controller.getLeftX()))
+                                                .withRotationalRate(
+                                                        DriveConfig.maxAngularSpeed.times(
+                                                                -controller.getRightX()))));
 
+        // reset heading
         controller
                 .rightStick()
                 .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
@@ -147,8 +162,9 @@ public class Robot extends LoggedRobot implements Sendable {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-        field.setRobotPose(drivetrain.getState().Pose);
-        posePublisher.set(drivetrain.getState().Pose);
+        field.setRobotPose(drivetrain.getPose2d());
+        posePublisher.set(drivetrain.getPose2d());
+        pose3dPublisher.set(drivetrain.getPose3d());
     }
 
     @Override
@@ -200,51 +216,19 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addStringProperty("robot pose", () -> drivetrain.getState().Pose.toString(), null);
-        builder.addStringProperty(
-                "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
+    public void initSendable(SendableBuilder builder) {}
 
-        // Field zoning
-        builder.addStringProperty(
-                "zoning/zone",
-                () -> {
-                    Pose2d pose = drivetrain.getState().Pose;
-                    if (FieldZoning.isInRedAllianceZone(pose)) return "Red";
-                    if (FieldZoning.isInBlueAllianceZone(pose)) return "Blue";
-                    return "Neutral";
-                },
-                null);
-        builder.addBooleanProperty(
-                "zoning/team alliance zone",
-                () -> FieldZoning.isInTeamAllianceZone(drivetrain.getState().Pose),
-                null);
-        builder.addBooleanProperty(
-                "zoning/red alliance zone",
-                () -> FieldZoning.isInRedAllianceZone(drivetrain.getState().Pose),
-                null);
-        builder.addBooleanProperty(
-                "zoning/blue alliance zone",
-                () -> FieldZoning.isInBlueAllianceZone(drivetrain.getState().Pose),
-                null);
-        builder.addBooleanProperty(
-                "zoning/neutral zone",
-                () -> FieldZoning.isInNeutralZone(drivetrain.getState().Pose),
-                null);
-        builder.addBooleanProperty(
-                "zoning/on bump", () -> FieldZoning.isOnBump(drivetrain.getState().Pose), null);
-    }
-
-    private Command LeftSideStartAuto() {
+    
+    private Command leftSideStartAuto() {
         return autoFactory.trajectoryCmd("LeftSideStartAuto");
     }
-    private Command MidSideStartAuto() {
+    private Command midSideStartAuto() {
         return autoFactory.trajectoryCmd("MidSideStartAuto");
     }
-    private Command RightSideStartAuto() {
+    private Command rightSideStartAuto() {
         return autoFactory.trajectoryCmd("RightSideStartAuto");
     }  
-    private Command SimpleForwardAuto() {
+    private Command simpleForwardAuto() {
         return autoFactory.trajectoryCmd("SimpleForwardAuto");
     }
 }

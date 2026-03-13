@@ -9,6 +9,13 @@ At this [Google Doc](https://docs.google.com/document/d/1LHVBFvE4I9V1lK-kII-BY99
 
 This document contains all specifications and requirements for the program.
 
+## Robot Initialization State
+Robot must be in a predetermined position for positions to correctly initialize.
+
+- **Turret must be within about 21 degrees of the stow angle of 0 degrees (aiming forward towards intake)**
+- Intake must be stowed up against the hardstop
+- Hood must be stowed down against the hardstop; gravity can usually achieve this
+
 ## Controls
 
 ### Drive
@@ -83,6 +90,7 @@ Formatting:
 ## Generated, Templated, and Imported Code
 - `TunerConstants.java` is entirely auto-generated
 - `CommandSwerveDrivetrain` is entirely from a template
+- `*IO.java` is most copied and adapted to our drivebase from a template provided by AdvantageKit
 
 ## Attribution
-AI (GitHub Copilot) may sometimes be used for autocomplete (e.g. writing specific lines and writing documentation).
+LLMs (GitHub Copilot, Sonnet4.6) may sometimes be used for autocomplete and documentation, vibecoding is highly condemned.

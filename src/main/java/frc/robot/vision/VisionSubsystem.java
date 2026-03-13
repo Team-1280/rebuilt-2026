@@ -4,39 +4,52 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import org.photonvision.EstimatedRobotPose;
-
-import java.util.function.BiConsumer;
-
 public class VisionSubsystem extends SubsystemBase {
-    private final BiConsumer<Pose2d, Double>
-            addVisionMeasurement; // Takes (robot pose, timestampSec)
 
-    /** All vision ameras */
+    /**
+     * Functional interface for injecting vision measurements into the drivetrain.
+     *
+     * <p>Carries all metadata needed for trust computation (distance, ambiguity, target count),
+     * ensuring measurements route through the full trust pipeline rather than the base-class {@code
+     * addVisionMeasurement(Pose2d, double)} bypass.
+     */
+    @FunctionalInterface
+    public interface VisionMeasurementConsumer {
+        void accept(
+                Pose2d pose,
+                double timestampSeconds,
+                double distanceMeters,
+                double ambiguity,
+                int numTargets);
+    }
+
+    private final VisionMeasurementConsumer addVisionMeasurement;
+
+    /** All vision cameras */
     private final Camera[] cameras = {
-        new Camera("front", VisionConst.FRONT_CAMERA_TRANSFORM),
-        new Camera("back", VisionConst.BACK_CAMERA_TRANSFORM)
+        new Camera("Back Left", VisionConst.BACK_LEFT_CAMERA_TRANSFORM),
+        new Camera("Back Right", VisionConst.BACK_RIGHT_CAMERA_TRANSFORM),
+        new Camera("Intake", VisionConst.INTAKE_CAMERA_TRANSFROM),
     };
 
     /**
-     * @param addVisionMeasurement Function that the subsystem calls to add a vision measurement,
-     *     e.g. drivetrain::addVisionMeasurement
+     * @param addVisionMeasurement Callback that injects a vision measurement into the drivetrain's
+     *     trust-aware estimator, e.g. {@code drivetrain::addVisionMeasurement}
      */
-    public VisionSubsystem(BiConsumer<Pose2d, Double> addVisionMeasurement) {
+    public VisionSubsystem(VisionMeasurementConsumer addVisionMeasurement) {
         this.addVisionMeasurement = addVisionMeasurement;
     }
 
     @Override
     public void periodic() {
-        // Update each camera, and add their measurements if available
-
-        // TODO: possible feature: use estimatedPose.targetsUsed properties (ambiguity, area, skew,
-        // etc.) to weigh measurements
         for (Camera camera : cameras) {
-            for (EstimatedRobotPose estimatedPose : camera.update()) {
-                Pose2d pose = estimatedPose.estimatedPose.toPose2d();
-                double timestamp = estimatedPose.timestampSeconds;
-                addVisionMeasurement.accept(pose, timestamp);
+            for (Camera.VisionMeasurement measurement : camera.update()) {
+                addVisionMeasurement.accept(
+                        measurement.pose(),
+                        measurement.timestampSeconds(),
+                        measurement.distanceMeters(),
+                        measurement.ambiguity(),
+                        measurement.numTargets());
             }
         }
     }
