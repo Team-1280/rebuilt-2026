@@ -15,20 +15,20 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 public final class IntakeConfig {
-    public static final double ROLLER_SPEED = 0.5; // TODO
+    public static final double ROLLER_SPEED = 0.5;
 
     /** Maximum error magnitude at which the deploy motor brakes to lock the intake in place. */
-    public static final Angle ANGLE_LOCK_TOLERANCE = Degrees.of(2.0); // TODO: tune
+    public static final Angle ANGLE_LOCK_TOLERANCE = Degrees.of(2.0);
 
     /** Minimum error magnitude at which the deploy motor stops braking and applies correction. */
-    public static final Angle ANGLE_UNLOCK_TOLERANCE = Degrees.of(4.0); // TODO: tune
+    public static final Angle ANGLE_UNLOCK_TOLERANCE = Degrees.of(4.0);
 
     /** Feedforward that is applied with the sign of the angle error to help correct small error. */
     public static final Voltage ANGLE_ERROR_SIGN_FEEDFORWARD = Volts.of(0.2);
 
-    public static final TalonFXConfiguration deployMotorConfig = new TalonFXConfiguration(); // TODO
-    public static final Current DEPLOY_STATOR_LIMIT = Amps.of(80); // TODO
-    public static final Current DEPLOY_SUPPLY_LIMIT = Amps.of(60); // TODO
+    public static final TalonFXConfiguration deployMotorConfig = new TalonFXConfiguration();
+    public static final Current DEPLOY_STATOR_LIMIT = Amps.of(20);
+    public static final Current DEPLOY_SUPPLY_LIMIT = DEPLOY_STATOR_LIMIT;
 
     static {
         deployMotorConfig.CurrentLimits.StatorCurrentLimit = DEPLOY_STATOR_LIMIT.in(Amps);
@@ -54,9 +54,9 @@ public final class IntakeConfig {
         deployMotorConfig.MotionMagic.MotionMagicJerk = 20.0;
     }
 
-    public static final TalonFXConfiguration rollerMotorConfig = new TalonFXConfiguration(); // TODO
-    public static final Current ROLLER_STATOR_LIMIT = Amps.of(60); // TODO
-    public static final Current ROLLER_SUPPLY_LIMIT = Amps.of(30); // TODO
+    public static final TalonFXConfiguration rollerMotorConfig = new TalonFXConfiguration();
+    public static final Current ROLLER_STATOR_LIMIT = Amps.of(80);
+    public static final Current ROLLER_SUPPLY_LIMIT = Amps.of(40);
 
     static {
         rollerMotorConfig.CurrentLimits.StatorCurrentLimit = ROLLER_STATOR_LIMIT.in(Amps);
