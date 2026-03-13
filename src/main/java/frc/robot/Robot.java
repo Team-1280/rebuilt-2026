@@ -4,13 +4,12 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
@@ -24,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.aesthetic.candle.CandleEffect;
 import frc.robot.aesthetic.candle.CandleSubsystem;
 import frc.robot.build.BuildConstants; // generated file: build to resolve
-import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
 import frc.robot.intake.IntakeSubsystem;
@@ -44,11 +42,7 @@ public class Robot extends LoggedRobot implements Sendable {
 
     private final Pigeon2 pigeon = new Pigeon2(26); // Also in TunerConstants.kPigeonId
 
-    private final CommandSwerveDrivetrain drivetrain =
-            new OdometryDrivetrain(
-                    () -> pigeon.getAngularVelocityZDevice().getValue().in(RadiansPerSecond),
-                    () -> 0.0 // TODO: slip ratio supplier
-                    );
+    private final OdometryDrivetrain drivetrain = new OdometryDrivetrain();
     private final CandleSubsystem candle = new CandleSubsystem();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
     private final LauncherAssembly launcher = new LauncherAssembly();
@@ -58,8 +52,14 @@ public class Robot extends LoggedRobot implements Sendable {
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
     private final Field2d field = new Field2d();
-    StructPublisher<Pose2d> posePublisher =
-            NetworkTableInstance.getDefault().getStructTopic("Robot Pose", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> posePublisher =
+            NetworkTableInstance.getDefault()
+                    .getStructTopic("Robot Pose2d", Pose2d.struct)
+                    .publish();
+    private final StructPublisher<Pose3d> pose3dPublisher =
+            NetworkTableInstance.getDefault()
+                    .getStructTopic("Robot Pose3d", Pose3d.struct)
+                    .publish();
 
     public Robot() {
         initLogger(); // must happen first
@@ -68,7 +68,6 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     private void initLogger() {
-        Logger.recordMetadata("Heatseeker", "Haru Urara"); // Set a metadata value
         Logger.recordMetadata("gitSHA", BuildConstants.GIT_SHA);
         if (isReal()) {
             Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
@@ -93,11 +92,12 @@ public class Robot extends LoggedRobot implements Sendable {
         SmartDashboard.putData("Drive Config", DriveConfig.getSendable());
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
-        SmartDashboard.putData(
-                "Field Zoning", FieldZoning.getSendable(() -> drivetrain.getState().Pose));
+        pose3dPublisher.set(Pose3d.kZero);
+        SmartDashboard.putData("Field Zoning", FieldZoning.getSendable(drivetrain::getPose2d));
         SmartDashboard.putData("Match Time", MatchTime.getSendable());
         SmartDashboard.putData("Hub Status", HubStatus.getSendable());
         SmartDashboard.putData("Target Selector", TargetSelector.getSendable());
+        SmartDashboard.putData("Drivetrain", drivetrain);
         SmartDashboard.putData("Vision", vision);
         SmartDashboard.putData("Launcher", launcher);
         SmartDashboard.putData("Spindexer", spindexer);
@@ -105,7 +105,7 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     private void initBindings() {
-        // Drive bindings
+        // swerve drive
         final SwerveRequest.FieldCentric driveRequest =
                 new SwerveRequest.FieldCentric()
                         .withDeadband(DriveConfig.speedDeadband)
@@ -127,6 +127,7 @@ public class Robot extends LoggedRobot implements Sendable {
                                                         DriveConfig.maxAngularSpeed.times(
                                                                 -controller.getRightX()))));
 
+        // reset heading
         controller
                 .rightStick()
                 .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
@@ -140,8 +141,9 @@ public class Robot extends LoggedRobot implements Sendable {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-        field.setRobotPose(drivetrain.getState().Pose);
-        posePublisher.set(drivetrain.getState().Pose);
+        field.setRobotPose(drivetrain.getPose2d());
+        posePublisher.set(drivetrain.getPose2d());
+        pose3dPublisher.set(drivetrain.getPose3d());
     }
 
     @Override
@@ -175,9 +177,5 @@ public class Robot extends LoggedRobot implements Sendable {
     public void simulationPeriodic() {}
 
     @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addStringProperty("robot pose", () -> drivetrain.getState().Pose.toString(), null);
-        builder.addStringProperty(
-                "robot speeds", () -> drivetrain.getState().Speeds.toString(), null);
-    }
+    public void initSendable(SendableBuilder builder) {}
 }

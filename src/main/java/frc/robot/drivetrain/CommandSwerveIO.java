@@ -18,10 +18,12 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -57,7 +59,7 @@ public class CommandSwerveIO extends SubsystemBase {
                             Math.hypot(
                                     TunerConstants.BackRight.LocationX,
                                     TunerConstants.BackRight.LocationY)));
-    private static final double DRIVE_MASS_KG = 0x0deadbeef; // TODO:add mass
+    private static final double DRIVE_MASS_KG = Units.lbsToKilograms(110);
     private static final double ROBOT_MOI = 6.088;
     private static final double WHEEL_COF = 1.02;
 
@@ -109,8 +111,9 @@ public class CommandSwerveIO extends SubsystemBase {
                     kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
     private final Alert gyroDisconnectedAlert =
             new Alert(
-                    "oh nyo ur gyro is disconnected, falling back to raw kinematics UwU",
-                    AlertType.kError);
+                    "Pigeon2 gyro disconnected, falling back to raw kinematics", AlertType.kError);
+    private final Alert gyro3DisconnectedAlert =
+            new Alert("NavX2 (gyro3) disconnected", AlertType.kWarning);
 
     public CommandSwerveIO(
             GyroIO gyroIO,
@@ -219,8 +222,15 @@ public class CommandSwerveIO extends SubsystemBase {
             poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
         }
 
-        // Update gyro alert
+        // Update gyro alerts
         gyroDisconnectedAlert.set(!gyroInputs.connected && currentMode != Mode.SIM);
+        gyro3DisconnectedAlert.set(!gyroInputs.gyro3Connected && currentMode != Mode.SIM);
+
+        // Dashboard and AdvantageKit gyro connection status
+        SmartDashboard.putBoolean("Gyro/Pigeon2Connected", gyroInputs.connected);
+        SmartDashboard.putBoolean("Gyro/NavX2Connected", gyroInputs.gyro3Connected);
+        Logger.recordOutput("Drivebase/Gyro/Pigeon2Connected", gyroInputs.connected);
+        Logger.recordOutput("Drivebase/Gyro/NavX2Connected", gyroInputs.gyro3Connected);
     }
 
     /**

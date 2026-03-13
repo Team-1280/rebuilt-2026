@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.Volts;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MountPoseConfigs;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -40,7 +41,8 @@ import edu.wpi.first.units.measure.Voltage;
 public class TunerConstants {
     // Both sets of gains need to be tuned to your individual robot.
 
-    // The steer motor uses any SwerveModule.SteerRequestType control request with the
+    // The steer motor uses any SwerveModule.SteerRequestType control request with
+    // the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
     private static final Slot0Configs steerGains =
             new Slot0Configs()
@@ -76,10 +78,12 @@ public class TunerConstants {
 
     // The stator current at which the wheels start to slip;
     // This needs to be tuned to your individual robot
-    private static final Current kSlipCurrent = Amps.of(120);
+    private static final Current kSlipCurrent = Amps.of(90);
 
-    // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
-    // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.
+    // Initial configs for the drive and steer motors and the azimuth encoder; these
+    // cannot be null.
+    // Some configs will be overwritten; check the `with*InitialConfigs()` API
+    // documentation.
     private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration();
     private static final TalonFXConfiguration steerInitialConfigs =
             new TalonFXConfiguration()
@@ -89,11 +93,14 @@ public class TunerConstants {
                                     // set a relatively low
                                     // stator current limit to help avoid brownouts without
                                     // impacting performance.
-                                    .withStatorCurrentLimit(Amps.of(60))
-                                    .withStatorCurrentLimitEnable(true));
+                                    .withStatorCurrentLimit(Amps.of(80))
+                                    .withStatorCurrentLimitEnable(true)
+                                    .withSupplyCurrentLimit(Amps.of(40))
+                                    .withSupplyCurrentLimitEnable(true));
     private static final CANcoderConfiguration encoderInitialConfigs = new CANcoderConfiguration();
     // Configs for the Pigeon 2; leave this null to skip applying Pigeon 2 configs
-    private static final Pigeon2Configuration pigeonConfigs = null;
+    private static final Pigeon2Configuration pigeonConfigs =
+            new Pigeon2Configuration().withMountPose(new MountPoseConfigs().withMountPoseRoll(180));
 
     // CAN bus that the devices are located on;
     // All swerve devices must share the same CAN bus

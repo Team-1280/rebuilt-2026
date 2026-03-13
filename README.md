@@ -90,6 +90,7 @@ Formatting:
 ## Generated, Templated, and Imported Code
 - `TunerConstants.java` is entirely auto-generated
 - `CommandSwerveDrivetrain` is entirely from a template
+- `*IO.java` is most copied and adapted to our drivebase from a template provided by AdvantageKit
 
 ## Attribution
-AI (GitHub Copilot) may sometimes be used for autocomplete (e.g. writing specific lines and writing documentation).
+LLMs (GitHub Copilot, Sonnet4.6) may sometimes be used for autocomplete and documentation, vibecoding is highly condemned.
