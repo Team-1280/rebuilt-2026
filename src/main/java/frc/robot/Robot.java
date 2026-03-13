@@ -18,19 +18,22 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
@@ -54,15 +57,35 @@ public class Robot extends LoggedRobot implements Sendable {
     StructPublisher<Pose2d> posePublisher =
             NetworkTableInstance.getDefault().getStructTopic("Robot Pose", Pose2d.struct).publish();
 
+    // Choreo setup:
+    private final AutoFactory autoFactory;
+    private Command autonomousCommand;
+
     public Robot() {
         initLogger(); // must happen first
         initDashboard();
         initBindings();
+
+        autoFactory = new AutoFactory(
+            drivetrain::getPose, // A function that returns the current robot pose
+            drivetrain::resetOdometry, // A function that resets the current robot pose to the provided Pose2d
+            drivetrain::followTrajectory, // The drive subsystem trajectory follower 
+            true, // If alliance flipping should be enabled 
+            drivetrain, // The drive subsystem
+        );
+        /* 
+        autoFactory
+            .bind("deployIntake", intakeSubsystem.intake())
+            .bind("retractIntake", intakeSubsystem.intake())
+            .bind("startIntake", scoringSubsystem.score())
+            .bind("stopIntake", scoringSubsystem.score())
+            .bind("startShootFuel", scoringSubsystem.score());
+            */
     }
 
     private void initLogger() {
         Logger.recordMetadata("Heatseeker", "Haru Urara"); // Set a metadata value
-        Logger.recordMetadata("gitSHA", BuildConstants.GIT_SHA);
+        //Logger.recordMetadata("gitSHA", BuildConstants.GIT_SHA);
         if (isReal()) {
             Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
             Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
@@ -113,7 +136,13 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     @Override
-    public void robotInit() {}
+    public void robotInit() {
+        autoChooser.addOption("None", Commands.none());
+        autoChooser.addOption("LeftSideStart", LeftSideStartAuto());
+        autoChooser.addOption("MidSideStart", MidSideStartAuto());
+        autoChooser.addOption("RightSideStart", RightSideStartAuto());
+        autoChooser.addOption("SimpleForwardAuto", SimpleForwardAuto());
+    }
 
     @Override
     public void robotPeriodic() {
@@ -124,19 +153,26 @@ public class Robot extends LoggedRobot implements Sendable {
 
     @Override
     public void autonomousInit() {
-        Command scheduledAutonomousCommand = getAutonomousCommand();
+        autonomousCommand = autoChooser.getSelected();
 
-        if (scheduledAutonomousCommand != null) {
-            CommandScheduler.getInstance().schedule(scheduledAutonomousCommand);
-            SmartDashboard.putData(scheduledAutonomousCommand);
+        if (autonomousCommand != null) {
+            autonomousCommand.schedule();
         }
     }
 
     @Override
     public void autonomousPeriodic() {}
 
+    private boolean isRedAlliance() {
+        return DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red);
+    }
+
     @Override
-    public void teleopInit() {}
+    public void teleopInit() {
+        if (autonomousCommand != null) {
+            autonomousCommand.cancel();
+        }
+    }
 
     @Override
     public void teleopPeriodic() {}
@@ -197,5 +233,18 @@ public class Robot extends LoggedRobot implements Sendable {
                 null);
         builder.addBooleanProperty(
                 "zoning/on bump", () -> FieldZoning.isOnBump(drivetrain.getState().Pose), null);
+    }
+
+    private Command LeftSideStartAuto() {
+        return autoFactory.trajectoryCmd("LeftSideStartAuto");
+    }
+    private Command MidSideStartAuto() {
+        return autoFactory.trajectoryCmd("MidSideStartAuto");
+    }
+    private Command RightSideStartAuto() {
+        return autoFactory.trajectoryCmd("RightSideStartAuto");
+    }  
+    private Command SimpleForwardAuto() {
+        return autoFactory.trajectoryCmd("SimpleForwardAuto");
     }
 }
