@@ -246,7 +246,7 @@ public class Robot extends LoggedRobot implements Sendable {
         // is split into multiple commands to separate requirements
         return Commands.defer(
                 () -> {
-                    Pose3d robotPose = null; // TODO: drivetrain.getPose3d()
+                    Pose3d robotPose = drivetrain.getPose3d();
                     Optional<LaunchTarget> target = TargetSelector.selectTarget(robotPose);
                     if (target.isEmpty()) {
                         return Commands.parallel(
@@ -257,7 +257,7 @@ public class Robot extends LoggedRobot implements Sendable {
                     }
                     Trajectory trajectory =
                             launcher.calculateTargetTrajectory(
-                                    target.get(), robotPose, null); // TODO
+                                    target.get(), robotPose, drivetrain.getFieldVelocity());
                     return Commands.parallel(
                             asDefault(
                                     Commands.runOnce(
