@@ -13,15 +13,49 @@ This document contains all specifications and requirements for the program.
 Robot must be in a predetermined position for positions to correctly initialize.
 
 - **Turret must be within about 21 degrees of the stow angle of 0 degrees (aiming forward towards intake)**
+    - Failure to do so leads to turret being off by the closest multiple of 42.3 degrees, requiring turret calibration in dashboard
 - Intake must be stowed up against the hardstop
 - Hood must be stowed down against the hardstop; gravity can usually achieve this
 
 ## Controls
+Hardware: Xbox Controller or equivalent
 
 ### Drive
-- Left Joystick: Move (field-oriented)
-- Right Joystick X: Rotate
-- Right Joystick Button: Reset robot heading to 0
+- Move - `Left Joystick`
+    - field-oriented, operator (alliance) perspective
+- Rotate - `Right Joystick` (horizontal direction)
+- Reset robot heading to 0 - Press `Right Joystick Button`
+
+### Stow
+- Stow robot - Press `Start`
+    - Stow state deactivates when any subsystem is activated
+
+### Intake
+D-pad
+
+- Stow intake and rollers off - Press `Up`
+- Deploy intake and rollers on - Press `Down`
+- Deploy intake and rollers off - Press `Right`
+- Reverse intake rollers - Hold `Left`
+    - Upon finishing, start rollers
+
+### Launcher
+- Automatic target aiming and launching - On by default
+- Stow launcher - Hold `Left Trigger`
+
+#### Feeder
+- Start feeding override - Hold `Right Trigger`
+- Stop feeding override - Hold `Right Bumper`
+
+### Fuel Unjamming
+- Intake fuel unjamming - Hold `A`
+    - Moves intake up while running intake in reverse
+    - Upon finishing, deploy intake and start rollers
+- Hopper/launcher fuel unjamming - Hold `B`
+    - Runs both intake and spindexer in reverse
+
+### Spindexer
+- Always on unless robot is stowed
 
 ## Trajectory Calculations and Math
 See [trajectory.pdf](./trajectory/trajectory.pdf).
