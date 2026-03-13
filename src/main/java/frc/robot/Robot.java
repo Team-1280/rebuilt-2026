@@ -169,7 +169,7 @@ public class Robot extends LoggedRobot implements Sendable {
                 .onTrue(
                         intake.runOnce(
                                 () -> {
-                                    intake.intakeDown();
+                                    intake.intakeUp();
                                     intake.rollersOff();
                                 }));
 
