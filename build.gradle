@@ -45,7 +45,7 @@ deploy {
 
 spotless {
     java {
-        targetExclude("src/main/java/frc/robot/build/*")
+        targetExclude("src/main/java/frc/robot/build/*", "**/generated/**/*")
         googleJavaFormat().aosp().reorderImports(true)
     }
 }
