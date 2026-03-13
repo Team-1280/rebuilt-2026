@@ -19,7 +19,7 @@ public final class ShooterConfig {
      */
     public static final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(70.0);
 
-    public static final Current STATOR_LIMIT = Amps.of(40);
+    public static final Current STATOR_LIMIT = Amps.of(50);
     public static final Current SUPPLY_LIMIT = STATOR_LIMIT;
 
     // NOTE: these configurations are shared for both motors; identical other than orientation
