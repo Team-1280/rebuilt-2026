@@ -1,5 +1,6 @@
 package frc.robot.launcher;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
@@ -40,6 +41,9 @@ public class LauncherAssembly implements Sendable {
     /** Launch speed multiplier for trajectory that can be used to correct error. */
     private double launchSpeedMultiplier = 1.0;
 
+    /** An offset to apply to turret yaw after it is calculated in trajectory, to mitigate bias. */
+    private Angle trajectoryYawOffset = Degrees.of(-6.5); // TODO: fix bias (mechanical)
+
     /** Allow fuel to be shot. */
     public void enableShooting() {
         shootingEnabled = true;
@@ -76,6 +80,12 @@ public class LauncherAssembly implements Sendable {
                 (multiplier) -> {
                     launchSpeedMultiplier = multiplier;
                 });
+        builder.addDoubleProperty(
+                "trajectory yaw offset (deg)",
+                () -> trajectoryYawOffset.in(Degrees),
+                (offset) -> {
+                    trajectoryYawOffset = Degrees.of(offset);
+                });
     }
 
     /** Set the launcher direction to the given robot pitch and yaw. */
@@ -100,7 +110,8 @@ public class LauncherAssembly implements Sendable {
     /** Aim the launcher pitch and yaw to the given trajectory's. */
     private void aimTrajectory(Trajectory trajectory) {
         aimDirection(
-                Radians.of(trajectory.getLauncherPitch()), Radians.of(trajectory.getLauncherYaw()));
+                Radians.of(trajectory.getLauncherPitch()),
+                Radians.of(trajectory.getLauncherYaw()).plus(trajectoryYawOffset));
     }
 
     /**
