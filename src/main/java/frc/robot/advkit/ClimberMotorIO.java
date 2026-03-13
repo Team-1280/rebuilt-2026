@@ -10,8 +10,8 @@ public interface ClimberMotorIO {
         public double velocityRadPerSec = 0.0;
         public double appliedVolts = 0.0;
         public double supplyVoltage = 0.0;
-        public double supplyCurrentAmps = 0.0;
-        public double statorCurrentAmps = 0.0;
+        public double supplyCurrentAmps = 80.0;
+        public double statorCurrentAmps = 30.0;
         public double deviceTempCelsius = 0.0;
         public double processorTempCelsius = 0.0;
         public boolean stalled = false;

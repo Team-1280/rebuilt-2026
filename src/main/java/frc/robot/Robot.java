@@ -28,7 +28,9 @@ import frc.robot.drivetrain.CommandSwerveDrivetrain;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.launcher.LauncherAssembly;
 import frc.robot.spindexer.SpindexerSubsystem;
+import frc.robot.target.TargetSelector;
 import frc.robot.time.HubStatus;
 import frc.robot.time.MatchTime;
 import frc.robot.vision.VisionSubsystem;
@@ -49,6 +51,7 @@ public class Robot extends LoggedRobot implements Sendable {
                     );
     private final CandleSubsystem candle = new CandleSubsystem();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
+    private final LauncherAssembly launcher = new LauncherAssembly();
     private final SpindexerSubsystem spindexer = new SpindexerSubsystem();
     private final IntakeSubsystem intake = new IntakeSubsystem();
 
@@ -94,7 +97,9 @@ public class Robot extends LoggedRobot implements Sendable {
                 "Field Zoning", FieldZoning.getSendable(() -> drivetrain.getState().Pose));
         SmartDashboard.putData("Match Time", MatchTime.getSendable());
         SmartDashboard.putData("Hub Status", HubStatus.getSendable());
+        SmartDashboard.putData("Target Selector", TargetSelector.getSendable());
         SmartDashboard.putData("Vision", vision);
+        SmartDashboard.putData("Launcher", launcher);
         SmartDashboard.putData("Spindexer", spindexer);
         SmartDashboard.putData("Intake", intake);
     }
