@@ -50,7 +50,7 @@ public final class TurretConfig {
         motorConfig.Slot0.kS = 0.22;
         motorConfig.Slot0.kV = 3.1;
         motorConfig.Slot0.kA = 0.15;
-        motorConfig.MotionMagic.MotionMagicCruiseVelocity = 0.1; // 1.0; // TODO: tune
+        motorConfig.MotionMagic.MotionMagicCruiseVelocity = 0.3; // 1.0; // TODO: tune
         motorConfig.MotionMagic.MotionMagicAcceleration = 0.6; // 6.0;
         motorConfig.MotionMagic.MotionMagicJerk = 0.0; // note: 0.0 is no limit
     }
