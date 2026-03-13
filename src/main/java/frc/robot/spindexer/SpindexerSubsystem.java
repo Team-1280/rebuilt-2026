@@ -28,6 +28,10 @@ public class SpindexerSubsystem extends SubsystemBase {
         moveMotorSpeed(0.0);
     }
 
+    public void reverse() {
+        moveMotorSpeed(SpindexerConfig.REVERSE_MOTOR_SPEED);
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("motor speed (frac)", this::getMotorSpeed, this::moveMotorSpeed);

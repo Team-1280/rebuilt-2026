@@ -16,7 +16,7 @@ public class FeederSubsystem extends SubsystemBase {
         return motor.get();
     }
 
-    public void moveMotorSpeed(double speed) {
+    private void moveMotorSpeed(double speed) {
         motor.set(speed);
     }
 
@@ -26,6 +26,10 @@ public class FeederSubsystem extends SubsystemBase {
 
     public void stop() {
         motor.stopMotor();
+    }
+
+    public void reverse() {
+        moveMotorSpeed(FeederConfig.REVERSE_MOTOR_SPEED);
     }
 
     @Override
