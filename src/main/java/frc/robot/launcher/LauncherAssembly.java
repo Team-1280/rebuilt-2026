@@ -3,11 +3,13 @@ package frc.robot.launcher;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -157,5 +159,20 @@ public class LauncherAssembly implements Sendable {
             LaunchTarget target, Pose3d robotPose, Translation2d robotVelocity) {
         Trajectory trajectory = calculateTargetTrajectory(target, robotPose, robotVelocity);
         return launchTrajectory(trajectory);
+    }
+
+    /** Set the launcher to launch at locked turret and hood angles. */
+    public void launchFixed() {
+        final AngularVelocity shooterFlywheelSpeed = RotationsPerSecond.of(50.0);
+        final boolean feed = true;
+        final Angle pitch = Degrees.of(60.0);
+        final Angle yaw = Degrees.of(0.0);
+        shooter.moveAngularVelocity(shooterFlywheelSpeed);
+        if (feed) {
+            feeder.start();
+        } else {
+            feeder.stop();
+        }
+        aimDirection(pitch, yaw);
     }
 }
