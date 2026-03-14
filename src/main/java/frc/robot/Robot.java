@@ -17,7 +17,9 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.aesthetic.candle.CandleEffect;
@@ -93,7 +95,10 @@ public class Robot extends LoggedRobot implements Sendable {
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
         pose3dPublisher.set(Pose3d.kZero);
-        SmartDashboard.putData("Field Zoning", FieldZoning.getSendable(drivetrain::getPose2d));
+        SmartDashboard.putData(
+                "Field Zoning",
+                FieldZoning.getSendable(
+                        drivetrain::getPose2d, () -> DriveConfig.trenchLauncherStowDistance));
         SmartDashboard.putData("Match Time", MatchTime.getSendable());
         SmartDashboard.putData("Hub Status", HubStatus.getSendable());
         SmartDashboard.putData("Target Selector", TargetSelector.getSendable());
@@ -144,6 +149,22 @@ public class Robot extends LoggedRobot implements Sendable {
         field.setRobotPose(drivetrain.getPose2d());
         posePublisher.set(drivetrain.getPose2d());
         pose3dPublisher.set(drivetrain.getPose3d());
+
+        if (isEnabled()) {
+            // Occurs after CommandScheduler and binding triggers in order to have priority
+            // Automatically stow launcher when robot is near a trench according to odometry
+            if (FieldZoning.isNearTrench(
+                    drivetrain.getPose2d().getTranslation(),
+                    DriveConfig.trenchLauncherStowDistance)) {
+                launcher.stow();
+                // Additionally, schedule a command to interrupt other launcher commands
+                CommandScheduler.getInstance()
+                        .schedule(
+                                Commands.runOnce(launcher::stow, launcher.subsystems)
+                                        .withInterruptBehavior(
+                                                InterruptionBehavior.kCancelIncoming));
+            }
+        }
     }
 
     @Override
