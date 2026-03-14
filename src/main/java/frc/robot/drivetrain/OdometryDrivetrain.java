@@ -106,7 +106,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
     private static final double STATOR_SLIP_SIGMA = 40.0;
 
     /** Minimum target distance for trusted vision measurements, in meters. */
-    private static final double TRUST_VISION_RANGE_MIN = 0.25;
+    private static final double TRUST_VISION_RANGE_MIN = 0.1;
 
     /** Maximum target distance for trusted vision measurements, in meters. */
     private static final double TRUST_VISION_RANGE_MAX = 3.5;
@@ -580,5 +580,27 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
         builder.addStringProperty("field velocity", () -> getFieldVelocity().toString(), null);
         builder.addStringProperty("chassis speeds", () -> getState().Speeds.toString(), null);
         builder.addBooleanProperty("is tilted", this::isTilted, null);
+
+        builder.addDoubleProperty(
+                "reset pose/x",
+                () -> getPose2d().getX(),
+                (x) -> {
+                    Pose2d pose = getPose2d();
+                    resetPose(new Pose2d(x, pose.getY(), pose.getRotation()));
+                });
+        builder.addDoubleProperty(
+                "reset pose/y",
+                () -> getPose2d().getY(),
+                (y) -> {
+                    Pose2d pose = getPose2d();
+                    resetPose(new Pose2d(pose.getX(), y, pose.getRotation()));
+                });
+        builder.addDoubleProperty(
+                "reset pose/rotation (deg)",
+                () -> getPose2d().getRotation().getDegrees(),
+                (deg) -> {
+                    Pose2d pose = getPose2d();
+                    resetPose(new Pose2d(pose.getTranslation(), Rotation2d.fromDegrees(deg)));
+                });
     }
 }
