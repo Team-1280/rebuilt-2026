@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "test"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "spin"
+            "pathName": "center-shoot"
           }
         }
       ]

@@ -4,13 +4,17 @@
 
 package frc.robot;
 
-import choreo.auto.AutoChooser;
-import choreo.auto.AutoFactory;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
 
+import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -18,13 +22,12 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-
 import frc.robot.aesthetic.candle.CandleSubsystem;
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
@@ -33,11 +36,6 @@ import frc.robot.spindexer.SpindexerSubsystem;
 import frc.robot.time.HubStatus;
 import frc.robot.time.MatchTime;
 import frc.robot.vision.VisionSubsystem;
-
-import org.littletonrobotics.junction.LoggedRobot;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot implements Sendable {
 
@@ -55,7 +53,7 @@ public class Robot extends LoggedRobot implements Sendable {
     StructPublisher<Pose2d> posePublisher =
             NetworkTableInstance.getDefault().getStructTopic("Robot Pose", Pose2d.struct).publish();
 
-    private final AutoChooser autoChooser = new AutoChooser();
+    private final SendableChooser<Command> autoChooser;
     private final AutoFactory autoFactory =
             new AutoFactory(
                     drivetrain::getPose2d,
@@ -66,9 +64,10 @@ public class Robot extends LoggedRobot implements Sendable {
 
     public Robot() {
         initLogger(); // must happen first
+        autoChooser = AutoBuilder.buildAutoChooser();
         initDashboard();
         initBindings();
-        initAuto();
+        // initAuto();
     }
 
     private void initLogger() {
@@ -137,15 +136,16 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     private void initAuto() {
-        autoChooser.addCmd("Test", this::testAuto);
-        RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
-        autoFactory.trajectoryCmd("Test");
     }
 
     private Command testAuto() {
         return Commands.sequence(
                 // Commands.run(() -> System.out.println("cool")),
                 autoFactory.resetOdometry("Test"), autoFactory.trajectoryCmd("Test"));
+    }
+
+    public Command getAutonomousCommand() {
+        return autoChooser.getSelected();
     }
 
     @Override
@@ -159,7 +159,14 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     @Override
-    public void autonomousInit() {}
+    public void autonomousInit() {
+        Command scheduledAutonomousCommand = getAutonomousCommand();
+
+        if (scheduledAutonomousCommand != null) {
+            CommandScheduler.getInstance().schedule(scheduledAutonomousCommand);
+            SmartDashboard.putData(scheduledAutonomousCommand);
+        }
+    }
 
     @Override
     public void autonomousPeriodic() {}
