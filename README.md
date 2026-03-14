@@ -42,6 +42,7 @@ D-pad
 ### Launcher
 - Automatic target aiming and launching - On by default
 - Stow launcher - Hold `Left Trigger`
+- Fixed launching - Hold `Left Bumper`
 
 #### Feeder
 - Start feeding override - Hold `Right Trigger`

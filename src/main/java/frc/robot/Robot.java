@@ -208,6 +208,13 @@ public class Robot extends LoggedRobot implements Sendable {
                         Commands.run(launcher::stow, launcher.subsystems)
                                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
 
+        // fixed launcher hold
+        controller
+                .leftBumper()
+                .whileTrue(
+                        Commands.run(launcher::launchFixed, launcher.subsystems)
+                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+
         // spindexer on: by default
         spindexer.setDefaultCommand(spindexer.run(spindexer::start));
     }
