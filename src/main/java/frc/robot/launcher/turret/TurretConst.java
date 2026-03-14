@@ -15,8 +15,8 @@ public final class TurretConst {
     public static final CANBus CAN_BUS = LauncherConst.CAN_BUS;
 
     // TODO: these are tentative, conservative estimates
-    public static final Angle MIN_ANGLE = Degrees.of(-315); // TODO
-    public static final Angle MAX_ANGLE = Degrees.of(135); // TODO
+    public static final Angle MIN_ANGLE = Degrees.of(-180); // TODO
+    public static final Angle MAX_ANGLE = Degrees.of(180); // TODO
 
     /** Number of encoder rotations for every mechanism rotation */
     public static final double ENCODER_TO_MECHANISM_RATIO = 8.5;

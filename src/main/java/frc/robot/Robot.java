@@ -101,7 +101,10 @@ public class Robot extends LoggedRobot implements Sendable {
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
         pose3dPublisher.set(Pose3d.kZero);
-        SmartDashboard.putData("Field Zoning", FieldZoning.getSendable(drivetrain::getPose2d));
+        SmartDashboard.putData(
+                "Field Zoning",
+                FieldZoning.getSendable(
+                        drivetrain::getPose2d, () -> DriveConfig.trenchLauncherStowDistance));
         SmartDashboard.putData("Match Time", MatchTime.getSendable());
         SmartDashboard.putData("Hub Status", HubStatus.getSendable());
         SmartDashboard.putData("Target Selector", TargetSelector.getSendable());
@@ -306,6 +309,21 @@ public class Robot extends LoggedRobot implements Sendable {
             CommandScheduler.getInstance().schedule(runAutomaticLaunching());
         }
         CommandScheduler.getInstance().run();
+        if (isEnabled()) {
+            // Occurs after CommandScheduler and binding triggers in order to have priority
+            // Automatically stow launcher when robot is near a trench according to odometry
+            if (FieldZoning.isNearTrench(
+                    drivetrain.getPose2d().getTranslation(),
+                    DriveConfig.trenchLauncherStowDistance)) {
+                launcher.stow();
+                // Additionally, schedule a command to interrupt other launcher commands
+                CommandScheduler.getInstance()
+                        .schedule(
+                                Commands.runOnce(launcher::stow, launcher.subsystems)
+                                        .withInterruptBehavior(
+                                                InterruptionBehavior.kCancelIncoming));
+            }
+        }
     }
 
     @Override

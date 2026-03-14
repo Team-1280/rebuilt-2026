@@ -16,10 +16,13 @@ import java.util.function.Supplier;
 
 public final class FieldZoning implements Sendable { // in meters
     private final Supplier<Pose2d> robotPoseSupplier;
+    private final Supplier<Distance> trenchDistanceSupplier;
 
     /** Private constructor for creating a sendable. */
-    private FieldZoning(Supplier<Pose2d> robotPoseSupplier) {
+    private FieldZoning(
+            Supplier<Pose2d> robotPoseSupplier, Supplier<Distance> trenchDistanceSupplier) {
         this.robotPoseSupplier = robotPoseSupplier;
+        this.trenchDistanceSupplier = trenchDistanceSupplier;
     }
 
     // rectangle rotation helpers
@@ -124,8 +127,9 @@ public final class FieldZoning implements Sendable { // in meters
         return false;
     }
 
-    public static Sendable getSendable(Supplier<Pose2d> robotPoseSupplier) {
-        return new FieldZoning(robotPoseSupplier);
+    public static Sendable getSendable(
+            Supplier<Pose2d> robotPoseSupplier, Supplier<Distance> trenchDistanceSupplier) {
+        return new FieldZoning(robotPoseSupplier, trenchDistanceSupplier);
     }
 
     @Override
@@ -156,11 +160,11 @@ public final class FieldZoning implements Sendable { // in meters
         builder.addBooleanProperty(
                 "on bump", () -> FieldZoning.isOnBump(robotPoseSupplier.get()), null);
         builder.addBooleanProperty(
-                "near trench (~0.6m)",
+                "near trench",
                 () ->
                         isNearTrench(
                                 robotPoseSupplier.get().getTranslation(),
-                                FieldConst.TRENCH_DEPTH.div(2)),
+                                trenchDistanceSupplier.get()),
                 null);
     }
 }
