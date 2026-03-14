@@ -17,6 +17,7 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -30,15 +31,20 @@ import frc.robot.field.FieldZoning;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.launcher.LauncherAssembly;
 import frc.robot.spindexer.SpindexerSubsystem;
+import frc.robot.target.LaunchTarget;
 import frc.robot.target.TargetSelector;
 import frc.robot.time.HubStatus;
 import frc.robot.time.MatchTime;
+import frc.robot.trajectory.Trajectory;
 import frc.robot.vision.VisionSubsystem;
 
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import java.util.Optional;
+import java.util.Set;
 
 public class Robot extends LoggedRobot implements Sendable {
 
@@ -136,6 +142,155 @@ public class Robot extends LoggedRobot implements Sendable {
         controller
                 .rightStick()
                 .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
+
+        // stow robot press; until any subsystem activated
+        controller
+                .start()
+                .onTrue(
+                        Commands.run(
+                                this::stow,
+                                launcher.shooter,
+                                launcher.feeder,
+                                launcher.hood,
+                                launcher.turret,
+                                spindexer,
+                                intake));
+
+        // intake down+start press
+        controller
+                .povDown()
+                .onTrue(
+                        intake.runOnce(
+                                () -> {
+                                    intake.intakeDown();
+                                    intake.rollersOn();
+                                }));
+
+        // intake up+stop press
+        controller
+                .povUp()
+                .onTrue(
+                        intake.runOnce(
+                                () -> {
+                                    intake.intakeUp();
+                                    intake.rollersOff();
+                                }));
+
+        // intake down+stop press
+        controller
+                .povRight()
+                .onTrue(
+                        intake.runOnce(
+                                () -> {
+                                    intake.intakeDown();
+                                    intake.rollersOff();
+                                }));
+
+        // reverse intake rollers hold
+        controller.povLeft().whileTrue(intake.startEnd(intake::rollersReverse, intake::rollersOn));
+
+        // intake fuel unjam hold
+        controller.a().whileTrue(runUnjamIntakeFuel());
+
+        // hopper/launcher fuel unjam hold
+        controller.b().whileTrue(runUnjamHopperLauncherFuel());
+
+        // start feeding override hold
+        controller.rightTrigger().whileTrue(launcher.feeder.run(launcher.feeder::start));
+
+        // stop feeding override hold
+        controller.rightBumper().whileTrue(launcher.feeder.run(launcher.feeder::stop));
+
+        // stow launcher hold
+        controller
+                .leftTrigger()
+                .whileTrue(
+                        Commands.run(launcher::stow, launcher.subsystems)
+                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+
+        // spindexer on: by default
+        spindexer.setDefaultCommand(spindexer.run(spindexer::start));
+    }
+
+    /** Stow or stop all subsystems except drivetrain. */
+    private void stow() {
+        launcher.stow();
+        spindexer.stop();
+        intake.stow();
+    }
+
+    private Command runUnjamIntakeFuel() {
+        return intake.startEnd(
+                () -> {
+                    intake.intakeUp();
+                    intake.rollersReverse();
+                },
+                () -> {
+                    intake.intakeDown();
+                    intake.rollersOn();
+                });
+    }
+
+    private Command runUnjamHopperLauncherFuel() {
+        return Commands.startEnd(
+                () -> {
+                    launcher.feeder.reverse();
+                    spindexer.reverse();
+                },
+                () -> {
+                    launcher.feeder.stop();
+                    spindexer.stop();
+                },
+                launcher.feeder,
+                spindexer);
+    }
+
+    private Command runAutomaticLaunching() {
+        // is split into multiple commands to separate requirements
+        return Commands.defer(
+                () -> {
+                    Pose3d robotPose = drivetrain.getPose3d();
+                    Optional<LaunchTarget> target = TargetSelector.selectTarget(robotPose);
+                    if (target.isEmpty()) {
+                        return Commands.parallel(
+                                asDefault(launcher.shooter.runOnce(launcher.shooter::stop)),
+                                asDefault(launcher.feeder.runOnce(launcher.feeder::stop)),
+                                asDefault(launcher.hood.runOnce(launcher.hood::stow)),
+                                asDefault(launcher.turret.runOnce(launcher.turret::stow)));
+                    }
+                    Trajectory trajectory =
+                            launcher.calculateTargetTrajectory(
+                                    target.get(), robotPose, drivetrain.getFieldVelocity());
+                    return Commands.parallel(
+                            asDefault(
+                                    Commands.runOnce(
+                                            () -> launcher.aimTrajectory(trajectory),
+                                            launcher.hood,
+                                            launcher.turret)),
+                            asDefault(
+                                    launcher.shooter.runOnce(
+                                            () -> launcher.shootTrajectory(trajectory))),
+                            asDefault(
+                                    launcher.feeder.runOnce(
+                                            () -> launcher.feedTrajectory(trajectory))));
+                },
+                Set.of());
+    }
+
+    /**
+     * Utility method that decorates the command to only run if the command requirements aren't
+     * occupied, and to not extend the command's requirements to the command composition.
+     */
+    private Command asDefault(Command command) {
+        return command.asProxy()
+                .onlyIf(
+                        () ->
+                                command.getRequirements().stream()
+                                        .allMatch(
+                                                req ->
+                                                        CommandScheduler.getInstance()
+                                                                        .requiring(req)
+                                                                == null));
     }
 
     @Override
@@ -145,11 +300,15 @@ public class Robot extends LoggedRobot implements Sendable {
 
     @Override
     public void robotPeriodic() {
-        CommandScheduler.getInstance().run();
         field.setRobotPose(drivetrain.getPose2d());
         posePublisher.set(drivetrain.getPose2d());
         pose3dPublisher.set(drivetrain.getPose3d());
 
+        if (isEnabled()) {
+            // Runs before controller triggers are checked, which deprioritizes automatic launching
+            CommandScheduler.getInstance().schedule(runAutomaticLaunching());
+        }
+        CommandScheduler.getInstance().run();
         if (isEnabled()) {
             // Occurs after CommandScheduler and binding triggers in order to have priority
             // Automatically stow launcher when robot is near a trench according to odometry

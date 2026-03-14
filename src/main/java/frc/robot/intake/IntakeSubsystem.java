@@ -85,6 +85,10 @@ public class IntakeSubsystem extends SubsystemBase {
         moveRollerSpeed(0.0);
     }
 
+    public void rollersReverse() {
+        moveRollerSpeed(IntakeConfig.REVERSE_ROLLER_SPEED);
+    }
+
     public void stow() {
         rollersOff();
         moveAngle(IntakeConst.MAX_ANGLE);

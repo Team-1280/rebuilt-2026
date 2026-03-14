@@ -16,6 +16,7 @@ import edu.wpi.first.units.measure.Voltage;
 
 public final class IntakeConfig {
     public static final double ROLLER_SPEED = 0.5;
+    public static final double REVERSE_ROLLER_SPEED = -ROLLER_SPEED;
 
     /** Maximum error magnitude at which the deploy motor brakes to lock the intake in place. */
     public static final Angle ANGLE_LOCK_TOLERANCE = Degrees.of(2.0);
