@@ -42,7 +42,7 @@ public class LauncherAssembly implements Sendable {
     private double launchSpeedMultiplier = 1.0;
 
     /** An offset to apply to turret yaw after it is calculated in trajectory, to mitigate bias. */
-    private Angle trajectoryYawOffset = Degrees.of(-6.5); // TODO: fix bias (mechanical)
+    private Angle trajectoryYawOffset = Degrees.of(0.0);
 
     /** Allow fuel to be shot. */
     public void enableShooting() {
