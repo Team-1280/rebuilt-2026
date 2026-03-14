@@ -1,0 +1,49 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "start-ltrench-f"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "fuel-intake-left"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "nz-trench-left"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "left-trench-b"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "left-shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "left-climb"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

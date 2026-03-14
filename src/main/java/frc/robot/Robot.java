@@ -4,9 +4,12 @@
 
 package frc.robot;
 
+import choreo.auto.AutoFactory;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -16,6 +19,7 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -69,6 +73,15 @@ public class Robot extends LoggedRobot implements Sendable {
                     .getStructTopic("Robot Pose3d", Pose3d.struct)
                     .publish();
 
+    private final SendableChooser<Command> autoChooser = AutoBuilder.buildAutoChooser();
+    private final AutoFactory autoFactory =
+            new AutoFactory(
+                    drivetrain::getPose2d,
+                    drivetrain::resetPose,
+                    drivetrain::getAlignToFieldPosition,
+                    true,
+                    drivetrain);
+
     public Robot() {
         initLogger(); // must happen first
         initDashboard();
@@ -96,6 +109,7 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     private void initDashboard() {
+        SmartDashboard.putData("Auto Chooser", autoChooser);
         SmartDashboard.putData("Robot", this);
         SmartDashboard.putData("Drive Config", DriveConfig.getSendable());
         SmartDashboard.putData("Field", field);
@@ -300,6 +314,10 @@ public class Robot extends LoggedRobot implements Sendable {
                                                                 == null));
     }
 
+    public Command getAutonomousCommand() {
+        return autoChooser.getSelected();
+    }
+
     @Override
     public void robotInit() {
         candle.animateCandle(CandleEffect.CHROMA);
@@ -334,7 +352,14 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     @Override
-    public void autonomousInit() {}
+    public void autonomousInit() {
+        Command scheduledAutonomousCommand = getAutonomousCommand();
+
+        if (scheduledAutonomousCommand != null) {
+            CommandScheduler.getInstance().schedule(scheduledAutonomousCommand);
+            SmartDashboard.putData(scheduledAutonomousCommand);
+        }
+    }
 
     @Override
     public void autonomousPeriodic() {}
