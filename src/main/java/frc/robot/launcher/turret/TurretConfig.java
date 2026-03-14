@@ -18,11 +18,10 @@ public final class TurretConfig {
     /** Stow yaw and the expected startup yaw */
     public static final Angle STOW_YAW = Degrees.of(0);
 
-    public static final Angle YAW_TOLERANCE = Degrees.of(2.0); // TODO: tune
+    public static final Angle YAW_TOLERANCE = Degrees.of(10.0); // TODO: tune
 
-    // TODO: tune current limits (currently set to restrictive safe limits)
-    public static final Current STATOR_LIMIT = Amps.of(10);
-    public static final Current SUPPLY_LIMIT = Amps.of(5);
+    public static final Current STATOR_LIMIT = Amps.of(30);
+    public static final Current SUPPLY_LIMIT = STATOR_LIMIT;
 
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
@@ -44,15 +43,14 @@ public final class TurretConfig {
         motorConfig.Feedback.FeedbackRemoteSensorID = TurretConst.ENCODER_ID;
         motorConfig.Feedback.SensorToMechanismRatio = TurretConst.ENCODER_TO_MECHANISM_RATIO;
 
-        // TODO: tune turret gains
         // Control unit: mechanism rotations
         motorConfig.Slot0.kP = 100.0;
         motorConfig.Slot0.kS = 0.22;
         motorConfig.Slot0.kV = 3.1;
         motorConfig.Slot0.kA = 0.15;
-        motorConfig.MotionMagic.MotionMagicCruiseVelocity = 0.3; // 1.0; // TODO: tune
-        motorConfig.MotionMagic.MotionMagicAcceleration = 0.6; // 6.0;
-        motorConfig.MotionMagic.MotionMagicJerk = 0.0; // note: 0.0 is no limit
+        motorConfig.MotionMagic.MotionMagicCruiseVelocity = 3.0;
+        motorConfig.MotionMagic.MotionMagicAcceleration = 40.0;
+        motorConfig.MotionMagic.MotionMagicJerk = 100.0;
     }
 
     public static final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
