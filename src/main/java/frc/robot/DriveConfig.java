@@ -15,10 +15,10 @@ public final class DriveConfig implements Sendable {
     public static boolean enableDriving = true;
 
     /** Maximum throttle linear drive speed. */
-    public static LinearVelocity maxSpeed = MetersPerSecond.of(1.6);
+    public static LinearVelocity maxSpeed = MetersPerSecond.of(2.5);
 
     /** Maximum throttle angular drive speed. */
-    public static AngularVelocity maxAngularSpeed = RotationsPerSecond.of(0.5);
+    public static AngularVelocity maxAngularSpeed = RotationsPerSecond.of(0.75);
 
     /** Minimum registerable linear drive speed. */
     public static LinearVelocity speedDeadband = maxSpeed.times(0.1);
