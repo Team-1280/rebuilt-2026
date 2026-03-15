@@ -1,15 +1,16 @@
 package frc.robot.launcher;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -23,6 +24,7 @@ import frc.robot.launcher.shooter.ShooterConfig;
 import frc.robot.launcher.shooter.ShooterSubsystem;
 import frc.robot.launcher.turret.TurretSubsystem;
 import frc.robot.target.LaunchTarget;
+import frc.robot.trajectory.LaunchSpeed;
 import frc.robot.trajectory.Trajectory;
 import frc.robot.trajectory.TrajectoryConstraints;
 import frc.robot.trajectory.TrajectoryParameters;
@@ -43,6 +45,12 @@ public class LauncherAssembly implements Sendable {
 
     /** An offset to apply to turret yaw after it is calculated in trajectory, to mitigate bias. */
     private Angle trajectoryYawOffset = Degrees.of(0.0);
+
+    /** Launch speed for when doing fixed launching. */
+    private LinearVelocity fixedLaunchSpeed = MetersPerSecond.of(7.5);
+
+    /** Launch pitch for when doing fixed launching. */
+    private Angle fixedLaunchPitch = HoodConst.MAX_PITCH;
 
     /** Stop flywheels and stow mechanisms. */
     public void stow() {
@@ -69,6 +77,18 @@ public class LauncherAssembly implements Sendable {
                 () -> trajectoryYawOffset.in(Degrees),
                 (offset) -> {
                     trajectoryYawOffset = Degrees.of(offset);
+                });
+        builder.addDoubleProperty(
+                "fixed launch speed (m per s)",
+                () -> fixedLaunchSpeed.in(MetersPerSecond),
+                (speed) -> {
+                    fixedLaunchSpeed = MetersPerSecond.of(speed);
+                });
+        builder.addDoubleProperty(
+                "fixed launch pitch (deg)",
+                () -> fixedLaunchPitch.in(Degrees),
+                (pitch) -> {
+                    fixedLaunchPitch = Degrees.of(pitch);
                 });
     }
 
@@ -163,16 +183,19 @@ public class LauncherAssembly implements Sendable {
 
     /** Set the launcher to launch at locked turret and hood angles. */
     public void launchFixed() {
-        final AngularVelocity shooterFlywheelSpeed = RotationsPerSecond.of(50.0);
         final boolean feed = true;
-        final Angle pitch = Degrees.of(60.0);
         final Angle yaw = Degrees.of(0.0);
+        AngularVelocity shooterFlywheelSpeed =
+                RadiansPerSecond.of(
+                        LaunchSpeed.estimateFlywheelSpeed(
+                                fixedLaunchSpeed.in(MetersPerSecond),
+                                fixedLaunchPitch.in(Radians)));
         shooter.moveAngularVelocity(shooterFlywheelSpeed);
         if (feed) {
             feeder.start();
         } else {
             feeder.stop();
         }
-        aimDirection(pitch, yaw);
+        aimDirection(fixedLaunchPitch, yaw);
     }
 }
