@@ -352,6 +352,7 @@ public class Robot extends LoggedRobot implements Sendable {
                                         .withInterruptBehavior(
                                                 InterruptionBehavior.kCancelIncoming));
             }
+            // launcher.shooter.moveAngularVelocity(RotationsPerSecond.of(3.0)); // REMOVE
         }
     }
 
@@ -363,6 +364,10 @@ public class Robot extends LoggedRobot implements Sendable {
             CommandScheduler.getInstance().schedule(scheduledAutonomousCommand);
             SmartDashboard.putData(scheduledAutonomousCommand);
         }
+
+        // Start intake for auto
+        // intake.intakeDown();
+        // intake.rollersOn();
     }
 
     @Override

@@ -56,8 +56,8 @@ public final class IntakeConfig {
     }
 
     public static final TalonFXConfiguration rollerMotorConfig = new TalonFXConfiguration();
-    public static final Current ROLLER_STATOR_LIMIT = Amps.of(80);
-    public static final Current ROLLER_SUPPLY_LIMIT = Amps.of(40);
+    public static final Current ROLLER_STATOR_LIMIT = Amps.of(60);
+    public static final Current ROLLER_SUPPLY_LIMIT = Amps.of(30);
 
     static {
         rollerMotorConfig.CurrentLimits.StatorCurrentLimit = ROLLER_STATOR_LIMIT.in(Amps);

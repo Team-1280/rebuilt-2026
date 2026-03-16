@@ -7,6 +7,24 @@
         {
           "type": "path",
           "data": {
+            "pathName": "left-shoot-end"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "left-shoot-trench"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
             "pathName": "start-ltrench-f"
           }
         },

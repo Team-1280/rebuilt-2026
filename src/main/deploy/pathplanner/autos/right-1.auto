@@ -7,6 +7,24 @@
         {
           "type": "path",
           "data": {
+            "pathName": "right-shoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "right-shoot-trench"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
             "pathName": "start-rtrench-f"
           }
         },

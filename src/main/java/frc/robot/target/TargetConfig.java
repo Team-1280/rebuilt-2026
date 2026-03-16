@@ -25,7 +25,7 @@ public class TargetConfig {
     // Hub target
     public static final Distance HUB_TARGET_HEIGHT = FieldConst.HUB_HEIGHT.plus(Inches.of(0.0));
     public static final SoftConstraint HUB_SOFT_CONSTRAINT = SoftConstraint.MINIMIZE_SPEED;
-    public static final Distance HUB_OBSTACLE_HEIGHT_LEEWAY = Inches.of(18.0);
+    public static Distance HUB_OBSTACLE_HEIGHT_LEEWAY = Inches.of(24.0);
 
     // Team alliance zone target closest to blue origin
     public static final Distance TEAM_ALLIANCE_ZONE_TARGET_X = FieldConst.BLUE_HUB_X;

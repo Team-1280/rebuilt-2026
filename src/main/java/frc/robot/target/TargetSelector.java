@@ -1,5 +1,6 @@
 package frc.robot.target;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -118,6 +119,12 @@ public class TargetSelector implements Sendable {
                 () -> ignoreHubStatus,
                 (ignore) -> {
                     ignoreHubStatus = ignore;
+                });
+        builder.addDoubleProperty(
+                "hub obstacle leeway (in.)",
+                () -> TargetConfig.HUB_OBSTACLE_HEIGHT_LEEWAY.in(Inches),
+                (leeway) -> {
+                    TargetConfig.HUB_OBSTACLE_HEIGHT_LEEWAY = Inches.of(leeway);
                 });
     }
 }

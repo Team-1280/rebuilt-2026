@@ -13,7 +13,7 @@ public final class SpindexerConfig {
     public static final double REVERSE_MOTOR_SPEED = -MOTOR_SPEED;
 
     public static final Current STATOR_LIMIT = Amps.of(20.0);
-    public static final Current SUPPLY_LIMIT = Amps.of(10.0);
+    public static final Current SUPPLY_LIMIT = Amps.of(8.0);
 
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 

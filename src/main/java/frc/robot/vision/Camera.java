@@ -85,4 +85,12 @@ public class Camera {
         return result.hasTargets()
                 && result.getBestTarget().getPoseAmbiguity() < VisionConst.MAX_AMBIGUITY;
     }
+
+    public boolean isConnected() {
+        return camera.isConnected();
+    }
+
+    public String getName() {
+        return camera.getName();
+    }
 }

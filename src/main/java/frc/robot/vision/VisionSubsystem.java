@@ -2,6 +2,7 @@ package frc.robot.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class VisionSubsystem extends SubsystemBase {
@@ -30,6 +31,7 @@ public class VisionSubsystem extends SubsystemBase {
         new Camera("Back Left", VisionConst.BACK_LEFT_CAMERA_TRANSFORM),
         new Camera("Back Right", VisionConst.BACK_RIGHT_CAMERA_TRANSFORM),
         new Camera("Intake", VisionConst.INTAKE_CAMERA_TRANSFROM),
+        // new Camera("Aux", VisionConst.AUX_CAMERA_TRANSFORM),
     };
 
     /**
@@ -38,6 +40,12 @@ public class VisionSubsystem extends SubsystemBase {
      */
     public VisionSubsystem(VisionMeasurementConsumer addVisionMeasurement) {
         this.addVisionMeasurement = addVisionMeasurement;
+        for (Camera camera : cameras) {
+            if (!camera.isConnected()) {
+                DriverStation.reportWarning(
+                        "PhotonVision: camera \"" + camera.getName() + "\" not connected", false);
+            }
+        }
     }
 
     @Override
