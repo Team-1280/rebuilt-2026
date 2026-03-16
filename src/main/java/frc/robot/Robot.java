@@ -4,18 +4,15 @@
 
 package frc.robot;
 
-import org.littletonrobotics.junction.LoggedRobot;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import choreo.auto.AutoFactory;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
@@ -25,17 +22,28 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+
+import frc.robot.aesthetic.candle.CandleEffect;
 import frc.robot.aesthetic.candle.CandleSubsystem;
+import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.launcher.LauncherAssembly;
 import frc.robot.spindexer.SpindexerSubsystem;
+import frc.robot.target.TargetSelector;
 import frc.robot.time.HubStatus;
 import frc.robot.time.MatchTime;
 import frc.robot.vision.VisionSubsystem;
+
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot implements Sendable {
 
@@ -44,16 +52,23 @@ public class Robot extends LoggedRobot implements Sendable {
     private final OdometryDrivetrain drivetrain = new OdometryDrivetrain();
     private final CandleSubsystem candle = new CandleSubsystem();
     private final VisionSubsystem vision = new VisionSubsystem(drivetrain::addVisionMeasurement);
+    private final LauncherAssembly launcher = new LauncherAssembly();
     private final SpindexerSubsystem spindexer = new SpindexerSubsystem();
     private final IntakeSubsystem intake = new IntakeSubsystem();
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
     private final Field2d field = new Field2d();
-    StructPublisher<Pose2d> posePublisher =
-            NetworkTableInstance.getDefault().getStructTopic("Robot Pose", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> posePublisher =
+            NetworkTableInstance.getDefault()
+                    .getStructTopic("Robot Pose2d", Pose2d.struct)
+                    .publish();
+    private final StructPublisher<Pose3d> pose3dPublisher =
+            NetworkTableInstance.getDefault()
+                    .getStructTopic("Robot Pose3d", Pose3d.struct)
+                    .publish();
 
-    private final SendableChooser<Command> autoChooser;
+    private final SendableChooser<Command> autoChooser = AutoBuilder.buildAutoChooser();
     private final AutoFactory autoFactory =
             new AutoFactory(
                     drivetrain::getPose2d,
@@ -64,15 +79,12 @@ public class Robot extends LoggedRobot implements Sendable {
 
     public Robot() {
         initLogger(); // must happen first
-        autoChooser = AutoBuilder.buildAutoChooser();
         initDashboard();
         initBindings();
-        // initAuto();
     }
 
     private void initLogger() {
-        Logger.recordMetadata("Heatseeker", "Haru Urara"); // Set a metadata value
-        // Logger.recordMetadata("gitSHA", BuildConstants.GIT_SHA);
+        Logger.recordMetadata("gitSHA", BuildConstants.GIT_SHA);
         if (isReal()) {
             Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
             Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
@@ -97,11 +109,17 @@ public class Robot extends LoggedRobot implements Sendable {
         SmartDashboard.putData("Drive Config", DriveConfig.getSendable());
         SmartDashboard.putData("Field", field);
         posePublisher.set(Pose2d.kZero);
-        SmartDashboard.putData("Field Zoning", FieldZoning.getSendable(drivetrain::getPose2d));
+        pose3dPublisher.set(Pose3d.kZero);
+        SmartDashboard.putData(
+                "Field Zoning",
+                FieldZoning.getSendable(
+                        drivetrain::getPose2d, () -> DriveConfig.trenchLauncherStowDistance));
         SmartDashboard.putData("Match Time", MatchTime.getSendable());
         SmartDashboard.putData("Hub Status", HubStatus.getSendable());
+        SmartDashboard.putData("Target Selector", TargetSelector.getSendable());
         SmartDashboard.putData("Drivetrain", drivetrain);
         SmartDashboard.putData("Vision", vision);
+        SmartDashboard.putData("Launcher", launcher);
         SmartDashboard.putData("Spindexer", spindexer);
         SmartDashboard.putData("Intake", intake);
     }
@@ -135,27 +153,37 @@ public class Robot extends LoggedRobot implements Sendable {
                 .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
     }
 
-    private void initAuto() {
-    }
-
-    private Command testAuto() {
-        return Commands.sequence(
-                // Commands.run(() -> System.out.println("cool")),
-                autoFactory.resetOdometry("Test"), autoFactory.trajectoryCmd("Test"));
-    }
-
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
     }
 
     @Override
-    public void robotInit() {}
+    public void robotInit() {
+        candle.animateCandle(CandleEffect.CHROMA);
+    }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
         field.setRobotPose(drivetrain.getPose2d());
         posePublisher.set(drivetrain.getPose2d());
+        pose3dPublisher.set(drivetrain.getPose3d());
+
+        if (isEnabled()) {
+            // Occurs after CommandScheduler and binding triggers in order to have priority
+            // Automatically stow launcher when robot is near a trench according to odometry
+            if (FieldZoning.isNearTrench(
+                    drivetrain.getPose2d().getTranslation(),
+                    DriveConfig.trenchLauncherStowDistance)) {
+                launcher.stow();
+                // Additionally, schedule a command to interrupt other launcher commands
+                CommandScheduler.getInstance()
+                        .schedule(
+                                Commands.runOnce(launcher::stow, launcher.subsystems)
+                                        .withInterruptBehavior(
+                                                InterruptionBehavior.kCancelIncoming));
+            }
+        }
     }
 
     @Override

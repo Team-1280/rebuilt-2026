@@ -39,5 +39,13 @@ public final class FieldConst {
             HUB_Y.in(Meters) - HUB_SIZE.in(Meters) / 2 - BUMP_HALF_WIDTH;
     protected static final double LEFT_BUMP_CENTER_Y = FIELD_WIDTH.in(Meters) - RIGHT_BUMP_CENTER_Y;
 
+    // Trench dimensions (for FieldZoning)
+    public static final Distance TRENCH_OPENING_WIDTH = Inches.of(50.34);
+    public static final Distance TRENCH_OPENING_HEIGHT = Inches.of(22.25);
+    public static final Distance TRENCH_WIDTH = Inches.of(65.65);
+    public static final Distance TRENCH_DEPTH = Inches.of(47.0);
+    public static final Distance BLUE_TRENCH_CENTER_X = BLUE_HUB_X;
+    public static final Distance RED_TRENCH_CENTER_X = RED_HUB_X;
+
     // See: https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-field-dimension-dwgs.pdf
 }

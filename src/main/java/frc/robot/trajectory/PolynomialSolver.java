@@ -1,5 +1,6 @@
-package frc.robot.util;
+package frc.robot.trajectory;
 
+/** Class with utilities for solving polynomials related to trajectory calculations. */
 public final class PolynomialSolver {
     private PolynomialSolver() {}
 

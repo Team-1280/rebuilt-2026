@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -14,10 +16,13 @@ import java.util.function.Supplier;
 
 public final class FieldZoning implements Sendable { // in meters
     private final Supplier<Pose2d> robotPoseSupplier;
+    private final Supplier<Distance> trenchDistanceSupplier;
 
     /** Private constructor for creating a sendable. */
-    private FieldZoning(Supplier<Pose2d> robotPoseSupplier) {
+    private FieldZoning(
+            Supplier<Pose2d> robotPoseSupplier, Supplier<Distance> trenchDistanceSupplier) {
         this.robotPoseSupplier = robotPoseSupplier;
+        this.trenchDistanceSupplier = trenchDistanceSupplier;
     }
 
     // rectangle rotation helpers
@@ -105,8 +110,26 @@ public final class FieldZoning implements Sendable { // in meters
                         pose, FieldConst.RED_BUMP_CENTER_X, FieldConst.RIGHT_BUMP_CENTER_Y);
     }
 
-    public static Sendable getSendable(Supplier<Pose2d> robotPoseSupplier) {
-        return new FieldZoning(robotPoseSupplier);
+    /**
+     * Check if the exact position of the translation, ignoring robot size and rotation, is near the
+     * trench within the given maximum x distance.
+     */
+    public static boolean isNearTrench(Translation2d point, Distance maxDistanceX) {
+        if (Math.min(point.getY(), FieldConst.FIELD_WIDTH.in(Meters) - point.getY())
+                <= FieldConst.TRENCH_OPENING_WIDTH.in(Meters)) {
+            if (Math.min(
+                            Math.abs(point.getX() - FieldConst.BLUE_TRENCH_CENTER_X.in(Meters)),
+                            Math.abs(point.getX() - FieldConst.RED_TRENCH_CENTER_X.in(Meters)))
+                    <= maxDistanceX.in(Meters)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static Sendable getSendable(
+            Supplier<Pose2d> robotPoseSupplier, Supplier<Distance> trenchDistanceSupplier) {
+        return new FieldZoning(robotPoseSupplier, trenchDistanceSupplier);
     }
 
     @Override
@@ -136,5 +159,12 @@ public final class FieldZoning implements Sendable { // in meters
                 "neutral zone", () -> FieldZoning.isInNeutralZone(robotPoseSupplier.get()), null);
         builder.addBooleanProperty(
                 "on bump", () -> FieldZoning.isOnBump(robotPoseSupplier.get()), null);
+        builder.addBooleanProperty(
+                "near trench",
+                () ->
+                        isNearTrench(
+                                robotPoseSupplier.get().getTranslation(),
+                                trenchDistanceSupplier.get()),
+                null);
     }
 }
