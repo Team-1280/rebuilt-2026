@@ -22,7 +22,10 @@
 #align(center)[
   #text(13pt)[Position, Trust, and the Algebra of Telemetry] \
   #v(0.5em)
-  #text(11pt, style: "italic")[Ren Lin | Team 1280 EECS]
+  #text(
+    11pt,
+    style: "italic",
+  )[From Ren Lin's Notebook, formatted and rewritten by Claude | Team 1280 EECS]
 ]
 
 #v(1em)
