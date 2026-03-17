@@ -141,7 +141,7 @@ public class TrajectorySolver {
             double lowPitch,
             double highPitch,
             double targetPitch) {
-        Trajectory trajectory = calculateFromPitch(parameters, targetPitch);
+        Trajectory trajectory = calculateTrajectory.calculate(parameters, targetPitch);
         boolean maximizePitch;
         if (constraints.checkUpper(trajectory)) {
             if (constraints.checkLower(trajectory)) {
