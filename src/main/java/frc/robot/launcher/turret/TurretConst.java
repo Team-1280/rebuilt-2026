@@ -16,7 +16,7 @@ public final class TurretConst {
 
     // TODO: these are tentative, conservative estimates
     public static final Angle MIN_ANGLE = Degrees.of(-180); // TODO
-    public static final Angle MAX_ANGLE = Degrees.of(180); // TODO
+    public static final Angle MAX_ANGLE = Degrees.of(210); // TODO
 
     /** Number of encoder rotations for every mechanism rotation */
     public static final double ENCODER_TO_MECHANISM_RATIO = 8.5;

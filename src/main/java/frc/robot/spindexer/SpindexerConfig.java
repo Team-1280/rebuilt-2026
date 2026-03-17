@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.Current;
 
 public final class SpindexerConfig {
     public static final double MOTOR_SPEED = 0.4; // TODO
+    public static final double REVERSE_MOTOR_SPEED = -MOTOR_SPEED;
 
     public static final Current STATOR_LIMIT = Amps.of(20.0);
     public static final Current SUPPLY_LIMIT = Amps.of(10.0);

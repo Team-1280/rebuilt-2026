@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -11,14 +13,19 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 
 public final class DriveConfig implements Sendable {
+    public static final Pose2d INITIAL_POSE = new Pose2d(3.548, 6.347, Rotation2d.fromDegrees(0.0));
+
+    /** Pose to reset to for a binding. */
+    public static final Pose2d RESET_POSE = INITIAL_POSE;
+
     /** Enable or disable driving. */
     public static boolean enableDriving = true;
 
     /** Maximum throttle linear drive speed. */
-    public static LinearVelocity maxSpeed = MetersPerSecond.of(1.6);
+    public static LinearVelocity maxSpeed = MetersPerSecond.of(2.5);
 
     /** Maximum throttle angular drive speed. */
-    public static AngularVelocity maxAngularSpeed = RotationsPerSecond.of(0.5);
+    public static AngularVelocity maxAngularSpeed = RotationsPerSecond.of(0.75);
 
     /** Minimum registerable linear drive speed. */
     public static LinearVelocity speedDeadband = maxSpeed.times(0.1);

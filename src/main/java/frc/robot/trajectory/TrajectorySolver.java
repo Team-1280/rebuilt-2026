@@ -97,7 +97,7 @@ public class TrajectorySolver {
      */
     public static Trajectory solveIgnoringVertical(
             TrajectoryParameters parameters, TrajectoryConstraints constraints) {
-        double lowPitch = constraints.calculateMinPitch(parameters);
+        double lowPitch = constraints.getMinLauncherPitch() - parameters.getLauncherTilt();
         double highPitch = constraints.calculateMaxPitch(parameters);
         // Note: minimizing speed here means making the launch angle as horizontal as possible
         double targetPitch =
@@ -108,10 +108,9 @@ public class TrajectorySolver {
         return computeOptimalPitchTrajectory(
                 (params, pitch) -> {
                     // Use maximum speed (even for minimize speed constraint)
-                    final double maxSpeedFraction = 1.0 - 1e-12;
                     double speed =
                             LaunchSpeed.estimateSpeed(constraints.getMaxFlywheelSpeed(), pitch)
-                                    * maxSpeedFraction;
+                                    * TrajectoryConfig.IGNORING_VERTICAL_SPEED_FRACTION;
                     return calculateFromPitchIgnoringVertical(params, pitch, speed);
                 },
                 parameters,
@@ -142,7 +141,7 @@ public class TrajectorySolver {
             double lowPitch,
             double highPitch,
             double targetPitch) {
-        Trajectory trajectory = calculateFromPitch(parameters, targetPitch);
+        Trajectory trajectory = calculateTrajectory.calculate(parameters, targetPitch);
         boolean maximizePitch;
         if (constraints.checkUpper(trajectory)) {
             if (constraints.checkLower(trajectory)) {

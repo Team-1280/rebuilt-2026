@@ -1,6 +1,7 @@
 package frc.robot.launcher;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
@@ -8,6 +9,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -21,6 +24,7 @@ import frc.robot.launcher.shooter.ShooterConfig;
 import frc.robot.launcher.shooter.ShooterSubsystem;
 import frc.robot.launcher.turret.TurretSubsystem;
 import frc.robot.target.LaunchTarget;
+import frc.robot.trajectory.LaunchSpeed;
 import frc.robot.trajectory.Trajectory;
 import frc.robot.trajectory.TrajectoryConstraints;
 import frc.robot.trajectory.TrajectoryParameters;
@@ -36,34 +40,22 @@ public class LauncherAssembly implements Sendable {
     /** An array of all launcher subsystems, useful for command subsystem requirements. */
     public final Subsystem[] subsystems = {shooter, feeder, hood, turret};
 
-    private boolean shootingEnabled = true;
-
     /** Launch speed multiplier for trajectory that can be used to correct error. */
     private double launchSpeedMultiplier = 1.0;
 
     /** An offset to apply to turret yaw after it is calculated in trajectory, to mitigate bias. */
     private Angle trajectoryYawOffset = Degrees.of(0.0);
 
-    /** Allow fuel to be shot. */
-    public void enableShooting() {
-        shootingEnabled = true;
-    }
+    /** Launch speed for when doing fixed launching. */
+    private LinearVelocity fixedLaunchSpeed = MetersPerSecond.of(7.5);
 
-    /** Stop shooting and don't allow fuel to be shot. */
-    public void disableShooting() {
-        stopShooting();
-        shootingEnabled = false;
-    }
-
-    /** Stop shooting fuel. */
-    private void stopShooting() {
-        shooter.stop();
-        feeder.stop();
-    }
+    /** Launch pitch for when doing fixed launching. */
+    private Angle fixedLaunchPitch = HoodConst.MAX_PITCH;
 
     /** Stop flywheels and stow mechanisms. */
     public void stow() {
-        stopShooting();
+        shooter.stop();
+        feeder.stop();
         hood.stow();
         turret.stow();
     }
@@ -85,6 +77,18 @@ public class LauncherAssembly implements Sendable {
                 () -> trajectoryYawOffset.in(Degrees),
                 (offset) -> {
                     trajectoryYawOffset = Degrees.of(offset);
+                });
+        builder.addDoubleProperty(
+                "fixed launch speed (m per s)",
+                () -> fixedLaunchSpeed.in(MetersPerSecond),
+                (speed) -> {
+                    fixedLaunchSpeed = MetersPerSecond.of(speed);
+                });
+        builder.addDoubleProperty(
+                "fixed launch pitch (deg)",
+                () -> fixedLaunchPitch.in(Degrees),
+                (pitch) -> {
+                    fixedLaunchPitch = Degrees.of(pitch);
                 });
     }
 
@@ -108,45 +112,45 @@ public class LauncherAssembly implements Sendable {
     }
 
     /** Aim the launcher pitch and yaw to the given trajectory's. */
-    private void aimTrajectory(Trajectory trajectory) {
+    public void aimTrajectory(Trajectory trajectory) {
         aimDirection(
                 Radians.of(trajectory.getLauncherPitch()),
                 Radians.of(trajectory.getLauncherYaw()).plus(trajectoryYawOffset));
     }
 
     /**
-     * Move shooter flywheel at trajectory's launch speed and start or stop feeding.
+     * Start or stop feeding fuel based on if the trajectory is valid and yaw is within tolerance.
      *
-     * <p>If shooting is disabled, does nothing.
-     *
-     * <p>Return a boolean of whether the launcher is feeding and shooting.
+     * <p>Return a boolean of whether the launcher is feeding.
      */
-    private boolean shootTrajectory(Trajectory trajectory) {
-        if (!shootingEnabled) {
-            return false;
-        }
-        boolean shoot = trajectory.isValid() && turret.withinTolerance();
-        if (shoot) {
+    public boolean feedTrajectory(Trajectory trajectory) {
+        boolean feed = trajectory.isValid() && turret.withinTolerance();
+        if (feed) {
             feeder.start();
         } else {
             feeder.stop();
         }
+        return feed;
+    }
+
+    /** Move shooter flywheel at trajectory's launch speed. */
+    public void shootTrajectory(Trajectory trajectory) {
         shooter.moveAngularVelocity(RadiansPerSecond.of(trajectory.getFlywheelSpeed()));
-        return shoot;
     }
 
     /**
      * Set the launcher to aim and, if possible, shoot, with the given trajectory.
      *
-     * <p>Return a boolean of whether the launcher is feeding and shooting.
+     * <p>Return a boolean of whether the launcher is feeding (and shooting).
      */
-    private boolean launchTrajectory(Trajectory trajectory) {
+    public boolean launchTrajectory(Trajectory trajectory) {
         aimTrajectory(trajectory);
-        return shootTrajectory(trajectory);
+        shootTrajectory(trajectory);
+        return feedTrajectory(trajectory);
     }
 
     /** Calculate the trajectory for the given target and parameters. Trajectory may be invalid. */
-    private Trajectory calculateTargetTrajectory(
+    public Trajectory calculateTargetTrajectory(
             LaunchTarget target, Pose3d robotPose, Translation2d robotVelocity) {
         TrajectoryParameters parameters =
                 new TrajectoryParameters(
@@ -175,5 +179,23 @@ public class LauncherAssembly implements Sendable {
             LaunchTarget target, Pose3d robotPose, Translation2d robotVelocity) {
         Trajectory trajectory = calculateTargetTrajectory(target, robotPose, robotVelocity);
         return launchTrajectory(trajectory);
+    }
+
+    /** Set the launcher to launch at locked turret and hood angles. */
+    public void launchFixed() {
+        final boolean feed = true;
+        final Angle yaw = Degrees.of(0.0);
+        AngularVelocity shooterFlywheelSpeed =
+                RadiansPerSecond.of(
+                        LaunchSpeed.estimateFlywheelSpeed(
+                                fixedLaunchSpeed.in(MetersPerSecond),
+                                fixedLaunchPitch.in(Radians)));
+        shooter.moveAngularVelocity(shooterFlywheelSpeed);
+        if (feed) {
+            feeder.start();
+        } else {
+            feeder.stop();
+        }
+        aimDirection(fixedLaunchPitch, yaw);
     }
 }
