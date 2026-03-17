@@ -12,8 +12,8 @@ public final class FeederConfig {
     public static final double MOTOR_SPEED = 0.3; // TODO
     public static final double REVERSE_MOTOR_SPEED = -0.8; // for unjamming
 
-    public static final Current STATOR_LIMIT = Amps.of(25);
-    public static final Current SUPPLY_LIMIT = Amps.of(15);
+    public static final Current STATOR_LIMIT = Amps.of(35);
+    public static final Current SUPPLY_LIMIT = Amps.of(20);
 
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
