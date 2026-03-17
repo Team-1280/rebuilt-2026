@@ -97,7 +97,7 @@ public class TrajectorySolver {
      */
     public static Trajectory solveIgnoringVertical(
             TrajectoryParameters parameters, TrajectoryConstraints constraints) {
-        double lowPitch = constraints.calculateMinPitch(parameters);
+        double lowPitch = constraints.getMinLauncherPitch() - parameters.getLauncherTilt();
         double highPitch = constraints.calculateMaxPitch(parameters);
         // Note: minimizing speed here means making the launch angle as horizontal as possible
         double targetPitch =
