@@ -148,13 +148,14 @@ public class Robot extends LoggedRobot implements Sendable {
                 .start()
                 .onTrue(
                         Commands.run(
-                                this::stow,
-                                launcher.shooter,
-                                launcher.feeder,
-                                launcher.hood,
-                                launcher.turret,
-                                spindexer,
-                                intake));
+                                        this::stow,
+                                        launcher.shooter,
+                                        launcher.feeder,
+                                        launcher.hood,
+                                        launcher.turret,
+                                        spindexer,
+                                        intake)
+                                .ignoringDisable(true));
 
         // intake deploy (down+start) press
         controller.povDown().onTrue(intake.runOnce(intake::deploy));
@@ -192,7 +193,8 @@ public class Robot extends LoggedRobot implements Sendable {
                 .leftTrigger()
                 .whileTrue(
                         Commands.run(launcher::stow, launcher.subsystems)
-                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
+                                .ignoringDisable(true));
 
         // fixed launcher hold
         controller
