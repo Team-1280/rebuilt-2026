@@ -106,13 +106,13 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
     private static final double STATOR_SLIP_SIGMA = 40.0;
 
     /** Minimum target distance for trusted vision measurements, in meters. */
-    private static final double TRUST_VISION_RANGE_MIN = 0.25;
+    private static final double TRUST_VISION_RANGE_MIN = 0.1;
 
     /** Maximum target distance for trusted vision measurements, in meters. */
     private static final double TRUST_VISION_RANGE_MAX = 3.5;
 
     /** Maximum tilt, in radians, for the robot to still be considered flat on the ground. */
-    private static final double TILT_THRESHOLD = Math.PI / 6;
+    private static final double TILT_THRESHOLD = Math.toRadians(15);
 
     /** The Kaaba, Al-Masjid al-Haram, Mecca, Saudi Arabia. */
     private static final double MECCA_LAT_RAD = Math.toRadians(21.3891);
@@ -193,7 +193,7 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
     private ChassisSpeeds commandedSpeeds = new ChassisSpeeds();
 
     /** Third gyroscope --NavX2 connected via USB, used for inertial cross-checking. */
-    private final AHRS navX2 = new AHRS(AHRS.NavXComType.kUSB1);
+    private final AHRS navX2 = new AHRS(AHRS.NavXComType.kMXP_SPI);
 
     /** TalonFX references for the 4 drive motors (modules 0-3: FL, FR, BL, BR). */
     private final TalonFX[] driveMotors;
@@ -403,7 +403,8 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
         double G1 =
                 Units.degreesToRadians(
                         getPigeon2().getAngularVelocityZWorld().getValueAsDouble()); // pigeon2
-        double G2 = -Units.degreesToRadians(navX2.getRate()); // navx2usb (negated: upside-down Z-axis)
+        double G2 =
+                -Units.degreesToRadians(navX2.getRate()); // navx2usb (negated: upside-down Z-axis)
         double G3 = getState().Speeds.omegaRadiansPerSecond; // kinematics
 
         Evidence e12 = Evidence.of(G1 - G2, GYRO_AGREEMENT_SIGMA); // Pigeon2 vs NavX2
@@ -440,13 +441,18 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
         // getWorldLinearAccel* return values in g; convert to m/s^2; Z captures vertical bounce
         double bumpAccel =
                 Math.hypot(
-                        Math.hypot(navX2.getWorldLinearAccelX(), navX2.getWorldLinearAccelY()),
-                        navX2.getWorldLinearAccelZ()) * 9.8;
+                                Math.hypot(
+                                        navX2.getWorldLinearAccelX(), navX2.getWorldLinearAccelY()),
+                                navX2.getWorldLinearAccelZ())
+                        * 9.8;
         Evidence bumpEvidence = Evidence.of(bumpAccel, BUMP_ACCEL_SIGMA);
 
         double pigeonRollRad = Units.degreesToRadians(getPigeon2().getRoll().getValueAsDouble());
         double pigeonPitchRad = Units.degreesToRadians(getPigeon2().getPitch().getValueAsDouble());
-        double tiltRad = Math.acos(MathUtil.clamp(Math.cos(pigeonRollRad) * Math.cos(pigeonPitchRad), -1.0, 1.0));
+        double tiltRad =
+                Math.acos(
+                        MathUtil.clamp(
+                                Math.cos(pigeonRollRad) * Math.cos(pigeonPitchRad), -1.0, 1.0));
         cachedIsTilted = tiltRad > TILT_THRESHOLD;
 
         double cmdLinear =
@@ -574,5 +580,27 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
         builder.addStringProperty("field velocity", () -> getFieldVelocity().toString(), null);
         builder.addStringProperty("chassis speeds", () -> getState().Speeds.toString(), null);
         builder.addBooleanProperty("is tilted", this::isTilted, null);
+
+        builder.addDoubleProperty(
+                "reset pose/x",
+                () -> getPose2d().getX(),
+                (x) -> {
+                    Pose2d pose = getPose2d();
+                    resetPose(new Pose2d(x, pose.getY(), pose.getRotation()));
+                });
+        builder.addDoubleProperty(
+                "reset pose/y",
+                () -> getPose2d().getY(),
+                (y) -> {
+                    Pose2d pose = getPose2d();
+                    resetPose(new Pose2d(pose.getX(), y, pose.getRotation()));
+                });
+        builder.addDoubleProperty(
+                "reset pose/rotation (deg)",
+                () -> getPose2d().getRotation().getDegrees(),
+                (deg) -> {
+                    Pose2d pose = getPose2d();
+                    resetPose(new Pose2d(pose.getTranslation(), Rotation2d.fromDegrees(deg)));
+                });
     }
 }

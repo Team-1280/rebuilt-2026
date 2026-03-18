@@ -2,6 +2,9 @@ package frc.robot.time;
 
 /** Constants and enums for match time, timeframes, and periods. All time is in seconds. */
 public final class TimeConst {
+    /** After a hub deactivates, there is a 3 second delay where the hub still scores fuel. */
+    public static final double HUB_SCORING_DEACTIVATION_DELAY = 3;
+
     /** The match period of the match. Each period has separate match times. */
     public static enum Period {
         NONE(0, Timeframe.NONE),

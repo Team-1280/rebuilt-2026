@@ -1,28 +1,40 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 
 public final class DriveConfig implements Sendable {
+    public static final Pose2d INITIAL_POSE = new Pose2d(3.548, 6.347, Rotation2d.fromDegrees(0.0));
+
+    /** Pose to reset to for a binding. */
+    public static final Pose2d RESET_POSE = INITIAL_POSE;
+
     /** Enable or disable driving. */
     public static boolean enableDriving = true;
 
     /** Maximum throttle linear drive speed. */
-    public static LinearVelocity maxSpeed = MetersPerSecond.of(1.6);
+    public static LinearVelocity maxSpeed = MetersPerSecond.of(2.5);
 
     /** Maximum throttle angular drive speed. */
-    public static AngularVelocity maxAngularSpeed = RotationsPerSecond.of(0.5);
+    public static AngularVelocity maxAngularSpeed = RotationsPerSecond.of(0.75);
 
     /** Minimum registerable linear drive speed. */
     public static LinearVelocity speedDeadband = maxSpeed.times(0.1);
 
     /** Minimum registerable angular drive speed. */
     public static AngularVelocity angularSpeedDeadband = maxAngularSpeed.times(0.1);
+
+    /** Maximum X distance from trench bar to center of robot to automatically stow launcher. */
+    public static Distance trenchLauncherStowDistance = Meters.of(1.5); // TODO: tune
 
     private DriveConfig() {}
 
@@ -39,28 +51,34 @@ public final class DriveConfig implements Sendable {
                     enableDriving = enable;
                 });
         builder.addDoubleProperty(
-                "max speed (m/s)",
+                "max speed (m per s)",
                 () -> maxSpeed.in(MetersPerSecond),
                 (speed) -> {
                     maxSpeed = MetersPerSecond.of(speed);
                 });
         builder.addDoubleProperty(
-                "max angular speed (rot/s)",
+                "max angular speed (rot per s)",
                 () -> maxAngularSpeed.in(RotationsPerSecond),
                 (angularSpeed) -> {
                     maxAngularSpeed = RotationsPerSecond.of(angularSpeed);
                 });
         builder.addDoubleProperty(
-                "speed deadband (m/s)",
+                "speed deadband (m per s)",
                 () -> speedDeadband.in(MetersPerSecond),
                 (deadband) -> {
                     speedDeadband = MetersPerSecond.of(deadband);
                 });
         builder.addDoubleProperty(
-                "angular speed deadband (rot/s)",
+                "angular speed deadband (rot per s)",
                 () -> angularSpeedDeadband.in(RotationsPerSecond),
                 (deadband) -> {
                     angularSpeedDeadband = RotationsPerSecond.of(deadband);
+                });
+        builder.addDoubleProperty(
+                "trench launcher stow x distance (m)",
+                () -> trenchLauncherStowDistance.in(Meters),
+                (x) -> {
+                    trenchLauncherStowDistance = Meters.of(x);
                 });
     }
 }
