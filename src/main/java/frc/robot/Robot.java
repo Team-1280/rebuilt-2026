@@ -312,16 +312,11 @@ public class Robot extends LoggedRobot implements Sendable {
     public void initAuto() {
         NamedCommands.registerCommand("deployIntake", intake.runOnce(intake::deploy));
         NamedCommands.registerCommand("stowIntake", intake.runOnce(intake::stow));
-
         final Command runStowLauncher =
                 Commands.run(launcher::stow, launcher.subsystems)
                         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
         NamedCommands.registerCommand("stowLauncher", runStowLauncher);
         NamedCommands.registerCommand("unstowLauncher", Commands.runOnce(runStowLauncher::cancel));
-    }
-
-    public Command getAutonomousCommand() {
-        return autoChooser.getSelected();
     }
 
     @Override
@@ -360,11 +355,10 @@ public class Robot extends LoggedRobot implements Sendable {
 
     @Override
     public void autonomousInit() {
-        Command scheduledAutonomousCommand = getAutonomousCommand();
-
-        if (scheduledAutonomousCommand != null) {
-            CommandScheduler.getInstance().schedule(scheduledAutonomousCommand);
-            SmartDashboard.putData(scheduledAutonomousCommand);
+        Command selectedAuto = autoChooser.getSelected();
+        if (selectedAuto != null) {
+            CommandScheduler.getInstance().schedule(selectedAuto);
+            SmartDashboard.putData("Auto Chooser/" + selectedAuto.getName(), selectedAuto);
         }
     }
 
