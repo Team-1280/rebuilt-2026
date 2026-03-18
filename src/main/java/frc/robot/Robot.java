@@ -162,7 +162,7 @@ public class Robot extends LoggedRobot implements Sendable {
                 .onTrue(
                         intake.runOnce(
                                 () -> {
-                                    intake.intakeDown();
+                                    intake.moveDown();
                                     intake.rollersOn();
                                 }));
 
@@ -172,7 +172,7 @@ public class Robot extends LoggedRobot implements Sendable {
                 .onTrue(
                         intake.runOnce(
                                 () -> {
-                                    intake.intakeUp();
+                                    intake.moveUp();
                                     intake.rollersOff();
                                 }));
 
@@ -182,7 +182,7 @@ public class Robot extends LoggedRobot implements Sendable {
                 .onTrue(
                         intake.runOnce(
                                 () -> {
-                                    intake.intakeDown();
+                                    intake.moveDown();
                                     intake.rollersOff();
                                 }));
 
@@ -232,11 +232,11 @@ public class Robot extends LoggedRobot implements Sendable {
     private Command runUnjamIntakeFuel() {
         return intake.startEnd(
                 () -> {
-                    intake.intakeUp();
+                    intake.moveUp();
                     intake.rollersReverse();
                 },
                 () -> {
-                    intake.intakeDown();
+                    intake.moveDown();
                     intake.rollersOn();
                 });
     }
