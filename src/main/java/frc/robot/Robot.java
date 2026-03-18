@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -315,6 +316,17 @@ public class Robot extends LoggedRobot implements Sendable {
                                                         CommandScheduler.getInstance()
                                                                         .requiring(req)
                                                                 == null));
+    }
+
+    public void initAuto() {
+        NamedCommands.registerCommand("deployIntake", intake.runOnce(intake::deploy));
+        NamedCommands.registerCommand("stowIntake", intake.runOnce(intake::stow));
+
+        final Command runStowLauncher =
+                Commands.run(launcher::stow, launcher.subsystems)
+                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+        NamedCommands.registerCommand("stowLauncher", runStowLauncher);
+        NamedCommands.registerCommand("unstowLauncher", Commands.runOnce(runStowLauncher::cancel));
     }
 
     public Command getAutonomousCommand() {
