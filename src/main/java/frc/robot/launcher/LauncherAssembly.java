@@ -52,6 +52,9 @@ public class LauncherAssembly implements Sendable {
     /** Launch pitch for when doing fixed launching. */
     private Angle fixedLaunchPitch = HoodConst.MAX_PITCH;
 
+    /** Launch yaw for when doing fixed launching. */
+    private Angle fixedLaunchYaw = Degrees.of(0.0);
+
     /** Stop flywheels and stow mechanisms. */
     public void stow() {
         shooter.stop();
@@ -89,6 +92,12 @@ public class LauncherAssembly implements Sendable {
                 () -> fixedLaunchPitch.in(Degrees),
                 (pitch) -> {
                     fixedLaunchPitch = Degrees.of(pitch);
+                });
+        builder.addDoubleProperty(
+                "fixed launch yaw (deg)",
+                () -> fixedLaunchPitch.in(Degrees),
+                (yaw) -> {
+                    fixedLaunchYaw = Degrees.of(yaw);
                 });
     }
 
@@ -184,7 +193,6 @@ public class LauncherAssembly implements Sendable {
     /** Set the launcher to launch at locked turret and hood angles. */
     public void launchFixed() {
         final boolean feed = true;
-        final Angle yaw = Degrees.of(0.0);
         AngularVelocity shooterFlywheelSpeed =
                 RadiansPerSecond.of(
                         LaunchSpeed.estimateFlywheelSpeed(
@@ -196,6 +204,6 @@ public class LauncherAssembly implements Sendable {
         } else {
             feeder.stop();
         }
-        aimDirection(fixedLaunchPitch, yaw);
+        aimDirection(fixedLaunchPitch, fixedLaunchYaw);
     }
 }
