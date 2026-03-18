@@ -5,39 +5,51 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "start-ltrench-f"
+            "name": "stowLauncher"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "fuel-intake-left"
+            "pathName": "L_start-L_trench-"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "deployIntake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "nz-trench-left"
+            "pathName": "-L_trench-L_fuel-M_fuel"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "left-trench-b"
+            "pathName": "M_fuel-L_trench-L_start-"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "unstowLauncher"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stowIntake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "left-shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "left-climb"
+            "pathName": "-L_start-L_shoot"
           }
         }
       ]
