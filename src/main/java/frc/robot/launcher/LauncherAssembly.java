@@ -63,44 +63,6 @@ public class LauncherAssembly implements Sendable {
         turret.stow();
     }
 
-    @Override
-    public void initSendable(SendableBuilder builder) {
-        SmartDashboard.putData("Launcher/shooter", shooter);
-        SmartDashboard.putData("Launcher/feeder", feeder);
-        SmartDashboard.putData("Launcher/hood", hood);
-        SmartDashboard.putData("Launcher/turret", turret);
-        builder.addDoubleProperty(
-                "launch speed multiplier",
-                () -> launchSpeedMultiplier,
-                (multiplier) -> {
-                    launchSpeedMultiplier = multiplier;
-                });
-        builder.addDoubleProperty(
-                "trajectory yaw offset (deg)",
-                () -> trajectoryYawOffset.in(Degrees),
-                (offset) -> {
-                    trajectoryYawOffset = Degrees.of(offset);
-                });
-        builder.addDoubleProperty(
-                "fixed launch speed (m per s)",
-                () -> fixedLaunchSpeed.in(MetersPerSecond),
-                (speed) -> {
-                    fixedLaunchSpeed = MetersPerSecond.of(speed);
-                });
-        builder.addDoubleProperty(
-                "fixed launch pitch (deg)",
-                () -> fixedLaunchPitch.in(Degrees),
-                (pitch) -> {
-                    fixedLaunchPitch = Degrees.of(pitch);
-                });
-        builder.addDoubleProperty(
-                "fixed launch yaw (deg)",
-                () -> fixedLaunchPitch.in(Degrees),
-                (yaw) -> {
-                    fixedLaunchYaw = Degrees.of(yaw);
-                });
-    }
-
     /** Set the launcher direction to the given robot pitch and yaw. */
     public void aimDirection(Angle pitch, Angle yaw) {
         hood.movePitch(pitch);
@@ -205,5 +167,43 @@ public class LauncherAssembly implements Sendable {
             feeder.stop();
         }
         aimDirection(fixedLaunchPitch, fixedLaunchYaw);
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        SmartDashboard.putData("Launcher/shooter", shooter);
+        SmartDashboard.putData("Launcher/feeder", feeder);
+        SmartDashboard.putData("Launcher/hood", hood);
+        SmartDashboard.putData("Launcher/turret", turret);
+        builder.addDoubleProperty(
+                "trajectory/speed multiplier",
+                () -> launchSpeedMultiplier,
+                (multiplier) -> {
+                    launchSpeedMultiplier = multiplier;
+                });
+        builder.addDoubleProperty(
+                "trajectory/yaw offset (deg)",
+                () -> trajectoryYawOffset.in(Degrees),
+                (offset) -> {
+                    trajectoryYawOffset = Degrees.of(offset);
+                });
+        builder.addDoubleProperty(
+                "fixed launch/speed (m per s)",
+                () -> fixedLaunchSpeed.in(MetersPerSecond),
+                (speed) -> {
+                    fixedLaunchSpeed = MetersPerSecond.of(speed);
+                });
+        builder.addDoubleProperty(
+                "fixed launch/pitch (deg)",
+                () -> fixedLaunchPitch.in(Degrees),
+                (pitch) -> {
+                    fixedLaunchPitch = Degrees.of(pitch);
+                });
+        builder.addDoubleProperty(
+                "fixed launch/yaw (deg)",
+                () -> fixedLaunchPitch.in(Degrees),
+                (yaw) -> {
+                    fixedLaunchYaw = Degrees.of(yaw);
+                });
     }
 }
