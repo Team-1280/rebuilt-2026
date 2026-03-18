@@ -33,10 +33,10 @@ Hardware: Xbox Controller or equivalent
 ### Intake
 D-pad
 
-- Stow intake and rollers off - Press `Up`
-- Deploy intake and rollers on - Press `Down`
-- Deploy intake and rollers off - Press `Right`
-- Reverse intake rollers - Hold `Left`
+- Intake up and rollers off (stow) - Press `Up`
+- Intake down and rollers on (deploy) - Press `Down`
+- Intake down and rollers off - Press `Right`
+- Reverse rollers - Hold `Left`
     - Upon finishing, start rollers
 
 ### Launcher

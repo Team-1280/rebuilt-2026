@@ -156,25 +156,11 @@ public class Robot extends LoggedRobot implements Sendable {
                                 spindexer,
                                 intake));
 
-        // intake down+start press
-        controller
-                .povDown()
-                .onTrue(
-                        intake.runOnce(
-                                () -> {
-                                    intake.moveDown();
-                                    intake.rollersOn();
-                                }));
+        // intake deploy (down+start) press
+        controller.povDown().onTrue(intake.runOnce(intake::deploy));
 
-        // intake up+stop press
-        controller
-                .povUp()
-                .onTrue(
-                        intake.runOnce(
-                                () -> {
-                                    intake.moveUp();
-                                    intake.rollersOff();
-                                }));
+        // intake stow (up+stop) press
+        controller.povUp().onTrue(intake.runOnce(intake::stow));
 
         // intake down+stop press
         controller
@@ -235,10 +221,7 @@ public class Robot extends LoggedRobot implements Sendable {
                     intake.moveUp();
                     intake.rollersReverse();
                 },
-                () -> {
-                    intake.moveDown();
-                    intake.rollersOn();
-                });
+                intake::deploy);
     }
 
     private Command runUnjamHopperLauncherFuel() {
