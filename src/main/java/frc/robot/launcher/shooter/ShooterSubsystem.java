@@ -43,6 +43,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void stop() {
+        targetAngularVelocity = RotationsPerSecond.of(0.0);
         rightLeaderMotor.stopMotor();
     }
 
