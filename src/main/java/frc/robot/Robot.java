@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import choreo.auto.AutoFactory;
-
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -75,13 +73,6 @@ public class Robot extends LoggedRobot implements Sendable {
                     .publish();
 
     private final SendableChooser<Command> autoChooser = AutoBuilder.buildAutoChooser();
-    private final AutoFactory autoFactory =
-            new AutoFactory(
-                    drivetrain::getPose2d,
-                    drivetrain::resetPose,
-                    drivetrain::getAlignToFieldPosition,
-                    true,
-                    drivetrain);
 
     public Robot() {
         initLogger(); // must happen first
