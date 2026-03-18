@@ -294,7 +294,6 @@ public class Robot extends LoggedRobot implements Sendable {
 
     @Override
     public void robotInit() {
-        drivetrain.resetPose(DriveConfig.INITIAL_POSE);
         candle.animateCandle(CandleEffect.CHROMA);
     }
 
