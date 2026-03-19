@@ -204,7 +204,11 @@ public class Robot extends LoggedRobot implements Sendable {
                                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
 
         // reset pose press
-        controller.y().onTrue(Commands.runOnce(() -> drivetrain.resetPose(DriveConfig.RESET_POSE)));
+        controller
+                .y()
+                .onTrue(
+                        Commands.runOnce(() -> drivetrain.resetPose(DriveConfig.RESET_POSE))
+                                .ignoringDisable(true));
 
         // spindexer on: by default
         spindexer.setDefaultCommand(spindexer.run(spindexer::start));
