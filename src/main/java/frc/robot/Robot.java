@@ -78,6 +78,7 @@ public class Robot extends LoggedRobot implements Sendable {
         initLogger(); // must happen first
         initDashboard();
         initBindings();
+        initAuto();
     }
 
     private void initLogger() {
