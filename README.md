@@ -57,7 +57,7 @@ D-pad
 
 ### Launcher
 - Automatic target aiming - On by default
-- Feeding (launching, shooting) - Hold `Right Trigger`
+- Shooting (feeder + shooter) - Hold `Right Trigger`
 - Fixed launching - Hold `Right Bumper`
 - Stow launcher - Hold `Left Trigger`
     - Ignores disable
