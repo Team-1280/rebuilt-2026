@@ -51,6 +51,12 @@ public final class DriveConfig implements Sendable {
     /** Maximum X distance from trench bar to center of robot to automatically stow launcher. */
     public static Distance trenchLauncherStowDistance = Meters.of(1.0);
 
+    public static final SwerveRequest.FieldCentric swerveRequest =
+            new SwerveRequest.FieldCentric()
+                    .withDeadband(DriveConfig.speedDeadband)
+                    .withRotationalDeadband(DriveConfig.angularSpeedDeadband)
+                    .withDriveRequestType(DriveRequestType.Velocity);
+
     private DriveConfig() {}
 
     public static Sendable getSendable() {

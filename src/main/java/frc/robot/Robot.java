@@ -5,7 +5,6 @@
 package frc.robot;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -117,26 +116,13 @@ public class Robot extends LoggedRobot implements Sendable {
 
     private void initBindings() {
         // swerve drive
-        final SwerveRequest.FieldCentric driveRequest =
-                new SwerveRequest.FieldCentric()
-                        .withDeadband(DriveConfig.speedDeadband)
-                        .withRotationalDeadband(DriveConfig.angularSpeedDeadband)
-                        .withDriveRequestType(DriveRequestType.Velocity);
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
                         () ->
-                                !DriveConfig.enableDriving
-                                        ? null
-                                        : driveRequest
-                                                .withVelocityX(
-                                                        DriveConfig.maxSpeed.times(
-                                                                -controller.getLeftY()))
-                                                .withVelocityY(
-                                                        DriveConfig.maxSpeed.times(
-                                                                -controller.getLeftX()))
-                                                .withRotationalRate(
-                                                        DriveConfig.maxAngularSpeed.times(
-                                                                -controller.getRightX()))));
+                                getSwerveRequest(
+                                        -controller.getLeftX(),
+                                        -controller.getLeftY(),
+                                        -controller.getRightX())));
 
         // reset heading
         controller
@@ -212,6 +198,17 @@ public class Robot extends LoggedRobot implements Sendable {
 
         // spindexer on: by default
         spindexer.setDefaultCommand(spindexer.run(spindexer::start));
+    }
+
+    /** Get the driving swerve request, from throttle values in WPILib robot coordinate axes. */
+    private SwerveRequest getSwerveRequest(double xThrottle, double yThrottle, double rotThrottle) {
+        if (!DriveConfig.enableDriving) {
+            return new SwerveRequest.Idle();
+        }
+        return DriveConfig.swerveRequest
+                .withVelocityX(DriveConfig.maxSpeed.times(xThrottle))
+                .withVelocityY(DriveConfig.maxSpeed.times(yThrottle))
+                .withRotationalRate(DriveConfig.maxAngularSpeed.times(rotThrottle));
     }
 
     /** Stow or stop all subsystems except drivetrain. */
