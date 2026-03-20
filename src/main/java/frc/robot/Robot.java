@@ -346,6 +346,9 @@ public class Robot extends LoggedRobot implements Sendable {
                         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
         NamedCommands.registerCommand("stowLauncher", runStowLauncher);
         NamedCommands.registerCommand("unstowLauncher", Commands.runOnce(runStowLauncher::cancel));
+        NamedCommands.registerCommand(
+                "startFeeder", launcher.feeder.runOnce(launcher.feeder::start));
+        NamedCommands.registerCommand("stopFeeder", launcher.feeder.runOnce(launcher.feeder::stop));
     }
 
     @Override
