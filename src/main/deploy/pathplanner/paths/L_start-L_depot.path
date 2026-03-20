@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.5738248697916672,
-        "y": 7.367636773923023
+        "x": 0.2216891968768211,
+        "y": 7.57247974572382
       },
       "isLocked": false,
       "linkedName": "L_start"
     },
     {
       "anchor": {
-        "x": 2.462381433174435,
-        "y": 7.207815368997176
+        "x": 0.6834912936970339,
+        "y": 6.508094710010593
       },
       "prevControl": {
-        "x": 2.995475415370677,
-        "y": 7.327617699703959
+        "x": 0.6834912936970339,
+        "y": 6.258094710010593
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "L_shoot"
+      "linkedName": "L_depot"
     }
   ],
   "rotationTargets": [],
@@ -42,12 +42,12 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
-    "velocity": 4.0,
+    "velocity": 0,
     "rotation": 0.0
   },
   "useDefaultConstraints": true

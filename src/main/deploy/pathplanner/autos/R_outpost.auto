@@ -1,0 +1,55 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "stowLauncher"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "deployIntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "R_start-M_center-"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "-M_center-R_outpost"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "R_outpost-R_shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "unstowLauncher"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stowIntake"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

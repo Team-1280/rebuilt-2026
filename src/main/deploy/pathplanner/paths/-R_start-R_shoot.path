@@ -4,28 +4,28 @@
     {
       "anchor": {
         "x": 4.443682798276398,
-        "y": 7.387848210598147
+        "y": 0.6710930047598651
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.5738248697916672,
-        "y": 7.367636773923023
+        "x": 3.8336598850159067,
+        "y": 0.6710930047598652
       },
       "isLocked": false,
-      "linkedName": "L_start"
+      "linkedName": "R_start"
     },
     {
       "anchor": {
-        "x": 2.462381433174435,
-        "y": 7.207815368997176
+        "x": 2.575025765801554,
+        "y": 0.918119703389831
       },
       "prevControl": {
-        "x": 2.995475415370677,
-        "y": 7.327617699703959
+        "x": 3.2001340704449155,
+        "y": 0.7927012711864416
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "L_shoot"
+      "linkedName": "R_shoot"
     }
   ],
   "rotationTargets": [],

@@ -1,0 +1,61 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "stowLauncher"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "R_start-R_trench-"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "deployIntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "-R_trench-R_fuel-M_fuel"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "M_fuel-R_trench-R_start-"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "unstowLauncher"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stowIntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "-R_start-R_shoot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
