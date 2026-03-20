@@ -41,7 +41,7 @@ public class LauncherAssembly implements Sendable {
     public final Subsystem[] subsystems = {shooter, feeder, hood, turret};
 
     /** Launch speed multiplier for trajectory that can be used to correct error. */
-    private double launchSpeedMultiplier = 1.0;
+    private double trajectorySpeedMultiplier = 0.95;
 
     /** An offset to apply to turret yaw after it is calculated in trajectory, to mitigate bias. */
     private Angle trajectoryYawOffset = Degrees.of(0.0);
@@ -129,7 +129,7 @@ public class LauncherAssembly implements Sendable {
                         robotVelocity,
                         LauncherConst.ROBOT_TO_LAUNCHER_TRANSFORM,
                         target.translation(),
-                        launchSpeedMultiplier);
+                        trajectorySpeedMultiplier);
         TrajectoryConstraints constraints =
                 target.constraints()
                         .withMinLauncherPitch(HoodConst.MIN_PITCH.in(Radians))
@@ -177,9 +177,9 @@ public class LauncherAssembly implements Sendable {
         SmartDashboard.putData("Launcher/turret", turret);
         builder.addDoubleProperty(
                 "trajectory/speed multiplier",
-                () -> launchSpeedMultiplier,
+                () -> trajectorySpeedMultiplier,
                 (multiplier) -> {
-                    launchSpeedMultiplier = multiplier;
+                    trajectorySpeedMultiplier = multiplier;
                 });
         builder.addDoubleProperty(
                 "trajectory/yaw offset (deg)",
