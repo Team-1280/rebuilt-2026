@@ -18,13 +18,23 @@ Robot must be in a predetermined position for positions to correctly initialize.
 - Hood must be stowed down against the hardstop; gravity can usually achieve this
 
 ## Controls
-Hardware: Xbox Controller or equivalent
+Hardware: Xbox Controller or equivalent; plus another if having an Operator.
 
-### Drive
+The *Driver* and *Operator* both use a separate controller.
+
+Each control is shared between both, with 'either/or' activation logic for the bindings.
+
+The only difference is that the Operator controller does not have driving controls.
+
+Hence, the Operator and Operator controller are completely optional.
+
+### Drive (Driver only)
 - Move - `Left Joystick`
     - field-oriented, operator (alliance) perspective
 - Rotate - `Right Joystick` (horizontal direction)
 - Constant drive speed - Hold `Left Bumper`
+
+### Odometry
 - Reset robot pose to preset pose - Press `Back`
     - Reset pose is in front of team hub, bumpers against it and intake facing towards it
     - Ignores disable

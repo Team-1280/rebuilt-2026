@@ -58,7 +58,10 @@ public class Robot extends LoggedRobot implements Sendable {
     private final SpindexerSubsystem spindexer = new SpindexerSubsystem();
     private final IntakeSubsystem intake = new IntakeSubsystem();
 
-    private final CommandXboxController controller = new CommandXboxController(0); // TODO
+    private final CommandXboxController driverController =
+            new CommandXboxController(DriveConfig.DRIVER_CONTROLLER_PORT);
+    private final CommandXboxController operatorController =
+            new CommandXboxController(DriveConfig.OPERATOR_CONTROLLER_PORT);
 
     private final Field2d field = new Field2d();
     private final StructPublisher<Pose2d> posePublisher =
@@ -122,12 +125,12 @@ public class Robot extends LoggedRobot implements Sendable {
                 drivetrain.applyRequest(
                         () ->
                                 getSwerveRequest(
-                                        -controller.getLeftX(),
-                                        -controller.getLeftY(),
-                                        -controller.getRightX())));
+                                        -driverController.getLeftX(),
+                                        -driverController.getLeftY(),
+                                        -driverController.getRightX())));
 
         // constant drive hold
-        controller
+        driverController
                 .leftBumper()
                 .whileTrue(
                         Commands.runEnd(
@@ -139,23 +142,26 @@ public class Robot extends LoggedRobot implements Sendable {
                                 }));
 
         // reset pose press
-        controller
+        driverController
                 .back()
+                .or(operatorController.back())
                 .onTrue(
                         Commands.runOnce(() -> drivetrain.resetPose(DriveConfig.getResetPose()))
                                 .ignoringDisable(true));
 
         // reset heading press
-        controller
+        driverController
                 .rightStick()
+                .or(operatorController.rightStick())
                 .onTrue(
                         drivetrain
                                 .runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero))
                                 .ignoringDisable(true));
 
         // stow robot press; until any subsystem activated
-        controller
+        driverController
                 .start()
+                .or(operatorController.start())
                 .onTrue(
                         Commands.run(
                                         this::stow,
@@ -168,14 +174,21 @@ public class Robot extends LoggedRobot implements Sendable {
                                 .ignoringDisable(true));
 
         // intake deploy (down+start) press
-        controller.povDown().onTrue(intake.runOnce(intake::deploy));
+        driverController
+                .povDown()
+                .or(operatorController.povDown())
+                .onTrue(intake.runOnce(intake::deploy));
 
         // intake stow (up+stop) press
-        controller.povUp().onTrue(intake.runOnce(intake::stow));
+        driverController
+                .povUp()
+                .or(operatorController.povUp())
+                .onTrue(intake.runOnce(intake::stow));
 
         // intake down+stop press
-        controller
+        driverController
                 .povRight()
+                .or(operatorController.povRight())
                 .onTrue(
                         intake.runOnce(
                                 () -> {
@@ -184,33 +197,39 @@ public class Robot extends LoggedRobot implements Sendable {
                                 }));
 
         // reverse intake rollers hold
-        controller.povLeft().whileTrue(intake.startEnd(intake::rollersReverse, intake::rollersOn));
+        driverController
+                .povLeft()
+                .or(operatorController.povLeft())
+                .whileTrue(intake.startEnd(intake::rollersReverse, intake::rollersOn));
 
         // feeding hold
-        controller
+        driverController
                 .rightTrigger()
+                .or(operatorController.rightTrigger())
                 .whileTrue(launcher.feeder.startEnd(launcher.feeder::start, launcher.feeder::stop));
 
         // stow launcher hold
-        controller
+        driverController
                 .leftTrigger()
+                .or(operatorController.leftTrigger())
                 .whileTrue(
                         Commands.run(launcher::stow, launcher.subsystems)
                                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
                                 .ignoringDisable(true));
 
         // fixed launching hold
-        controller
+        driverController
                 .leftBumper()
+                .or(operatorController.leftBumper())
                 .whileTrue(
                         Commands.run(launcher::launchFixed, launcher.subsystems)
                                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
 
         // intake fuel unjam hold
-        controller.a().whileTrue(runUnjamIntakeFuel());
+        driverController.a().or(operatorController.a()).whileTrue(runUnjamIntakeFuel());
 
         // hopper/launcher fuel unjam hold
-        controller.b().whileTrue(runUnjamHopperLauncherFuel());
+        driverController.b().or(operatorController.b()).whileTrue(runUnjamHopperLauncherFuel());
 
         // spindexer: on by default
         spindexer.setDefaultCommand(spindexer.run(spindexer::start));

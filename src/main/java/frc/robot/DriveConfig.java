@@ -20,6 +20,9 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.field.FieldConst;
 
 public final class DriveConfig implements Sendable {
+    public static final int DRIVER_CONTROLLER_PORT = 0;
+    public static final int OPERATOR_CONTROLLER_PORT = 1;
+
     /** Enable or disable driving. */
     public static boolean enableDriving = true;
 
