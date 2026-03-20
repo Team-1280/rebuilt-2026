@@ -219,6 +219,14 @@ public class Robot extends LoggedRobot implements Sendable {
                 .or(operatorController.rightTrigger())
                 .whileTrue(launcher.feeder.startEnd(launcher.feeder::start, launcher.feeder::stop));
 
+        // fixed launching hold
+        driverController
+                .rightBumper()
+                .or(operatorController.rightBumper())
+                .whileTrue(
+                        Commands.run(launcher::launchFixed, launcher.subsystems)
+                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+
         // stow launcher hold
         driverController
                 .leftTrigger()
@@ -227,14 +235,6 @@ public class Robot extends LoggedRobot implements Sendable {
                         Commands.run(launcher::stow, launcher.subsystems)
                                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
                                 .ignoringDisable(true));
-
-        // fixed launching hold
-        driverController
-                .leftBumper()
-                .or(operatorController.leftBumper())
-                .whileTrue(
-                        Commands.run(launcher::launchFixed, launcher.subsystems)
-                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
 
         // intake fuel unjam hold
         driverController.a().or(operatorController.a()).whileTrue(runUnjamIntakeFuel());
