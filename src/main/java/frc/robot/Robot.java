@@ -78,13 +78,14 @@ public class Robot extends LoggedRobot implements Sendable {
                     .getStructTopic("Robot Pose3d", Pose3d.struct)
                     .publish();
 
-    private final SendableChooser<Command> autoChooser = AutoBuilder.buildAutoChooser();
+    private final SendableChooser<Command> autoChooser;
 
     public Robot() {
         initLogger(); // must happen first
+        initAuto(); // must happen before auto chooser built
+        autoChooser = AutoBuilder.buildAutoChooser();
         initDashboard();
         initBindings();
-        initAuto();
     }
 
     private void initLogger() {
@@ -397,6 +398,7 @@ public class Robot extends LoggedRobot implements Sendable {
 
     @Override
     public void autonomousInit() {
+        CommandScheduler.getInstance().schedule(Commands.idle(launcher.subsystems));
         Command selectedAuto = autoChooser.getSelected();
         if (selectedAuto != null) {
             CommandScheduler.getInstance().schedule(selectedAuto);
