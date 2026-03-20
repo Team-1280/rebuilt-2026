@@ -20,22 +20,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.field.FieldConst;
 
 public final class DriveConfig implements Sendable {
-    /** Pose to reset to for a binding. Default: lined up against team hub and facing it. */
-    public static final Pose2d RESET_POSE =
-            DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                    ? new Pose2d(
-                            FieldConst.BLUE_HUB_X
-                                    .minus(FieldConst.HUB_SIZE.div(2))
-                                    .minus(FieldConst.ROBOT_HALF_SIZE),
-                            FieldConst.FIELD_WIDTH.div(2),
-                            Rotation2d.fromDegrees(0.0))
-                    : new Pose2d(
-                            FieldConst.RED_HUB_X
-                                    .plus(FieldConst.HUB_SIZE.div(2))
-                                    .plus(FieldConst.ROBOT_HALF_SIZE),
-                            FieldConst.FIELD_WIDTH.div(2),
-                            Rotation2d.fromDegrees(180.0));
-
     /** Enable or disable driving. */
     public static boolean enableDriving = true;
 
@@ -74,6 +58,24 @@ public final class DriveConfig implements Sendable {
                     .withDriveRequestType(DriveRequestType.Velocity);
 
     private DriveConfig() {}
+
+    /** Get pose to reset to for a binding. Default: lined up against team hub and facing it. */
+    public static final Pose2d getResetPose() {
+        Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+        return alliance == Alliance.Blue
+                ? new Pose2d(
+                        FieldConst.BLUE_HUB_X
+                                .minus(FieldConst.HUB_SIZE.div(2))
+                                .minus(FieldConst.ROBOT_HALF_SIZE),
+                        FieldConst.FIELD_WIDTH.div(2),
+                        Rotation2d.fromDegrees(0.0))
+                : new Pose2d(
+                        FieldConst.RED_HUB_X
+                                .plus(FieldConst.HUB_SIZE.div(2))
+                                .plus(FieldConst.ROBOT_HALF_SIZE),
+                        FieldConst.FIELD_WIDTH.div(2),
+                        Rotation2d.fromDegrees(180.0));
+    }
 
     public static Sendable getSendable() {
         return new DriveConfig();

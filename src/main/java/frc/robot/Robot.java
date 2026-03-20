@@ -117,7 +117,7 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     private void initBindings() {
-        // swerve drive
+        // swerve drive joystick
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
                         () ->
@@ -126,10 +126,32 @@ public class Robot extends LoggedRobot implements Sendable {
                                         -controller.getLeftY(),
                                         -controller.getRightX())));
 
-        // reset heading
+        // constant drive hold
+        controller
+                .leftBumper()
+                .whileTrue(
+                        Commands.runEnd(
+                                () -> {
+                                    DriveConfig.constantDriveEnabled = true;
+                                },
+                                () -> {
+                                    DriveConfig.constantDriveEnabled = false;
+                                }));
+
+        // reset pose press
+        controller
+                .back()
+                .onTrue(
+                        Commands.runOnce(() -> drivetrain.resetPose(DriveConfig.getResetPose()))
+                                .ignoringDisable(true));
+
+        // reset heading press
         controller
                 .rightStick()
-                .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
+                .onTrue(
+                        drivetrain
+                                .runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero))
+                                .ignoringDisable(true));
 
         // stow robot press; until any subsystem activated
         controller
@@ -164,17 +186,10 @@ public class Robot extends LoggedRobot implements Sendable {
         // reverse intake rollers hold
         controller.povLeft().whileTrue(intake.startEnd(intake::rollersReverse, intake::rollersOn));
 
-        // intake fuel unjam hold
-        controller.a().whileTrue(runUnjamIntakeFuel());
-
-        // hopper/launcher fuel unjam hold
-        controller.b().whileTrue(runUnjamHopperLauncherFuel());
-
-        // start feeding override hold
-        controller.rightTrigger().whileTrue(launcher.feeder.run(launcher.feeder::start));
-
-        // stop feeding override hold
-        controller.rightBumper().whileTrue(launcher.feeder.run(launcher.feeder::stop));
+        // feeding hold
+        controller
+                .rightTrigger()
+                .whileTrue(launcher.feeder.startEnd(launcher.feeder::start, launcher.feeder::stop));
 
         // stow launcher hold
         controller
@@ -184,21 +199,20 @@ public class Robot extends LoggedRobot implements Sendable {
                                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
                                 .ignoringDisable(true));
 
-        // fixed launcher hold
+        // fixed launching hold
         controller
                 .leftBumper()
                 .whileTrue(
                         Commands.run(launcher::launchFixed, launcher.subsystems)
                                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
 
-        // reset pose press
-        controller
-                .y()
-                .onTrue(
-                        Commands.runOnce(() -> drivetrain.resetPose(DriveConfig.RESET_POSE))
-                                .ignoringDisable(true));
+        // intake fuel unjam hold
+        controller.a().whileTrue(runUnjamIntakeFuel());
 
-        // spindexer on: by default
+        // hopper/launcher fuel unjam hold
+        controller.b().whileTrue(runUnjamHopperLauncherFuel());
+
+        // spindexer: on by default
         spindexer.setDefaultCommand(spindexer.run(spindexer::start));
     }
 
@@ -253,7 +267,8 @@ public class Robot extends LoggedRobot implements Sendable {
                 spindexer);
     }
 
-    private Command runAutomaticLaunching() {
+    /** Get a command that aims the launcher at the appropriate target. */
+    private Command runAutomaticTargeting() {
         // is split into multiple commands to separate requirements
         return Commands.defer(
                 () -> {
@@ -262,7 +277,6 @@ public class Robot extends LoggedRobot implements Sendable {
                     if (target.isEmpty()) {
                         return Commands.parallel(
                                 asDefault(launcher.shooter.runOnce(launcher.shooter::stop)),
-                                asDefault(launcher.feeder.runOnce(launcher.feeder::stop)),
                                 asDefault(launcher.hood.runOnce(launcher.hood::stow)),
                                 asDefault(launcher.turret.runOnce(launcher.turret::stow)));
                     }
@@ -277,10 +291,7 @@ public class Robot extends LoggedRobot implements Sendable {
                                             launcher.turret)),
                             asDefault(
                                     launcher.shooter.runOnce(
-                                            () -> launcher.shootTrajectory(trajectory))),
-                            asDefault(
-                                    launcher.feeder.runOnce(
-                                            () -> launcher.feedTrajectory(trajectory))));
+                                            () -> launcher.shootTrajectory(trajectory))));
                 },
                 Set.of());
     }
@@ -314,7 +325,7 @@ public class Robot extends LoggedRobot implements Sendable {
 
         if (isEnabled()) {
             // Runs before controller triggers are checked, which deprioritizes automatic launching
-            CommandScheduler.getInstance().schedule(runAutomaticLaunching());
+            CommandScheduler.getInstance().schedule(runAutomaticTargeting());
         }
         CommandScheduler.getInstance().run();
         if (isEnabled()) {

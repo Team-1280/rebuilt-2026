@@ -24,11 +24,17 @@ Hardware: Xbox Controller or equivalent
 - Move - `Left Joystick`
     - field-oriented, operator (alliance) perspective
 - Rotate - `Right Joystick` (horizontal direction)
+- Constant drive speed - Hold `Left Bumper`
+- Reset robot pose to preset pose - Press `Back`
+    - Reset pose is in front of team hub, bumpers against it and intake facing towards it
+    - Ignores disable
 - Reset robot heading to 0 - Press `Right Joystick Button`
+    - Ignores disable
 
 ### Stow
 - Stow robot - Press `Start`
     - Stow state deactivates when any subsystem is activated
+    - Ignores disable
 
 ### Intake
 D-pad
@@ -40,13 +46,11 @@ D-pad
     - Upon finishing, start rollers
 
 ### Launcher
-- Automatic target aiming and launching - On by default
+- Automatic target aiming - On by default
+- Feeding (launching, shooting) - Hold `Right Trigger`
+- Fixed launching - Hold `Right Bumper`
 - Stow launcher - Hold `Left Trigger`
-- Fixed launching - Hold `Left Bumper`
-
-#### Feeder
-- Start feeding override - Hold `Right Trigger`
-- Stop feeding override - Hold `Right Bumper`
+    - Ignores disable
 
 ### Fuel Unjamming
 - Intake fuel unjamming - Hold `A`
