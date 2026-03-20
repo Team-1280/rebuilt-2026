@@ -42,11 +42,15 @@ public final class DriveConfig implements Sendable {
     /** Maximum throttle angular drive speed. */
     public static AngularVelocity maxAngularSpeed = RotationsPerSecond.of(0.75);
 
+    /** Initial deadband fraction of maximum power, for both linear and angular speeds. */
+    private static final double GENERAL_DEADBAND_FRACTION = 0.1;
+
     /** Minimum registerable linear drive speed. */
-    public static LinearVelocity speedDeadband = maxSpeed.times(0.1);
+    public static LinearVelocity speedDeadband = maxSpeed.times(GENERAL_DEADBAND_FRACTION);
 
     /** Minimum registerable angular drive speed. */
-    public static AngularVelocity angularSpeedDeadband = maxAngularSpeed.times(0.1);
+    public static AngularVelocity angularSpeedDeadband =
+            maxAngularSpeed.times(GENERAL_DEADBAND_FRACTION);
 
     /** Maximum X distance from trench bar to center of robot to automatically stow launcher. */
     public static Distance trenchLauncherStowDistance = Meters.of(1.0);
