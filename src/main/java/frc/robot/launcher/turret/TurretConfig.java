@@ -50,7 +50,8 @@ public final class TurretConfig {
         motorConfig.Slot0.kA = 0.15;
         motorConfig.MotionMagic.MotionMagicCruiseVelocity = 3.0;
         motorConfig.MotionMagic.MotionMagicAcceleration = 40.0;
-        motorConfig.MotionMagic.MotionMagicJerk = 100.0;
+        // motorConfig.MotionMagic.MotionMagicJerk = 100.0; // broken
+        // motorConfig.MotionMagic.MotionMagicJerk = 400.0; // possible fix
     }
 
     public static final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();

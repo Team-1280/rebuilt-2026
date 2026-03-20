@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.Sendable;
@@ -45,6 +46,10 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Robot extends LoggedRobot implements Sendable {
 
@@ -58,6 +63,10 @@ public class Robot extends LoggedRobot implements Sendable {
     private final IntakeSubsystem intake = new IntakeSubsystem();
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
+
+    private final ExecutorService trajectoryThread = Executors.newSingleThreadExecutor();
+    private Future<?> trajectoryFuture;
+    private final AtomicReference<Trajectory> latestTrajectory = new AtomicReference<>();
 
     private final Field2d field = new Field2d();
     private final StructPublisher<Pose2d> posePublisher =
@@ -244,22 +253,38 @@ public class Robot extends LoggedRobot implements Sendable {
                 spindexer);
     }
 
+    private void submitTrajectoryCalc() {
+        if (trajectoryFuture != null && !trajectoryFuture.isDone()) {
+            return;
+        }
+        Pose3d robotPose = drivetrain.getPose3d();
+        Translation2d robotVelocity = drivetrain.getFieldVelocity();
+        Optional<LaunchTarget> target = TargetSelector.selectTarget(robotPose);
+        if (target.isEmpty()) {
+            latestTrajectory.set(null);
+            return;
+        }
+        LaunchTarget t = target.get();
+        trajectoryFuture =
+                trajectoryThread.submit(
+                        () ->
+                                latestTrajectory.set(
+                                        launcher.calculateTargetTrajectory(
+                                                t, robotPose, robotVelocity)));
+    }
+
     private Command runAutomaticLaunching() {
         // is split into multiple commands to separate requirements
         return Commands.defer(
                 () -> {
-                    Pose3d robotPose = drivetrain.getPose3d();
-                    Optional<LaunchTarget> target = TargetSelector.selectTarget(robotPose);
-                    if (target.isEmpty()) {
+                    Trajectory trajectory = latestTrajectory.get();
+                    if (trajectory == null) {
                         return Commands.parallel(
                                 asDefault(launcher.shooter.runOnce(launcher.shooter::stop)),
                                 asDefault(launcher.feeder.runOnce(launcher.feeder::stop)),
                                 asDefault(launcher.hood.runOnce(launcher.hood::stow)),
                                 asDefault(launcher.turret.runOnce(launcher.turret::stow)));
                     }
-                    Trajectory trajectory =
-                            launcher.calculateTargetTrajectory(
-                                    target.get(), robotPose, drivetrain.getFieldVelocity());
                     return Commands.parallel(
                             asDefault(
                                     Commands.runOnce(
@@ -304,6 +329,7 @@ public class Robot extends LoggedRobot implements Sendable {
         pose3dPublisher.set(drivetrain.getPose3d());
 
         if (isEnabled()) {
+            submitTrajectoryCalc();
             // Runs before controller triggers are checked, which deprioritizes automatic launching
             CommandScheduler.getInstance().schedule(runAutomaticLaunching());
         }

@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class TurretSubsystem extends SubsystemBase {
     private final TalonFX motor = new TalonFX(TurretConst.MOTOR_ID, TurretConst.CAN_BUS);
     private final CANcoder encoder = new CANcoder(TurretConst.ENCODER_ID, TurretConst.CAN_BUS);
+    private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
 
     /** Continuous desired turret yaw, raw. */
     private Angle targetYaw;
@@ -122,7 +123,7 @@ public class TurretSubsystem extends SubsystemBase {
                                 yaw.in(Rotations),
                                 TurretConst.MIN_ANGLE.in(Rotations),
                                 TurretConst.MAX_ANGLE.in(Rotations)));
-        motor.setControl(new MotionMagicVoltage(targetYaw));
+        motor.setControl(motionMagicRequest.withPosition(targetYaw));
     }
 
     /** Get the continuous yaw. */
