@@ -88,12 +88,14 @@ public final class DriveConfig implements Sendable {
                 () -> speedDeadband.in(MetersPerSecond),
                 (deadband) -> {
                     speedDeadband = MetersPerSecond.of(deadband);
+                    swerveRequest.withDeadband(speedDeadband);
                 });
         builder.addDoubleProperty(
                 "angular speed deadband (rot per s)",
                 () -> angularSpeedDeadband.in(RotationsPerSecond),
                 (deadband) -> {
                     angularSpeedDeadband = RotationsPerSecond.of(deadband);
+                    swerveRequest.withRotationalDeadband(angularSpeedDeadband);
                 });
         builder.addDoubleProperty(
                 "trench launcher stow x distance (m)",
