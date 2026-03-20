@@ -53,18 +53,6 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 4.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "R_outpost-R_shoot"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "unstowLauncher"
@@ -74,12 +62,6 @@
           "type": "named",
           "data": {
             "name": "startFeeder"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "stowIntake"
           }
         }
       ]

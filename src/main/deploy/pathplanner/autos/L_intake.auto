@@ -25,19 +25,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "-L_trench-L_fuel-M_fuel"
+            "pathName": "-L_trench-L_fuel"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "M_fuel-L_trench-L_start-"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "stowIntake"
+            "pathName": "L_fuel-L_trench-L_start-"
           }
         },
         {

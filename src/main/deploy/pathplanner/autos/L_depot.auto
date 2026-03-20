@@ -37,12 +37,6 @@
         {
           "type": "named",
           "data": {
-            "name": "stowIntake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "startFeeder"
           }
         }
