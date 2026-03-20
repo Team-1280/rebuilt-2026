@@ -11,7 +11,7 @@ public final class CandleConfig {
     public static final CANdleConfiguration config = new CANdleConfiguration();
 
     static {
-        config.LED.StripType = StripTypeValue.RGB;
+        config.LED.StripType = StripTypeValue.BRG;
         config.LED.BrightnessScalar = BRIGHTNESS;
     }
 }

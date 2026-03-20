@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -14,6 +15,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
@@ -41,7 +43,7 @@ public class LauncherAssembly implements Sendable {
     public final Subsystem[] subsystems = {shooter, feeder, hood, turret};
 
     /** Launch speed multiplier for trajectory that can be used to correct error. */
-    private double launchSpeedMultiplier = 1.0;
+    private double trajectorySpeedMultiplier = 0.95;
 
     /** An offset to apply to turret yaw after it is calculated in trajectory, to mitigate bias. */
     private Angle trajectoryYawOffset = Degrees.of(0.0);
@@ -54,6 +56,18 @@ public class LauncherAssembly implements Sendable {
 
     /** Launch yaw for when doing fixed launching. */
     private Angle fixedLaunchYaw = Degrees.of(0.0);
+
+    /** Approximate time for the motor to receive and react to a control request, in seconds. */
+    private double motorLatency = 0.37;
+
+    /** Filter of yaw velocity for use in motor latency compensation. */
+    private final LinearFilter trajectoryYawVelocityFilter = LinearFilter.movingAverage(4);
+
+    /** Record of the previous trajectory yaw for use in motor latency compensation. */
+    private Angle previousTrajectoryYaw = turret.getYaw();
+
+    /** Record of the previous trajectory time for use in motor latency compensation. */
+    private double previousTrajectoryTime = Timer.getFPGATimestamp();
 
     /** Stop flywheels and stow mechanisms. */
     public void stow() {
@@ -82,11 +96,26 @@ public class LauncherAssembly implements Sendable {
         aimDirection(Radians.of(pitchRad), Radians.of(yawRad));
     }
 
-    /** Aim the launcher pitch and yaw to the given trajectory's. */
+    /** Aim the launcher pitch and yaw to the given trajectory's, compensating for latency. */
     public void aimTrajectory(Trajectory trajectory) {
-        aimDirection(
-                Radians.of(trajectory.getLauncherPitch()),
-                Radians.of(trajectory.getLauncherYaw()).plus(trajectoryYawOffset));
+        Angle yaw = Radians.of(trajectory.getLauncherYaw()).plus(trajectoryYawOffset);
+
+        double time = Timer.getFPGATimestamp();
+        double yawDifference = yaw.minus(previousTrajectoryYaw).in(Radians);
+        double timeDifference = time - previousTrajectoryTime;
+        previousTrajectoryYaw = yaw;
+        previousTrajectoryTime = time;
+
+        if (yawDifference > Math.toRadians(15) || timeDifference > 0.10) {
+            // reset the yaw velocity due to yaw or time discontinuity
+            trajectoryYawVelocityFilter.reset();
+        } else {
+            double yawVelocity = yawDifference / timeDifference;
+            double filteredYawVelocity = trajectoryYawVelocityFilter.calculate(yawVelocity);
+            yaw = yaw.plus(Radians.of(filteredYawVelocity * motorLatency));
+        }
+
+        aimDirection(Radians.of(trajectory.getLauncherPitch()), yaw);
     }
 
     /**
@@ -129,7 +158,7 @@ public class LauncherAssembly implements Sendable {
                         robotVelocity,
                         LauncherConst.ROBOT_TO_LAUNCHER_TRANSFORM,
                         target.translation(),
-                        launchSpeedMultiplier);
+                        trajectorySpeedMultiplier);
         TrajectoryConstraints constraints =
                 target.constraints()
                         .withMinLauncherPitch(HoodConst.MIN_PITCH.in(Radians))
@@ -177,9 +206,9 @@ public class LauncherAssembly implements Sendable {
         SmartDashboard.putData("Launcher/turret", turret);
         builder.addDoubleProperty(
                 "trajectory/speed multiplier",
-                () -> launchSpeedMultiplier,
+                () -> trajectorySpeedMultiplier,
                 (multiplier) -> {
-                    launchSpeedMultiplier = multiplier;
+                    trajectorySpeedMultiplier = multiplier;
                 });
         builder.addDoubleProperty(
                 "trajectory/yaw offset (deg)",

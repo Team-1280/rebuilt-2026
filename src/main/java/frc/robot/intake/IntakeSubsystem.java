@@ -32,11 +32,11 @@ public class IntakeSubsystem extends SubsystemBase {
         return deployMotor.getPosition().getValue();
     }
 
-    public void intakeDown() {
+    public void moveDown() {
         moveAngle(IntakeConst.MIN_ANGLE);
     }
 
-    public void intakeUp() {
+    public void moveUp() {
         moveAngle(IntakeConst.MAX_ANGLE);
     }
 
@@ -91,13 +91,13 @@ public class IntakeSubsystem extends SubsystemBase {
 
     /** Intake down and rollers on. */
     public void deploy() {
-        intakeDown();
+        moveDown();
         rollersOn();
     }
 
     public void stow() {
         rollersOff();
-        moveAngle(IntakeConst.MAX_ANGLE);
+        moveUp();
     }
 
     @Override

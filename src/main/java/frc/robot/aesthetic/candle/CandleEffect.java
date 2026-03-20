@@ -12,7 +12,7 @@ import com.ctre.phoenix6.controls.TwinkleAnimation;
 import com.ctre.phoenix6.signals.RGBWColor;
 
 public enum CandleEffect {
-    LARSON(new LarsonAnimation(LEDStartIndex, LEDEndIndex).withColor(new RGBWColor(255, 255, 255))),
+    LARSON(new LarsonAnimation(LEDStartIndex, LEDEndIndex).withColor(new RGBWColor(255, 212, 0))),
     FLOW(
             new ColorFlowAnimation(LEDStartIndex, LEDEndIndex)
                     .withColor(new RGBWColor(255, 255, 255))),
@@ -23,9 +23,7 @@ public enum CandleEffect {
     BREATHE(
             new SingleFadeAnimation(LEDStartIndex, LEDEndIndex)
                     .withColor(new RGBWColor(235, 209, 39))),
-    REN_SPECIAL(
-            new TwinkleAnimation(LEDStartIndex, LEDEndIndex)
-                    .withColor(new RGBWColor(235, 209, 39))),
+    SPECIAL(new TwinkleAnimation(LEDStartIndex, LEDEndIndex).withColor(new RGBWColor(255, 212, 0))),
     EW(
             new SingleFadeAnimation(LEDStartIndex, LEDEndIndex)
                     .withColor(new RGBWColor(198, 184, 54))); // disgusting color

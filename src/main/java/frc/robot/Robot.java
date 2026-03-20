@@ -4,8 +4,9 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Value;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -60,7 +61,10 @@ public class Robot extends LoggedRobot implements Sendable {
     private final SpindexerSubsystem spindexer = new SpindexerSubsystem();
     private final IntakeSubsystem intake = new IntakeSubsystem();
 
-    private final CommandXboxController controller = new CommandXboxController(0); // TODO
+    private final CommandXboxController driverController =
+            new CommandXboxController(DriveConfig.DRIVER_CONTROLLER_PORT);
+    private final CommandXboxController operatorController =
+            new CommandXboxController(DriveConfig.OPERATOR_CONTROLLER_PORT);
 
     private final Field2d field = new Field2d();
     private final StructPublisher<Pose2d> posePublisher =
@@ -123,110 +127,140 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     private void initBindings() {
-        // swerve drive
-        final SwerveRequest.FieldCentric driveRequest =
-                new SwerveRequest.FieldCentric()
-                        .withDeadband(DriveConfig.speedDeadband)
-                        .withRotationalDeadband(DriveConfig.angularSpeedDeadband)
-                        .withDriveRequestType(DriveRequestType.Velocity);
+        // swerve drive joystick
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(
                         () ->
-                                !DriveConfig.enableDriving
-                                        ? null
-                                        : driveRequest
-                                                .withVelocityX(
-                                                        DriveConfig.maxSpeed.times(
-                                                                -controller.getLeftY()))
-                                                .withVelocityY(
-                                                        DriveConfig.maxSpeed.times(
-                                                                -controller.getLeftX()))
-                                                .withRotationalRate(
-                                                        DriveConfig.maxAngularSpeed.times(
-                                                                -controller.getRightX()))));
+                                getSwerveRequest(
+                                        -driverController.getLeftX(),
+                                        -driverController.getLeftY(),
+                                        -driverController.getRightX())));
 
-        // reset heading
-        controller
+        // constant drive hold
+        driverController
+                .leftBumper()
+                .whileTrue(
+                        Commands.runEnd(
+                                () -> {
+                                    DriveConfig.constantDriveEnabled = true;
+                                },
+                                () -> {
+                                    DriveConfig.constantDriveEnabled = false;
+                                }));
+
+        // reset pose press
+        driverController
+                .back()
+                .or(operatorController.back())
+                .onTrue(
+                        Commands.runOnce(() -> drivetrain.resetPose(DriveConfig.getResetPose()))
+                                .ignoringDisable(true));
+
+        // reset heading press
+        driverController
                 .rightStick()
-                .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
+                .or(operatorController.rightStick())
+                .onTrue(
+                        drivetrain
+                                .runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero))
+                                .ignoringDisable(true));
 
         // stow robot press; until any subsystem activated
-        controller
+        driverController
                 .start()
+                .or(operatorController.start())
                 .onTrue(
                         Commands.run(
-                                this::stow,
-                                launcher.shooter,
-                                launcher.feeder,
-                                launcher.hood,
-                                launcher.turret,
-                                spindexer,
-                                intake));
+                                        this::stow,
+                                        launcher.shooter,
+                                        launcher.feeder,
+                                        launcher.hood,
+                                        launcher.turret,
+                                        spindexer,
+                                        intake)
+                                .ignoringDisable(true));
 
-        // intake down+start press
-        controller
+        // intake deploy (down+start) press
+        driverController
                 .povDown()
-                .onTrue(
-                        intake.runOnce(
-                                () -> {
-                                    intake.intakeDown();
-                                    intake.rollersOn();
-                                }));
+                .or(operatorController.povDown())
+                .onTrue(intake.runOnce(intake::deploy));
 
-        // intake up+stop press
-        controller
+        // intake stow (up+stop) press
+        driverController
                 .povUp()
-                .onTrue(
-                        intake.runOnce(
-                                () -> {
-                                    intake.intakeUp();
-                                    intake.rollersOff();
-                                }));
+                .or(operatorController.povUp())
+                .onTrue(intake.runOnce(intake::stow));
 
         // intake down+stop press
-        controller
+        driverController
                 .povRight()
+                .or(operatorController.povRight())
                 .onTrue(
                         intake.runOnce(
                                 () -> {
-                                    intake.intakeDown();
+                                    intake.moveDown();
                                     intake.rollersOff();
                                 }));
 
         // reverse intake rollers hold
-        controller.povLeft().whileTrue(intake.startEnd(intake::rollersReverse, intake::rollersOn));
+        driverController
+                .povLeft()
+                .or(operatorController.povLeft())
+                .whileTrue(intake.startEnd(intake::rollersReverse, intake::rollersOn));
 
-        // intake fuel unjam hold
-        controller.a().whileTrue(runUnjamIntakeFuel());
-
-        // hopper/launcher fuel unjam hold
-        controller.b().whileTrue(runUnjamHopperLauncherFuel());
-
-        // start feeding override hold
-        controller.rightTrigger().whileTrue(launcher.feeder.run(launcher.feeder::start));
-
-        // stop feeding override hold
-        controller.rightBumper().whileTrue(launcher.feeder.run(launcher.feeder::stop));
+        // feeding hold
+        driverController
+                .rightTrigger()
+                .or(operatorController.rightTrigger())
+                .whileTrue(launcher.feeder.startEnd(launcher.feeder::start, launcher.feeder::stop));
 
         // stow launcher hold
-        controller
+        driverController
                 .leftTrigger()
+                .or(operatorController.leftTrigger())
                 .whileTrue(
                         Commands.run(launcher::stow, launcher.subsystems)
-                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
+                                .ignoringDisable(true));
 
-        // fixed launcher hold
-        controller
+        // fixed launching hold
+        driverController
                 .leftBumper()
+                .or(operatorController.leftBumper())
                 .whileTrue(
                         Commands.run(launcher::launchFixed, launcher.subsystems)
                                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
 
-        // reset pose press
-        controller.y().onTrue(Commands.runOnce(() -> drivetrain.resetPose(DriveConfig.RESET_POSE)));
+        // intake fuel unjam hold
+        driverController.a().or(operatorController.a()).whileTrue(runUnjamIntakeFuel());
 
-        // spindexer on: by default
+        // hopper/launcher fuel unjam hold
+        driverController.b().or(operatorController.b()).whileTrue(runUnjamHopperLauncherFuel());
+
+        // spindexer: on by default
         spindexer.setDefaultCommand(spindexer.run(spindexer::start));
+    }
+
+    /** Get the driving swerve request, from throttle values in WPILib robot coordinate axes. */
+    private SwerveRequest getSwerveRequest(double xThrottle, double yThrottle, double rotThrottle) {
+        if (!DriveConfig.enableDriving) {
+            return new SwerveRequest.Idle();
+        }
+        if (DriveConfig.constantDriveEnabled) {
+            double throttleMagnitude = Math.hypot(xThrottle, yThrottle);
+            double multiplier =
+                    throttleMagnitude > DriveConfig.constantDriveThrottleDeadband
+                            ? DriveConfig.constantDriveSpeed.div(DriveConfig.maxSpeed).in(Value)
+                                    / throttleMagnitude
+                            : 0.0;
+            xThrottle *= multiplier;
+            yThrottle *= multiplier;
+        }
+        return DriveConfig.swerveRequest
+                .withVelocityX(DriveConfig.maxSpeed.times(xThrottle))
+                .withVelocityY(DriveConfig.maxSpeed.times(yThrottle))
+                .withRotationalRate(DriveConfig.maxAngularSpeed.times(rotThrottle));
     }
 
     /** Stow or stop all subsystems except drivetrain. */
@@ -239,13 +273,10 @@ public class Robot extends LoggedRobot implements Sendable {
     private Command runUnjamIntakeFuel() {
         return intake.startEnd(
                 () -> {
-                    intake.intakeUp();
+                    intake.moveUp();
                     intake.rollersReverse();
                 },
-                () -> {
-                    intake.intakeDown();
-                    intake.rollersOn();
-                });
+                intake::deploy);
     }
 
     private Command runUnjamHopperLauncherFuel() {
@@ -262,7 +293,8 @@ public class Robot extends LoggedRobot implements Sendable {
                 spindexer);
     }
 
-    private Command runAutomaticLaunching() {
+    /** Get a command that aims the launcher at the appropriate target. */
+    private Command runAutomaticTargeting() {
         // is split into multiple commands to separate requirements
         return Commands.defer(
                 () -> {
@@ -271,7 +303,6 @@ public class Robot extends LoggedRobot implements Sendable {
                     if (target.isEmpty()) {
                         return Commands.parallel(
                                 asDefault(launcher.shooter.runOnce(launcher.shooter::stop)),
-                                asDefault(launcher.feeder.runOnce(launcher.feeder::stop)),
                                 asDefault(launcher.hood.runOnce(launcher.hood::stow)),
                                 asDefault(launcher.turret.runOnce(launcher.turret::stow)));
                     }
@@ -286,10 +317,7 @@ public class Robot extends LoggedRobot implements Sendable {
                                             launcher.turret)),
                             asDefault(
                                     launcher.shooter.runOnce(
-                                            () -> launcher.shootTrajectory(trajectory))),
-                            asDefault(
-                                    launcher.feeder.runOnce(
-                                            () -> launcher.feedTrajectory(trajectory))));
+                                            () -> launcher.shootTrajectory(trajectory))));
                 },
                 Set.of());
     }
@@ -333,7 +361,7 @@ public class Robot extends LoggedRobot implements Sendable {
 
         if (isEnabled()) {
             // Runs before controller triggers are checked, which deprioritizes automatic launching
-            CommandScheduler.getInstance().schedule(runAutomaticLaunching());
+            CommandScheduler.getInstance().schedule(runAutomaticTargeting());
         }
         CommandScheduler.getInstance().run();
         if (isEnabled()) {

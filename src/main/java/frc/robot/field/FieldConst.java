@@ -23,8 +23,15 @@ public final class FieldConst {
             HUB_FUNNEL_INNER_RADIUS.times(2 / Math.sqrt(3)); // by hexagon geometry
     public static final Distance HUB_HEIGHT = Inches.of(72.0); // to top of funnel
 
-    /* Side length of the square robot bumpers */
-    public static final Distance ROBOT_SIZE = Inches.of(27);
+    /**
+     * Side length of the square robot bumpers.
+     *
+     * <p>Drivebase is 27 inches, approximately square, square bumpers is 4.75 inches width.
+     *
+     * <p>Total size: 36.5 inches = 0.9271 meters.
+     */
+    public static final Distance ROBOT_SIZE = Inches.of(27).plus(Inches.of(4.75).times(2));
+
     public static final Distance ROBOT_HALF_SIZE = ROBOT_SIZE.div(2);
 
     // Bump dimensions (for FieldZoning)

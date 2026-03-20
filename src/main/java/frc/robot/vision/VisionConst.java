@@ -27,7 +27,7 @@ public final class VisionConst {
                             Units.inchesToMeters(-9.696891),
                             Units.inchesToMeters(-10.423049),
                             Units.inchesToMeters(8.887247)),
-                    new Rotation3d(0.0, -(90 - 61.75), Math.toRadians(180 + 27.2)));
+                    new Rotation3d(0.0, -(90 - 61.75), Math.toRadians(-90)));
     public static final Transform3d INTAKE_CAMERA_TRANSFROM =
             new Transform3d(
                     new Translation3d(

@@ -1,7 +1,6 @@
 package frc.robot.drivetrain;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.studica.frc.AHRS;
 
 import edu.wpi.first.math.MathUtil;
@@ -114,18 +113,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
     /** Maximum tilt, in radians, for the robot to still be considered flat on the ground. */
     private static final double TILT_THRESHOLD = Math.toRadians(15);
 
-    /** The Kaaba, Al-Masjid al-Haram, Mecca, Saudi Arabia. */
-    private static final double MECCA_LAT_RAD = Math.toRadians(21.3891);
-
-    private static final double MECCA_LON_RAD = Math.toRadians(39.8579);
-
-    /** Auto Shop 37.8244069635729, -122.00586640858481 * */
-    private static final double DEFAULT_VENUE_LAT = 37.8244069635729;
-
-    private static final double DEFAULT_VENUE_LON = -122.00586640858481;
-
-    private static final double DEFAULT_FIELD_X_COMPASS_DEG = 90.0;
-
     /**
      * Commutative monoid for categorical trust fusion.
      *
@@ -198,12 +185,6 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
     /** TalonFX references for the 4 drive motors (modules 0-3: FL, FR, BL, BR). */
     private final TalonFX[] driveMotors;
 
-    /**
-     * Shared heading request used by {@link #faceTowardsMecca}. Gains configured in constructor.
-     */
-    private final SwerveRequest.FieldCentricFacingAngle m_qiblaRequest =
-            new SwerveRequest.FieldCentricFacingAngle();
-
     /** Constructs the drivetrain with odometry trust logic. */
     public OdometryDrivetrain() {
         super(
@@ -220,38 +201,8 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
             driveMotors[i] = getModule(i).getDriveMotor();
         }
 
-        m_qiblaRequest.HeadingController.setPID(5.0, 0.0, 0.1);
-        m_qiblaRequest.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
-
         getPigeon2().getAngularVelocityXWorld().setUpdateFrequency(50.0);
         getPigeon2().getAngularVelocityYWorld().setUpdateFrequency(50.0);
-    }
-
-    private static Rotation2d computeQibla(
-            double venueLat, double venueLon, double fieldXCompassDeg) {
-        double lat1 = Math.toRadians(venueLat);
-        double dLon = MECCA_LON_RAD - Math.toRadians(venueLon);
-        double y = Math.sin(dLon) * Math.cos(MECCA_LAT_RAD);
-        double x =
-                Math.cos(lat1) * Math.sin(MECCA_LAT_RAD)
-                        - Math.sin(lat1) * Math.cos(MECCA_LAT_RAD) * Math.cos(dLon);
-        // atan2 -> compass bearing in degrees (0 = North, CW positive)
-        double compassBearingDeg = Math.toDegrees(Math.atan2(y, x));
-        // Compass is CW from North; WPILib field angles are CCW from field X+
-        return Rotation2d.fromDegrees(fieldXCompassDeg - compassBearingDeg);
-    }
-
-    public void alignOperatorPerspectiveToMecca(
-            double venueLat, double venueLon, double fieldXCompassDeg) {
-        Rotation2d qibla = computeQibla(venueLat, venueLon, fieldXCompassDeg);
-        setOperatorPerspectiveForward(qibla);
-        Logger.recordOutput("Mecca/QiblaFieldAngleDeg", qibla.getDegrees());
-        Logger.recordOutput("Mecca/OperatorPerspectiveAligned", true);
-    }
-
-    public void alignOperatorPerspectiveToMecca() {
-        alignOperatorPerspectiveToMecca(
-                DEFAULT_VENUE_LAT, DEFAULT_VENUE_LON, DEFAULT_FIELD_X_COMPASS_DEG);
     }
 
     /**
