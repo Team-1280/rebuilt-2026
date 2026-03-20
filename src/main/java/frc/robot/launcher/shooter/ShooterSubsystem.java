@@ -20,6 +20,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private AngularVelocity targetAngularVelocity = RotationsPerSecond.of(0.0);
 
+    private boolean enabled = true;
+
     public ShooterSubsystem() {
         rightLeaderMotor.getConfigurator().apply(ShooterConfig.motorConfig);
         leftFollowerMotor.getConfigurator().apply(ShooterConfig.motorConfig);
@@ -28,7 +30,23 @@ public class ShooterSubsystem extends SubsystemBase {
                 new Follower(rightLeaderMotor.getDeviceID(), MotorAlignmentValue.Opposed));
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void enable() {
+        enabled = true;
+    }
+
+    public void disable() {
+        stop();
+        enabled = false;
+    }
+
     public void moveAngularVelocity(AngularVelocity angularVelocity) {
+        if (!enabled) {
+            return;
+        }
         targetAngularVelocity =
                 RotationsPerSecond.of(
                         MathUtil.clamp(
@@ -60,5 +78,12 @@ public class ShooterSubsystem extends SubsystemBase {
                 "angular velocity error (RPS)",
                 () -> targetAngularVelocity.minus(getAngularVelocity()).in(RotationsPerSecond),
                 null);
+        builder.addBooleanProperty(
+                "enabled",
+                () -> enabled,
+                (enabled) -> {
+                    if (enabled) enable();
+                    else disable();
+                });
     }
 }
