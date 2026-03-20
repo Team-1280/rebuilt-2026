@@ -155,7 +155,16 @@ public class Robot extends LoggedRobot implements Sendable {
                 .or(operatorController.rightStick())
                 .onTrue(
                         drivetrain
-                                .runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero))
+                                .runOnce(
+                                        () ->
+                                                drivetrain.resetRotation(
+                                                        DriverStation.getAlliance()
+                                                                                .orElse(
+                                                                                        Alliance
+                                                                                                .Blue)
+                                                                        == Alliance.Blue
+                                                                ? Rotation2d.kZero
+                                                                : Rotation2d.fromDegrees(180.0)))
                                 .ignoringDisable(true));
 
         // stow robot press; until any subsystem activated

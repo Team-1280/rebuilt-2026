@@ -38,7 +38,7 @@ Hence, the Operator and Operator controller are completely optional.
 - Reset robot pose to preset pose - Press `Back`
     - Reset pose is in front of team hub, bumpers against it and intake facing towards it
     - Ignores disable
-- Reset robot heading to 0 - Press `Right Joystick Button`
+- Reset robot heading to 0, operator perspective - Press `Right Joystick Button`
     - Ignores disable
 
 ### Stow
