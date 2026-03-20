@@ -23,6 +23,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "unstowLauncher"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "L_depot-L_shoot"
@@ -31,13 +37,13 @@
         {
           "type": "named",
           "data": {
-            "name": "unstowLauncher"
+            "name": "stowIntake"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "stowIntake"
+            "name": "startFeeder"
           }
         }
       ]

@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.8324256819382487,
-        "y": 0.3037532552114326
+        "x": 3.443682798276398,
+        "y": 0.6710930047598652
       },
       "isLocked": false,
       "linkedName": "R_start"
     },
     {
       "anchor": {
-        "x": 2.0,
-        "y": 4.06090998575277
+        "x": 2.575025765801554,
+        "y": 0.918119703389831
       },
       "prevControl": {
-        "x": 2.0,
-        "y": 4.31090998575277
+        "x": 3.025221102002641,
+        "y": 0.6817796819982402
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "R_shoot"
     }
   ],
   "rotationTargets": [],
@@ -41,8 +41,8 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 4.0,
-    "rotation": -90.0
+    "velocity": 0,
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,

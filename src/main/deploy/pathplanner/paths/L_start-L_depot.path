@@ -8,27 +8,68 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.2216891968768211,
-        "y": 7.57247974572382
+        "x": 3.3516975463714025,
+        "y": 7.387848210598147
       },
       "isLocked": false,
       "linkedName": "L_start"
     },
     {
       "anchor": {
-        "x": 0.6834912936970339,
-        "y": 6.508094710010593
+        "x": 2.874582553917254,
+        "y": 7.387848210598147
       },
       "prevControl": {
-        "x": 0.6834912936970339,
-        "y": 6.258094710010593
+        "x": 3.752590091329226,
+        "y": 7.387596555897887
+      },
+      "nextControl": {
+        "x": 1.3360026062695407,
+        "y": 7.388289198697967
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.657108274647888,
+        "y": 7.149693689480634
+      },
+      "prevControl": {
+        "x": 0.7203553970525375,
+        "y": 7.401565232125201
+      },
+      "nextControl": {
+        "x": 0.5962213978657704,
+        "y": 6.907221447284297
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.55,
+        "y": 6.2
+      },
+      "prevControl": {
+        "x": 0.5560588138204234,
+        "y": 6.74866609815141
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "L_depot"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 2,
+      "rotationDegrees": -90.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],

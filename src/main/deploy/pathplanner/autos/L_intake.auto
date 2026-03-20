@@ -37,12 +37,6 @@
         {
           "type": "named",
           "data": {
-            "name": "unstowLauncher"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "stowIntake"
           }
         },
@@ -50,6 +44,18 @@
           "type": "path",
           "data": {
             "pathName": "-L_start-L_shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "unstowLauncher"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "startFeeder"
           }
         }
       ]

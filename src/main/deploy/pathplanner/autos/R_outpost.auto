@@ -11,6 +11,36 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "R_start-R_shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "unstowLauncher"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "startFeeder"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 4.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stowLauncher"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "deployIntake"
@@ -19,13 +49,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "R_start-M_center-"
+            "pathName": "R_shoot-R_outpost"
           }
         },
         {
-          "type": "path",
+          "type": "wait",
           "data": {
-            "pathName": "-M_center-R_outpost"
+            "waitTime": 4.0
           }
         },
         {
@@ -38,6 +68,12 @@
           "type": "named",
           "data": {
             "name": "unstowLauncher"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "startFeeder"
           }
         },
         {

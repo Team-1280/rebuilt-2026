@@ -20,12 +20,12 @@
         "y": 7.387848210598147
       },
       "prevControl": {
-        "x": 8.184679654915481,
-        "y": 7.236264897189363
+        "x": 7.827673973912029,
+        "y": 7.387848210598147
       },
       "nextControl": {
-        "x": 4.515402970507388,
-        "y": 7.48065696696344
+        "x": 4.512315628455987,
+        "y": 7.387848210598147
       },
       "isLocked": false,
       "linkedName": "L_trench"
@@ -36,8 +36,8 @@
         "y": 7.387848210598147
       },
       "prevControl": {
-        "x": 5.218858890304863,
-        "y": 7.346481168508276
+        "x": 5.2199618755571064,
+        "y": 7.387848210598147
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,18 +45,6 @@
     }
   ],
   "rotationTargets": [
-    {
-      "waypointRelativePos": 1,
-      "rotationDegrees": -0.4525182414110042
-    },
-    {
-      "waypointRelativePos": 1,
-      "rotationDegrees": 0.0
-    },
-    {
-      "waypointRelativePos": 1,
-      "rotationDegrees": 0.0
-    },
     {
       "waypointRelativePos": 1,
       "rotationDegrees": 0.0
