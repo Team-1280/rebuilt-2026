@@ -49,7 +49,7 @@ public final class DriveConfig implements Sendable {
     public static AngularVelocity angularSpeedDeadband = maxAngularSpeed.times(0.1);
 
     /** Maximum X distance from trench bar to center of robot to automatically stow launcher. */
-    public static Distance trenchLauncherStowDistance = Meters.of(1.5); // TODO: tune
+    public static Distance trenchLauncherStowDistance = Meters.of(1.0);
 
     private DriveConfig() {}
 
