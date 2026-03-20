@@ -18,6 +18,8 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -132,8 +134,8 @@ public class Robot extends LoggedRobot implements Sendable {
                 drivetrain.applyRequest(
                         () ->
                                 getSwerveRequest(
-                                        -driverController.getLeftX(),
                                         -driverController.getLeftY(),
+                                        -driverController.getLeftX(),
                                         -driverController.getRightX())));
 
         // constant drive hold
@@ -162,7 +164,16 @@ public class Robot extends LoggedRobot implements Sendable {
                 .or(operatorController.rightStick())
                 .onTrue(
                         drivetrain
-                                .runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero))
+                                .runOnce(
+                                        () ->
+                                                drivetrain.resetRotation(
+                                                        DriverStation.getAlliance()
+                                                                                .orElse(
+                                                                                        Alliance
+                                                                                                .Blue)
+                                                                        == Alliance.Blue
+                                                                ? Rotation2d.kZero
+                                                                : Rotation2d.fromDegrees(180.0)))
                                 .ignoringDisable(true));
 
         // stow robot press; until any subsystem activated
