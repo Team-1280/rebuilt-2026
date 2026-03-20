@@ -78,6 +78,7 @@ public class Robot extends LoggedRobot implements Sendable {
         initLogger(); // must happen first
         initDashboard();
         initBindings();
+        initAuto();
     }
 
     private void initLogger() {
@@ -321,7 +322,6 @@ public class Robot extends LoggedRobot implements Sendable {
 
     @Override
     public void robotInit() {
-        drivetrain.resetPose(DriveConfig.INITIAL_POSE);
         candle.animateCandle(CandleEffect.CHROMA);
     }
 
