@@ -4,6 +4,9 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -54,6 +57,15 @@ public final class DriveConfig implements Sendable {
 
     /** Maximum X distance from trench bar to center of robot to automatically stow launcher. */
     public static Distance trenchLauncherStowDistance = Meters.of(1.0);
+
+    /** Whether to do constant linear speed driving. */
+    public static boolean constantDriveEnabled = false;
+
+    /** Linear drive speed for constant drive. */
+    public static LinearVelocity constantDriveSpeed = MetersPerSecond.of(0.7);
+
+    /** Controller throttle magnitude (X and Y) for constant linear drive. */
+    public static double constantDriveThrottleDeadband = 0.3;
 
     public static final SwerveRequest.FieldCentric swerveRequest =
             new SwerveRequest.FieldCentric()
@@ -106,6 +118,25 @@ public final class DriveConfig implements Sendable {
                 () -> trenchLauncherStowDistance.in(Meters),
                 (x) -> {
                     trenchLauncherStowDistance = Meters.of(x);
+                });
+
+        builder.addBooleanProperty(
+                "constant drive/enabled",
+                () -> constantDriveEnabled,
+                (value) -> {
+                    constantDriveEnabled = value;
+                });
+        builder.addDoubleProperty(
+                "constant drive/speed (m per s)",
+                () -> constantDriveSpeed.in(MetersPerSecond),
+                (speed) -> {
+                    constantDriveSpeed = MetersPerSecond.of(speed);
+                });
+        builder.addDoubleProperty(
+                "constant drive/throttle deadband",
+                () -> constantDriveThrottleDeadband,
+                (deadband) -> {
+                    constantDriveThrottleDeadband = deadband;
                 });
     }
 }

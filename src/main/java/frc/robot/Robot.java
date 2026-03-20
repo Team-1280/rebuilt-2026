@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Value;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -204,6 +206,16 @@ public class Robot extends LoggedRobot implements Sendable {
     private SwerveRequest getSwerveRequest(double xThrottle, double yThrottle, double rotThrottle) {
         if (!DriveConfig.enableDriving) {
             return new SwerveRequest.Idle();
+        }
+        if (DriveConfig.constantDriveEnabled) {
+            double throttleMagnitude = Math.hypot(xThrottle, yThrottle);
+            double multiplier =
+                    throttleMagnitude > DriveConfig.constantDriveThrottleDeadband
+                            ? DriveConfig.constantDriveSpeed.div(DriveConfig.maxSpeed).in(Value)
+                                    / throttleMagnitude
+                            : 0.0;
+            xThrottle *= multiplier;
+            yThrottle *= multiplier;
         }
         return DriveConfig.swerveRequest
                 .withVelocityX(DriveConfig.maxSpeed.times(xThrottle))
