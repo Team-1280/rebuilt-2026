@@ -3,6 +3,8 @@ package frc.robot.vision;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -13,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Camera {
+public class Camera implements Sendable {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
 
@@ -84,5 +86,14 @@ public class Camera {
     public boolean shouldUseResult(PhotonPipelineResult result) {
         return result.hasTargets()
                 && result.getBestTarget().getPoseAmbiguity() < VisionConst.MAX_AMBIGUITY;
+    }
+
+    public String getName() {
+        return camera.getName();
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addBooleanProperty("connected", camera::isConnected, null);
     }
 }
