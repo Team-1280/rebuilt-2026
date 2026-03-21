@@ -380,10 +380,9 @@ public class Robot extends LoggedRobot implements Sendable {
         NamedCommands.registerCommand("stowIntake", intake.runOnce(intake::stow));
 
         final Command runStowLauncher =
-                instantProxy(
                         Commands.run(launcher::stow, launcher.subsystems)
-                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
-        NamedCommands.registerCommand("stowLauncher", runStowLauncher);
+                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+        NamedCommands.registerCommand("stowLauncher", instantProxy(runStowLauncher));
         NamedCommands.registerCommand("unstowLauncher", Commands.runOnce(runStowLauncher::cancel));
 
         final Command runShooting = runShooting();
