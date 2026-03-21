@@ -365,16 +365,29 @@ public class Robot extends LoggedRobot implements Sendable {
                                                                 == null));
     }
 
+    /**
+     * Utility method that gets a wrapper instant command that schedules the given command and
+     * immediately finishes.
+     */
+    private Command instantProxy(Command command) {
+        return Commands.runOnce(() -> CommandScheduler.getInstance().schedule(command));
+    }
+
     public void initAuto() {
+        // Note: all named commands must finish instantly
+
         NamedCommands.registerCommand("deployIntake", intake.runOnce(intake::deploy));
         NamedCommands.registerCommand("stowIntake", intake.runOnce(intake::stow));
+
         final Command runStowLauncher =
-                Commands.run(launcher::stow, launcher.subsystems)
-                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+                instantProxy(
+                        Commands.run(launcher::stow, launcher.subsystems)
+                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         NamedCommands.registerCommand("stowLauncher", runStowLauncher);
         NamedCommands.registerCommand("unstowLauncher", Commands.runOnce(runStowLauncher::cancel));
+
         final Command runShooting = runShooting();
-        NamedCommands.registerCommand("startShooting", runShooting);
+        NamedCommands.registerCommand("startShooting", instantProxy(runShooting));
         NamedCommands.registerCommand("stopShooting", Commands.runOnce(runShooting::cancel));
     }
 
