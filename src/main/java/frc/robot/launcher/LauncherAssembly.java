@@ -183,7 +183,7 @@ public class LauncherAssembly implements Sendable {
 
     /** Set the launcher to launch at locked turret and hood angles. */
     public void launchFixed() {
-        final boolean feed = true;
+        final boolean feed = false;
         AngularVelocity shooterFlywheelSpeed =
                 RadiansPerSecond.of(
                         LaunchSpeed.estimateFlywheelSpeed(

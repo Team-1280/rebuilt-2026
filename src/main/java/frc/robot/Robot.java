@@ -221,11 +221,18 @@ public class Robot extends LoggedRobot implements Sendable {
                 .or(operatorController.povLeft())
                 .whileTrue(intake.startEnd(intake::rollersReverse, intake::rollersOn));
 
-        // feeding hold
+        // shooting hold
         driverController
                 .rightTrigger()
                 .or(operatorController.rightTrigger())
-                .whileTrue(launcher.feeder.startEnd(launcher.feeder::start, launcher.feeder::stop));
+                .whileTrue(runShooting());
+
+        // fixed launching hold
+        driverController
+                .rightBumper()
+                .or(operatorController.rightBumper())
+                .whileTrue(Commands.run(launcher::launchFixed, launcher.hood, launcher.turret))
+                .whileTrue(runShooting());
 
         // stow launcher hold
         driverController
@@ -236,14 +243,6 @@ public class Robot extends LoggedRobot implements Sendable {
                                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
                                 .ignoringDisable(true));
 
-        // fixed launching hold
-        driverController
-                .leftBumper()
-                .or(operatorController.leftBumper())
-                .whileTrue(
-                        Commands.run(launcher::launchFixed, launcher.subsystems)
-                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
-
         // intake fuel unjam hold
         driverController.a().or(operatorController.a()).whileTrue(runUnjamIntakeFuel());
 
@@ -252,6 +251,9 @@ public class Robot extends LoggedRobot implements Sendable {
 
         // spindexer: on by default
         spindexer.setDefaultCommand(spindexer.run(spindexer::start));
+
+        // shooter: off by default
+        launcher.shooter.disable();
     }
 
     /** Get the driving swerve request, from throttle values in WPILib robot coordinate axes. */
@@ -280,6 +282,19 @@ public class Robot extends LoggedRobot implements Sendable {
         launcher.stow();
         spindexer.stop();
         intake.stow();
+    }
+
+    private Command runShooting() {
+        return Commands.startEnd(
+                () -> {
+                    launcher.feeder.start();
+                    launcher.shooter.enable();
+                },
+                () -> {
+                    launcher.feeder.stop();
+                    launcher.shooter.disable();
+                },
+                launcher.feeder);
     }
 
     private Command runUnjamIntakeFuel() {
