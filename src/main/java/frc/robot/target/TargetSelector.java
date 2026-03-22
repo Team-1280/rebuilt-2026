@@ -2,6 +2,7 @@ package frc.robot.target;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -80,7 +81,18 @@ public class TargetSelector implements Sendable {
         } else {
             // Launch at a zone. Do team mirroring and field width mirroring
             ignoresVertical = true;
-            constraints = new TrajectoryConstraints(SoftConstraint.MINIMIZE_PITCH);
+            double distanceX =
+                    alliance == Alliance.Blue
+                            ? robotPose2d.getX()
+                            : FieldConst.FIELD_LENGTH.in(Meters) - robotPose2d.getX();
+            double targetPitch =
+                    MathUtil.interpolate(
+                            Math.toRadians(15.0),
+                            Math.toRadians(45.0),
+                            distanceX / FieldConst.FIELD_LENGTH.in(Meters));
+            constraints =
+                    new TrajectoryConstraints(SoftConstraint.TARGET_PITCH)
+                            .withTargetPitch(targetPitch);
             Distance targetX;
             Distance targetY;
             if (FieldZoning.isInNeutralZone(robotPose2d)) {

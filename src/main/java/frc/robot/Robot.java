@@ -427,6 +427,7 @@ public class Robot extends LoggedRobot implements Sendable {
                                                 InterruptionBehavior.kCancelIncoming));
             }
         }
+        stow();
     }
 
     @Override

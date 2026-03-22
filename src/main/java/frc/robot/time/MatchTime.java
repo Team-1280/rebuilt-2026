@@ -102,5 +102,6 @@ public class MatchTime implements Sendable {
                 (isMatch) -> {
                     isMatchOverride = Optional.of(isMatch);
                 });
+        builder.addStringProperty("alliance", () -> DriverStation.getAlliance().toString(), null);
     }
 }
