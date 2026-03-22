@@ -30,7 +30,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 
-import frc.robot.aesthetic.candle.CandleEffect;
 import frc.robot.aesthetic.candle.CandleSubsystem;
 import frc.robot.build.BuildConstants; // generated file: build to resolve
 import frc.robot.drivetrain.OdometryDrivetrain;
@@ -400,9 +399,7 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     @Override
-    public void robotInit() {
-        candle.animateCandle(CandleEffect.CHROMA);
-    }
+    public void robotInit() {}
 
     @Override
     public void robotPeriodic() {

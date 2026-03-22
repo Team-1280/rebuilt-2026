@@ -192,8 +192,6 @@ public class LauncherAssembly implements Sendable {
         shooter.moveAngularVelocity(shooterFlywheelSpeed);
         if (feed) {
             feeder.start();
-        } else {
-            feeder.stop();
         }
         aimDirection(fixedLaunchPitch, fixedLaunchYaw);
     }
@@ -230,7 +228,7 @@ public class LauncherAssembly implements Sendable {
                 });
         builder.addDoubleProperty(
                 "fixed launch/yaw (deg)",
-                () -> fixedLaunchPitch.in(Degrees),
+                () -> fixedLaunchYaw.in(Degrees),
                 (yaw) -> {
                     fixedLaunchYaw = Degrees.of(yaw);
                 });

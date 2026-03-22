@@ -15,6 +15,7 @@ import frc.robot.field.FieldConst;
 import frc.robot.field.FieldZoning;
 import frc.robot.time.HubStatus;
 import frc.robot.time.TimeConst;
+import frc.robot.trajectory.TrajectoryConfig;
 import frc.robot.trajectory.TrajectoryConstraints;
 import frc.robot.trajectory.TrajectoryConstraints.Obstacle;
 import frc.robot.trajectory.TrajectoryConstraints.SoftConstraint;
@@ -22,7 +23,7 @@ import frc.robot.trajectory.TrajectoryConstraints.SoftConstraint;
 import java.util.Optional;
 
 public class TargetSelector implements Sendable {
-    private static boolean ignoreHubStatus = false;
+    private static boolean ignoreHubStatus = true;
 
     private TargetSelector() {}
 
@@ -118,6 +119,12 @@ public class TargetSelector implements Sendable {
                 () -> ignoreHubStatus,
                 (ignore) -> {
                     ignoreHubStatus = ignore;
+                });
+        builder.addDoubleProperty(
+                "ignoring vertical speed fraction",
+                () -> TrajectoryConfig.IGNORING_VERTICAL_SPEED_FRACTION,
+                (frac) -> {
+                    TrajectoryConfig.IGNORING_VERTICAL_SPEED_FRACTION = frac;
                 });
     }
 }
