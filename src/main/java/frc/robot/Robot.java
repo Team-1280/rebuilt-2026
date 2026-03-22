@@ -11,7 +11,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.Sendable;
@@ -31,6 +33,7 @@ import frc.robot.drivetrain.OdometryDrivetrain;
 import frc.robot.field.FieldZoning;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.launcher.LauncherAssembly;
+import frc.robot.launcher.LauncherConst;
 import frc.robot.spindexer.SpindexerSubsystem;
 import frc.robot.target.LaunchTarget;
 import frc.robot.target.TargetSelector;
@@ -46,9 +49,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Robot extends LoggedRobot implements Sendable {
@@ -64,8 +64,7 @@ public class Robot extends LoggedRobot implements Sendable {
 
     private final CommandXboxController controller = new CommandXboxController(0); // TODO
 
-    private final ExecutorService trajectoryThread = Executors.newSingleThreadExecutor();
-    private Future<?> trajectoryFuture;
+    private Thread trajectoryCalcThread;
     private final AtomicReference<Trajectory> latestTrajectory = new AtomicReference<>();
 
     private final Field2d field = new Field2d();
@@ -253,26 +252,6 @@ public class Robot extends LoggedRobot implements Sendable {
                 spindexer);
     }
 
-    private void submitTrajectoryCalc() {
-        if (trajectoryFuture != null && !trajectoryFuture.isDone()) {
-            return;
-        }
-        Pose3d robotPose = drivetrain.getPose3d();
-        Translation2d robotVelocity = drivetrain.getFieldVelocity();
-        Optional<LaunchTarget> target = TargetSelector.selectTarget(robotPose);
-        if (target.isEmpty()) {
-            latestTrajectory.set(null);
-            return;
-        }
-        LaunchTarget t = target.get();
-        trajectoryFuture =
-                trajectoryThread.submit(
-                        () ->
-                                latestTrajectory.set(
-                                        launcher.calculateTargetTrajectory(
-                                                t, robotPose, robotVelocity)));
-    }
-
     private Command runAutomaticLaunching() {
         // is split into multiple commands to separate requirements
         return Commands.defer(
@@ -320,6 +299,61 @@ public class Robot extends LoggedRobot implements Sendable {
     @Override
     public void robotInit() {
         candle.animateCandle(CandleEffect.CHROMA);
+        trajectoryCalcThread = new Thread(() -> {
+            while (!Thread.interrupted()) {
+                if (isEnabled()) {
+                    // 1. Get current state
+                    Pose3d robotPose = drivetrain.getPose3d();
+                    Translation2d robotVelocity = drivetrain.getFieldVelocity();
+                    double omega = drivetrain.getAngularVelocity(); // rad/s CCW
+
+                    // 2. Angular velocity contribution: ω × r_launcher in field frame
+                    //    r_launcher = launcher XY offset in field coords (robot offset rotated by heading)
+                    Translation2d launcherOffset2d =
+                            new Translation2d(
+                                    LauncherConst.ROBOT_TO_LAUNCHER_TRANSFORM.getX(),
+                                    LauncherConst.ROBOT_TO_LAUNCHER_TRANSFORM.getY())
+                            .rotateBy(robotPose.getRotation().toRotation2d());
+                    Translation2d angularContribution =
+                            new Translation2d(-omega * launcherOffset2d.getY(), omega * launcherOffset2d.getX());
+                    Translation2d fullVelocity = robotVelocity.plus(angularContribution);
+
+                    // 3. Predict robot pose at expected firing time
+                    double latency = LauncherConst.SHOOTING_LATENCY;
+                    Translation3d predictedTranslation =
+                            new Translation3d(
+                                    robotPose.getX() + fullVelocity.getX() * latency,
+                                    robotPose.getY() + fullVelocity.getY() * latency,
+                                    robotPose.getZ());
+                    Rotation3d predictedRotation =
+                            new Rotation3d(
+                                    robotPose.getRotation().getX(),
+                                    robotPose.getRotation().getY(),
+                                    robotPose.getRotation().getZ() + omega * latency);
+                    Pose3d predictedPose = new Pose3d(predictedTranslation, predictedRotation);
+
+                    // 4. Compute trajectory from predicted pose with full velocity
+                    SmartDashboard.putNumber("Trajectory/Omega", omega);
+                    SmartDashboard.putString("Trajectory/FullVelocity", fullVelocity.toString());
+                    Optional<LaunchTarget> target = TargetSelector.selectTarget(predictedPose);
+                    if (target.isEmpty()) {
+                        latestTrajectory.set(null);
+                    } else {
+                        latestTrajectory.set(
+                                launcher.calculateTargetTrajectory(
+                                        target.get(), predictedPose, fullVelocity));
+                    }
+                } else {
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }, "trajectory-calc");
+        trajectoryCalcThread.setDaemon(true);
+        trajectoryCalcThread.start();
     }
 
     @Override
@@ -329,7 +363,6 @@ public class Robot extends LoggedRobot implements Sendable {
         pose3dPublisher.set(drivetrain.getPose3d());
 
         if (isEnabled()) {
-            submitTrajectoryCalc();
             // Runs before controller triggers are checked, which deprioritizes automatic launching
             CommandScheduler.getInstance().schedule(runAutomaticLaunching());
         }

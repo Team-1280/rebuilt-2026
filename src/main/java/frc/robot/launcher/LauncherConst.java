@@ -11,6 +11,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 public final class LauncherConst {
     public static final CANBus CAN_BUS = new CANBus("launcher");
 
+    /** Expected time between trajectory application and fuel leaving the launcher, in seconds. */
+    public static final double SHOOTING_LATENCY = 0.15;
+
     /** The transform from the robot origin to the launcher exit point, including rotation. */
     public static final Transform3d ROBOT_TO_LAUNCHER_TRANSFORM =
             new Transform3d(

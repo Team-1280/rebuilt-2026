@@ -274,6 +274,11 @@ public final class OdometryDrivetrain extends CommandSwerveDrivetrain implements
                 new Rotation3d(roll, pitch, pose2d.getRotation().getRadians()));
     }
 
+    /** Returns the robot angular velocity in rad/s, positive CCW. */
+    public double getAngularVelocity() {
+        return getState().Speeds.omegaRadiansPerSecond;
+    }
+
     /** Get the robot velocity on the 2D field (field coordinate system) as a Translation2d. */
     public Translation2d getFieldVelocity() {
         ChassisSpeeds chassisSpeeds = getState().Speeds;
