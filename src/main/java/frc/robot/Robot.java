@@ -8,6 +8,8 @@ import static edu.wpi.first.units.Units.Value;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -19,6 +21,7 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -75,8 +78,12 @@ public class Robot extends LoggedRobot implements Sendable {
                     .getStructTopic("Robot Pose3d", Pose3d.struct)
                     .publish();
 
+    private final SendableChooser<Command> autoChooser;
+
     public Robot() {
         initLogger(); // must happen first
+        initAuto(); // must happen before auto chooser built
+        autoChooser = AutoBuilder.buildAutoChooser();
         initDashboard();
         initBindings();
     }
@@ -102,6 +109,7 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     private void initDashboard() {
+        SmartDashboard.putData("Auto Chooser", autoChooser);
         SmartDashboard.putData("Robot", this);
         SmartDashboard.putData("Drive Config", DriveConfig.getSendable());
         SmartDashboard.putData("Field", field);
@@ -357,6 +365,19 @@ public class Robot extends LoggedRobot implements Sendable {
                                                                 == null));
     }
 
+    public void initAuto() {
+        NamedCommands.registerCommand("deployIntake", intake.runOnce(intake::deploy));
+        NamedCommands.registerCommand("stowIntake", intake.runOnce(intake::stow));
+        final Command runStowLauncher =
+                Commands.run(launcher::stow, launcher.subsystems)
+                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+        NamedCommands.registerCommand("stowLauncher", runStowLauncher);
+        NamedCommands.registerCommand("unstowLauncher", Commands.runOnce(runStowLauncher::cancel));
+        final Command runShooting = runShooting();
+        NamedCommands.registerCommand("startShooting", runShooting);
+        NamedCommands.registerCommand("stopShooting", Commands.runOnce(runShooting::cancel));
+    }
+
     @Override
     public void robotInit() {
         candle.animateCandle(CandleEffect.CHROMA);
@@ -391,7 +412,14 @@ public class Robot extends LoggedRobot implements Sendable {
     }
 
     @Override
-    public void autonomousInit() {}
+    public void autonomousInit() {
+        CommandScheduler.getInstance().schedule(Commands.idle(launcher.subsystems));
+        Command selectedAuto = autoChooser.getSelected();
+        if (selectedAuto != null) {
+            CommandScheduler.getInstance().schedule(selectedAuto);
+            SmartDashboard.putData("Auto Chooser/" + selectedAuto.getName(), selectedAuto);
+        }
+    }
 
     @Override
     public void autonomousPeriodic() {}
