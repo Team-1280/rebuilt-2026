@@ -38,17 +38,23 @@ public record HubStatus(boolean activated, double timeToActivation, double timeT
             return firstActiveAlliance.get();
         }
         // Get the alliance using the Game Data if available
+        /*
+         * https://docs.wpilib.org/en/stable/docs/yearly-overview/2026-game-data.html
+         * "The alliance will be provided as a single character representing the color of
+         * the alliance whose goal will go inactive first (i.e. ‘R’ = red, ‘B’ = blue).
+         * This alliance’s goal will be active in Shifts 2 and 4."
+         */
         String message = DriverStation.getGameSpecificMessage();
         switch (message) {
             case "":
             default:
                 break;
             case "B":
-                firstActiveAlliance = Optional.of(Alliance.Blue);
-                return Alliance.Blue;
-            case "R":
                 firstActiveAlliance = Optional.of(Alliance.Red);
                 return Alliance.Red;
+            case "R":
+                firstActiveAlliance = Optional.of(Alliance.Blue);
+                return Alliance.Blue;
         }
         // If unknown, default to assuming the opponent alliance's hub activates first
         return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
