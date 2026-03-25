@@ -1,0 +1,97 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "stowLauncher"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "L_start-L_trench-"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "deployIntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "-L_trench-L_fuel"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "L_fuel-L_trench-L_start-"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "-L_start-L_shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "unstowLauncher"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "startShooting"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 4.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopShooting"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "L_shoot-L_depot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "L_depot-L_shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "startShooting"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
