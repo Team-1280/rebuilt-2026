@@ -11,9 +11,6 @@ public final class TrajectoryConfig {
 
     // R^2 = 0.9902, RMSE = 0.209543
 
-    /** Fraction from 0 to 1 of the maximum speed to use, when the trajectory ignores vertical. */
-    public static final double IGNORING_VERTICAL_SPEED_FRACTION = 0.8;
-
     /**
      * The amount of max possible error in pitch, from the optimal pitch, that the optimizer
      * algorithm accepts. This determines how precise and how expensive the optimizer is.

@@ -109,10 +109,9 @@ public class TrajectorySolver {
                 };
         return computeOptimalPitchTrajectory(
                 (params, pitch) -> {
-                    // Use maximum speed (even for minimize speed constraint)
                     double speed =
                             LaunchSpeed.estimateSpeed(constraints.getMaxFlywheelSpeed(), pitch)
-                                    * TrajectoryConfig.IGNORING_VERTICAL_SPEED_FRACTION;
+                                    * constraints.getIgnoringVerticalSpeedFraction();
                     return calculateFromPitchIgnoringVertical(params, pitch, speed);
                 },
                 parameters,

@@ -36,7 +36,9 @@ public class TrajectoryConstraints {
     private final ArrayList<Obstacle> lowerObstacles = new ArrayList<>();
     private final ArrayList<Obstacle> upperObstacles = new ArrayList<>();
     private double maxHeight = Double.POSITIVE_INFINITY;
+
     private double targetPitch = 0.0;
+    private double ignoringVerticalSpeedFraction = 1.0 - 1e-12;
 
     /**
      * Create a set of constraints.
@@ -363,6 +365,17 @@ public class TrajectoryConstraints {
     /** Set the target pitch. Only applies for when the soft constraint is TARGET_PITCH. */
     public TrajectoryConstraints withTargetPitch(double targetPitch) {
         this.targetPitch = targetPitch;
+        return this;
+    }
+
+    /** Get the fraction of launch speed that will be used, when trajectory ignores vertical. */
+    public double getIgnoringVerticalSpeedFraction() {
+        return ignoringVerticalSpeedFraction;
+    }
+
+    /** Set the fraction of launch speed that will be used, when trajectory ignores vertical. */
+    public TrajectoryConstraints withIgnoringVerticalSpeedFraction(double fraction) {
+        ignoringVerticalSpeedFraction = fraction;
         return this;
     }
 }
