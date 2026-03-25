@@ -192,8 +192,6 @@ public class LauncherAssembly implements Sendable {
         shooter.moveAngularVelocity(shooterFlywheelSpeed);
         if (feed) {
             feeder.start();
-        } else {
-            feeder.stop();
         }
         aimDirection(fixedLaunchPitch, fixedLaunchYaw);
     }
