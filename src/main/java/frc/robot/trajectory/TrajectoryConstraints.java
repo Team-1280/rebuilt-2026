@@ -8,9 +8,13 @@ import java.util.ArrayList;
 public class TrajectoryConstraints {
     /** Whether the code should try to minimize or maximize the launch pitch, or minimize speed */
     public static enum SoftConstraint {
+        /** Minimize the pitch, reducing time. */
         MINIMIZE_PITCH,
+        /** Maximize the pitch, increasing time. */
         MAXIMIZE_PITCH,
+        /** Minimize the required launch speed, avoiding speed constraints. */
         MINIMIZE_SPEED, // note: use maximize pitch as a fallback for this in some situations
+        /** Optimize for a custom target pitch, set with the withTargetPitch() method. */
         TARGET_PITCH, // note: use minimize pitch as a fallback for this in some situations
     }
 
