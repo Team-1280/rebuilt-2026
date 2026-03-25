@@ -330,48 +330,26 @@ public class Robot extends LoggedRobot implements Sendable {
                     Optional<LaunchTarget> target = TargetSelector.selectTarget(robotPose);
                     if (target.isEmpty()) {
                         return Commands.parallel(
-                                asDefault(launcher.shooter.runOnce(launcher.shooter::stop)),
-                                asDefault(launcher.hood.runOnce(launcher.hood::stow)),
-                                asDefault(launcher.turret.runOnce(launcher.turret::stow)));
+                                CommandsUtil.asDefault(
+                                        launcher.shooter.runOnce(launcher.shooter::stop)),
+                                CommandsUtil.asDefault(launcher.hood.runOnce(launcher.hood::stow)),
+                                CommandsUtil.asDefault(
+                                        launcher.turret.runOnce(launcher.turret::stow)));
                     }
                     Trajectory trajectory =
                             launcher.calculateTargetTrajectory(
                                     target.get(), robotPose, drivetrain.getFieldVelocity());
                     return Commands.parallel(
-                            asDefault(
+                            CommandsUtil.asDefault(
                                     Commands.runOnce(
                                             () -> launcher.aimTrajectory(trajectory),
                                             launcher.hood,
                                             launcher.turret)),
-                            asDefault(
+                            CommandsUtil.asDefault(
                                     launcher.shooter.runOnce(
                                             () -> launcher.shootTrajectory(trajectory))));
                 },
                 Set.of());
-    }
-
-    /**
-     * Utility method that decorates the command to only run if the command requirements aren't
-     * occupied, and to not extend the command's requirements to the command composition.
-     */
-    private Command asDefault(Command command) {
-        return command.asProxy()
-                .onlyIf(
-                        () ->
-                                command.getRequirements().stream()
-                                        .allMatch(
-                                                req ->
-                                                        CommandScheduler.getInstance()
-                                                                        .requiring(req)
-                                                                == null));
-    }
-
-    /**
-     * Utility method that gets a wrapper instant command that schedules the given command and
-     * immediately finishes.
-     */
-    private Command instantProxy(Command command) {
-        return Commands.runOnce(() -> CommandScheduler.getInstance().schedule(command));
     }
 
     public void initAuto() {
@@ -383,11 +361,11 @@ public class Robot extends LoggedRobot implements Sendable {
         final Command runStowLauncher =
                 Commands.run(launcher::stow, launcher.subsystems)
                         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
-        NamedCommands.registerCommand("stowLauncher", instantProxy(runStowLauncher));
+        NamedCommands.registerCommand("stowLauncher", CommandsUtil.instantProxy(runStowLauncher));
         NamedCommands.registerCommand("unstowLauncher", Commands.runOnce(runStowLauncher::cancel));
 
         final Command runShooting = runShooting();
-        NamedCommands.registerCommand("startShooting", instantProxy(runShooting));
+        NamedCommands.registerCommand("startShooting", CommandsUtil.instantProxy(runShooting));
         NamedCommands.registerCommand("stopShooting", Commands.runOnce(runShooting::cancel));
 
         RobotModeTriggers.autonomous()
