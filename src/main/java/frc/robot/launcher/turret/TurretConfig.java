@@ -44,13 +44,14 @@ public final class TurretConfig {
         motorConfig.Feedback.SensorToMechanismRatio = TurretConst.ENCODER_TO_MECHANISM_RATIO;
 
         // Control unit: mechanism rotations
+        // TODO: tune to minimize latency, especially jerk
         motorConfig.Slot0.kP = 100.0;
         motorConfig.Slot0.kS = 0.22;
         motorConfig.Slot0.kV = 3.1;
         motorConfig.Slot0.kA = 0.15;
         motorConfig.MotionMagic.MotionMagicCruiseVelocity = 3.0;
         motorConfig.MotionMagic.MotionMagicAcceleration = 40.0;
-        motorConfig.MotionMagic.MotionMagicJerk = 100.0;
+        motorConfig.MotionMagic.MotionMagicJerk = 500.0;
     }
 
     public static final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
