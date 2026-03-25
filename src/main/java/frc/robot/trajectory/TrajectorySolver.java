@@ -69,6 +69,7 @@ public class TrajectorySolver {
                     case MAXIMIZE_PITCH -> highPitch;
                     case MINIMIZE_PITCH -> lowPitch;
                     case MINIMIZE_SPEED -> parameters.getMinimalSpeedPitch();
+                    case TARGET_PITCH -> constraints.getTargetPitch();
                 };
         // Use a pitch approximation algorithm to find a trajectory very close to the optimal
         return computeOptimalPitchTrajectory(
@@ -104,6 +105,7 @@ public class TrajectorySolver {
                     case MAXIMIZE_PITCH -> highPitch;
                     case MINIMIZE_PITCH -> lowPitch;
                     case MINIMIZE_SPEED -> 0.0; // launch angle as horizontal as possible
+                    case TARGET_PITCH -> constraints.getTargetPitch();
                 };
         return computeOptimalPitchTrajectory(
                 (params, pitch) -> {
@@ -162,7 +164,7 @@ public class TrajectorySolver {
                 maximizePitch =
                         switch (constraints.getSoftConstraint()) {
                             case MAXIMIZE_PITCH, MINIMIZE_SPEED -> true;
-                            case MINIMIZE_PITCH -> false;
+                            case MINIMIZE_PITCH, TARGET_PITCH -> false;
                         };
             }
         }

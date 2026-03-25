@@ -11,6 +11,7 @@ public class TrajectoryConstraints {
         MINIMIZE_PITCH,
         MAXIMIZE_PITCH,
         MINIMIZE_SPEED, // note: use maximize pitch as a fallback for this in some situations
+        TARGET_PITCH, // note: use minimize pitch as a fallback for this in some situations
     }
 
     /**
@@ -31,6 +32,7 @@ public class TrajectoryConstraints {
     private final ArrayList<Obstacle> lowerObstacles = new ArrayList<>();
     private final ArrayList<Obstacle> upperObstacles = new ArrayList<>();
     private double maxHeight = Double.POSITIVE_INFINITY;
+    private double targetPitch = 0.0;
 
     /**
      * Create a set of constraints.
@@ -346,6 +348,17 @@ public class TrajectoryConstraints {
     /** Set the maximum allowable max height of a trajectory. */
     public TrajectoryConstraints withMaxHeight(double maxHeight) {
         this.maxHeight = maxHeight;
+        return this;
+    }
+
+    /** Get the target pitch. Only applies for when the soft constraint is TARGET_PITCH. */
+    public double getTargetPitch() {
+        return targetPitch;
+    }
+
+    /** Set the target pitch. Only applies for when the soft constraint is TARGET_PITCH. */
+    public TrajectoryConstraints withTargetPitch(double targetPitch) {
+        this.targetPitch = targetPitch;
         return this;
     }
 }
