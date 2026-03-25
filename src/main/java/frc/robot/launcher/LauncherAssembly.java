@@ -58,7 +58,7 @@ public class LauncherAssembly implements Sendable {
     private Angle fixedLaunchYaw = Degrees.of(0.0);
 
     /** Approximate time for the motor to receive and react to a control request, in seconds. */
-    private double motorLatency = 0.37;
+    private double motorLatency = 0.0; // TODO: tune or remove
 
     /** Filter of yaw velocity for use in motor latency compensation. */
     private final LinearFilter trajectoryYawVelocityFilter = LinearFilter.movingAverage(4);
