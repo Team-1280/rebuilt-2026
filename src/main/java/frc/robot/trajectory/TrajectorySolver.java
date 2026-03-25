@@ -99,11 +99,11 @@ public class TrajectorySolver {
             TrajectoryParameters parameters, TrajectoryConstraints constraints) {
         double lowPitch = constraints.getMinLauncherPitch() - parameters.getLauncherTilt();
         double highPitch = constraints.calculateMaxPitch(parameters);
-        // Note: minimizing speed here means making the launch angle as horizontal as possible
         double targetPitch =
                 switch (constraints.getSoftConstraint()) {
                     case MAXIMIZE_PITCH -> highPitch;
-                    case MINIMIZE_PITCH, MINIMIZE_SPEED -> lowPitch;
+                    case MINIMIZE_PITCH -> lowPitch;
+                    case MINIMIZE_SPEED -> 0.0; // launch angle as horizontal as possible
                 };
         return computeOptimalPitchTrajectory(
                 (params, pitch) -> {
