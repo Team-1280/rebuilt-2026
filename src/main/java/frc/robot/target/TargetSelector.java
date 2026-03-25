@@ -1,7 +1,9 @@
 package frc.robot.target;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -39,13 +41,13 @@ public class TargetSelector implements Sendable {
 
         if (FieldZoning.isInTeamAllianceZone(robotPose2d)) {
             // Launch at hub from team alliance zone
+            ignoresVertical = false;
             Distance hubX =
                     switch (alliance) {
                         case Blue -> FieldConst.BLUE_HUB_X;
                         case Red -> FieldConst.RED_HUB_X;
                     };
             translation = new Translation3d(hubX, FieldConst.HUB_Y, TargetConfig.HUB_TARGET_HEIGHT);
-            ignoresVertical = false;
             double distance =
                     Math.hypot(
                             translation.getX() - robotPose2d.getX(),
@@ -79,7 +81,19 @@ public class TargetSelector implements Sendable {
         } else {
             // Launch at a zone. Do team mirroring and field width mirroring
             ignoresVertical = true;
-            constraints = new TrajectoryConstraints(SoftConstraint.MINIMIZE_PITCH);
+            // Pitch gradient; higher pitch when farther away
+            double distanceX =
+                    alliance == Alliance.Blue
+                            ? robotPose2d.getX()
+                            : FieldConst.FIELD_LENGTH.in(Meters) - robotPose2d.getX();
+            double targetPitch =
+                    MathUtil.interpolate(
+                            TargetConfig.PASSING_PITCH_GRADIENT_LOW.in(Radians),
+                            TargetConfig.PASSING_PITCH_GRADIENT_HIGH.in(Radians),
+                            distanceX / FieldConst.FIELD_LENGTH.in(Meters));
+            constraints =
+                    new TrajectoryConstraints(SoftConstraint.TARGET_PITCH)
+                            .withTargetPitch(targetPitch);
             Distance targetX;
             Distance targetY;
             if (FieldZoning.isInNeutralZone(robotPose2d)) {
