@@ -228,7 +228,7 @@ public class LauncherAssembly implements Sendable {
                 });
         builder.addDoubleProperty(
                 "fixed launch/yaw (deg)",
-                () -> fixedLaunchPitch.in(Degrees),
+                () -> fixedLaunchYaw.in(Degrees),
                 (yaw) -> {
                     fixedLaunchYaw = Degrees.of(yaw);
                 });
