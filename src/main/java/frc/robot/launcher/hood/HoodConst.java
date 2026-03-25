@@ -14,7 +14,7 @@ public final class HoodConst {
     public static final CANBus CAN_BUS = LauncherConst.CAN_BUS;
 
     /** The minimum launcher pitch; this is only a software limit. */
-    public static final Angle MIN_PITCH = Degrees.of(30.0); // TODO: tune
+    public static final Angle MIN_PITCH = Degrees.of(15.0);
 
     /** The maximum launcher pitch; note that there is a physical hardstop here. */
     public static final Angle MAX_PITCH = Degrees.of(73.606);
