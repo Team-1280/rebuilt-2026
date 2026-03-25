@@ -144,5 +144,6 @@ public record HubStatus(boolean activated, double timeToActivation, double timeT
                 "team activation time", () -> getTeamHubStatus().timeToActivation(), null);
         builder.addDoubleProperty(
                 "team deactivation time", () -> getTeamHubStatus().timeToDeactivation(), null);
+        builder.addStringProperty("alliance", () -> DriverStation.getAlliance().toString(), null);
     }
 }
