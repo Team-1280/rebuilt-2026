@@ -91,20 +91,24 @@ public class TargetSelector implements Sendable {
                             TargetConfig.PASSING_PITCH_GRADIENT_LOW.in(Radians),
                             TargetConfig.PASSING_PITCH_GRADIENT_HIGH.in(Radians),
                             distanceX / FieldConst.FIELD_LENGTH.in(Meters));
-            constraints =
-                    new TrajectoryConstraints(SoftConstraint.TARGET_PITCH)
-                            .withTargetPitch(targetPitch);
             Distance targetX;
             Distance targetY;
+            double speedFraction;
             if (FieldZoning.isInNeutralZone(robotPose2d)) {
                 // Launch at team alliance zone from neutral zone
                 targetX = TargetConfig.TEAM_ALLIANCE_ZONE_TARGET_X;
                 targetY = TargetConfig.TEAM_ALLIANCE_ZONE_TARGET_Y;
+                speedFraction = TargetConfig.TEAM_ALLIANCE_ZONE_SPEED_FRACTION;
             } else {
                 // Launch at neutral zone from opponent alliance zone
                 targetX = TargetConfig.NEUTRAL_ZONE_TARGET_X;
                 targetY = TargetConfig.NEUTRAL_ZONE_TARGET_Y;
+                speedFraction = TargetConfig.NEUTRAL_ZONE_SPEED_FRACTION;
             }
+            constraints =
+                    new TrajectoryConstraints(SoftConstraint.TARGET_PITCH)
+                            .withTargetPitch(targetPitch)
+                            .withIgnoringVerticalSpeedFraction(speedFraction);
             // TODO: add field wall width and length upper obstacles (2)
 
             if (alliance == Alliance.Red) {

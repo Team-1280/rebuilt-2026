@@ -37,9 +37,11 @@ public class TargetConfig {
     public static final Distance TEAM_ALLIANCE_ZONE_TARGET_X = FieldConst.BLUE_HUB_X;
     public static final Distance TEAM_ALLIANCE_ZONE_TARGET_Y =
             FieldConst.HUB_Y.minus(FieldConst.HUB_SIZE.div(2)).minus(Meters.of(0.5));
+    public static final double TEAM_ALLIANCE_ZONE_SPEED_FRACTION = 0.8;
 
     // Neutral zone target closest to blue origin (when robot is in red alliance zone)
     public static final Distance NEUTRAL_ZONE_TARGET_X = FieldConst.RED_HUB_X;
     public static final Distance NEUTRAL_ZONE_TARGET_Y =
             FieldConst.HUB_Y.minus(FieldConst.HUB_SIZE.div(2)).minus(Meters.of(0.4));
+    public static final double NEUTRAL_ZONE_SPEED_FRACTION = 0.8;
 }
