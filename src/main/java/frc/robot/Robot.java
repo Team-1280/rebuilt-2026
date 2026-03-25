@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 
 import frc.robot.aesthetic.candle.CandleEffect;
 import frc.robot.aesthetic.candle.CandleSubsystem;
@@ -388,6 +389,14 @@ public class Robot extends LoggedRobot implements Sendable {
         final Command runShooting = runShooting();
         NamedCommands.registerCommand("startShooting", instantProxy(runShooting));
         NamedCommands.registerCommand("stopShooting", Commands.runOnce(runShooting::cancel));
+
+        RobotModeTriggers.autonomous()
+                .onFalse(
+                        Commands.runOnce(
+                                () -> {
+                                    runStowLauncher.cancel();
+                                    runShooting.cancel();
+                                }));
     }
 
     @Override
@@ -430,6 +439,7 @@ public class Robot extends LoggedRobot implements Sendable {
         if (selectedAuto != null) {
             CommandScheduler.getInstance().schedule(selectedAuto);
             SmartDashboard.putData("Auto Chooser/" + selectedAuto.getName(), selectedAuto);
+            RobotModeTriggers.autonomous().onFalse(Commands.runOnce(selectedAuto::cancel));
         }
     }
 
