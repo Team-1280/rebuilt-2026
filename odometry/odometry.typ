@@ -16,7 +16,7 @@
   v(0.3em)
 }
 
-#import "@preview/fletcher:0.5.3": diagram, edge, node
+#import "@preview/fletcher:0.5.8": diagram, edge, node
 #import "@preview/cetz:0.3.4"
 
 #align(center)[
